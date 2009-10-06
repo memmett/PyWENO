@@ -1,8 +1,9 @@
 PyWENO
 ======
 
-PyWENO implements one-dimensional Weighted Essentially Non-oscillatory
-(WENO) approximations over unstructured (non-uniform) grids.
+PyWENO is a Python implementation of one-dimensional Weighted
+Essentially Non-oscillatory (WENO) approximations over unstructured
+(non-uniform) grids.
 
 Please see Matthew's :download:`WENO <WENO.pdf>` document for the
 mathematics behind PyWENO.

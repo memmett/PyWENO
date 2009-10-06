@@ -1,6 +1,4 @@
-"""WENO Stencil class.
-
-   Please see pyweno.weno for more information.
+"""PyWENO Stencil class.
 
    Indexing conventions:
 

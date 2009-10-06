@@ -1,4 +1,6 @@
-"""PyWENO smoothness indicators."""
+"""PyWENO smoothness indicators.
+
+"""
 
 import numpy as np
 

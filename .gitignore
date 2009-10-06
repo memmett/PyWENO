@@ -1,13 +1,16 @@
+# backup files
 *~
 
+# compiled python and shared objects
 *.pyc
 *.pyo
+*.so
 
-*.prof
-
+# setuptools
 build
 dist
 PyWENO*
 
+# sphinx
 _build
 _doctrees

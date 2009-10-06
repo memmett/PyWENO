@@ -1,13 +1,13 @@
-"""Weighted Essentially Non-oscillatory (WENO) approximation.
+"""PyWENO WENO class.
 
-   PyWENO implements one-dimensional WENO approximations over
-   unstructured grids.
+   Indexing conventions:
 
-   Please see
+     * There are N cells C_i, where i=1,...,N.
 
-       http://www.math.ualberta.ca/~memmett/pyweno/
+     * A quantity X that depends on the cell C_i is indexed as X[i-1].
 
-   for more information.
+     * A quantity X that depends on the cell boundary at x_{i-1/2} is
+       indexed as X[i-1].
 
 """
 

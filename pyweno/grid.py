@@ -1,4 +1,6 @@
-"""PyWENO Grid class."""
+"""PyWENO Grid class.
+
+"""
 
 import math
 
