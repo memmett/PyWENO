@@ -1,0 +1,13 @@
+*~
+
+*.pyc
+*.pyo
+
+*.prof
+
+build
+dist
+PyWENO*
+
+_build
+_doctrees
