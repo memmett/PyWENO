@@ -10,8 +10,6 @@
 void
 coeffs_3m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -210,8 +208,6 @@ coeffs_3m(long int i, int r, double *x, double *c)
 void
 coeffs_3p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -410,9 +406,7 @@ coeffs_3m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -457,9 +451,7 @@ coeffs_3p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -502,8 +494,6 @@ coeffs_3p_py(PyObject *self, PyObject *args)
 void
 coeffs_3(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -702,9 +692,7 @@ coeffs_3_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -747,8 +735,6 @@ coeffs_3_py(PyObject *self, PyObject *args)
 void
 coeffs_4m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -1174,8 +1160,6 @@ coeffs_4m(long int i, int r, double *x, double *c)
 void
 coeffs_4p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -1601,9 +1585,7 @@ coeffs_4m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -1648,9 +1630,7 @@ coeffs_4p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -1693,8 +1673,6 @@ coeffs_4p_py(PyObject *self, PyObject *args)
 void
 coeffs_4(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -2120,9 +2098,7 @@ coeffs_4_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -2165,8 +2141,6 @@ coeffs_4_py(PyObject *self, PyObject *args)
 void
 coeffs_5m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -2987,8 +2961,6 @@ coeffs_5m(long int i, int r, double *x, double *c)
 void
 coeffs_5p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -3809,9 +3781,7 @@ coeffs_5m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -3856,9 +3826,7 @@ coeffs_5p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -3901,8 +3869,6 @@ coeffs_5p_py(PyObject *self, PyObject *args)
 void
 coeffs_5(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -4723,9 +4689,7 @@ coeffs_5_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -4768,8 +4732,6 @@ coeffs_5_py(PyObject *self, PyObject *args)
 void
 coeffs_6m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -6222,8 +6184,6 @@ coeffs_6m(long int i, int r, double *x, double *c)
 void
 coeffs_6p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -7676,9 +7636,7 @@ coeffs_6m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -7723,9 +7681,7 @@ coeffs_6p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -7768,8 +7724,6 @@ coeffs_6p_py(PyObject *self, PyObject *args)
 void
 coeffs_6(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -9222,9 +9176,7 @@ coeffs_6_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -9267,8 +9219,6 @@ coeffs_6_py(PyObject *self, PyObject *args)
 void
 coeffs_7m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -11671,8 +11621,6 @@ coeffs_7m(long int i, int r, double *x, double *c)
 void
 coeffs_7p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -14075,9 +14023,7 @@ coeffs_7m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -14122,9 +14068,7 @@ coeffs_7p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -14167,8 +14111,6 @@ coeffs_7p_py(PyObject *self, PyObject *args)
 void
 coeffs_7(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -16571,9 +16513,7 @@ coeffs_7_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -16616,8 +16556,6 @@ coeffs_7_py(PyObject *self, PyObject *args)
 void
 coeffs_8m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -20381,8 +20319,6 @@ coeffs_8m(long int i, int r, double *x, double *c)
 void
 coeffs_8p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -24146,9 +24082,7 @@ coeffs_8m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -24193,9 +24127,7 @@ coeffs_8p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -24238,8 +24170,6 @@ coeffs_8p_py(PyObject *self, PyObject *args)
 void
 coeffs_8(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -28003,9 +27933,7 @@ coeffs_8_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -28048,8 +27976,6 @@ coeffs_8_py(PyObject *self, PyObject *args)
 void
 coeffs_9m(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -33690,8 +33616,6 @@ coeffs_9m(long int i, int r, double *x, double *c)
 void
 coeffs_9p(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -39332,9 +39256,7 @@ coeffs_9m_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -39379,9 +39301,7 @@ coeffs_9p_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -39424,8 +39344,6 @@ coeffs_9p_py(PyObject *self, PyObject *args)
 void
 coeffs_9(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
@@ -45066,9 +44984,7 @@ coeffs_9_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -45113,9 +45029,7 @@ coeffs_xi_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, k, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r, k;
 
   PyObject *bndry, *coeffs;
 

@@ -123,8 +123,6 @@ coeff_fcn_bndry_c_head = """
 void
 coeffs_%(k)d%(bndry)s(long int i, int r, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 """
 
@@ -138,9 +136,7 @@ coeffs_%(k)d%(bndry)s_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -208,8 +204,6 @@ coeff_fcn_xi_c_head = """
 void
 coeffs_%(k)d(long int i, int r, double xi, double *x, double *c)
 {
-  int j;
-
   double sum_l, sum_m, prod_n, prod_m;
 """
 
@@ -223,9 +217,7 @@ coeffs_%(k)d_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r;
 
   PyObject *bndry, *coeffs;
 
@@ -305,9 +297,7 @@ coeffs_xi_py(PyObject *self, PyObject *args)
 {
   double *x, *c, xi;
   long int i;
-  int r, k, j;
-
-  double sum_l, sum_m, prod_n, prod_m;
+  int r, k;
 
   PyObject *bndry, *coeffs;
 
