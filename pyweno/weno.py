@@ -15,12 +15,10 @@ import math
 import sys
 
 import numpy as np
+import scipy.optimize
 
-import pyweno.grid as grid
-import pyweno.stencil as stencil
-
-import scipy.optimize as sciopt
-
+import pyweno.stencil
+import pyweno.smoothness
 
 ######################################################################
 # private helpers
@@ -107,6 +105,7 @@ class WENO(object):
                  order,
                  cache=None,
                  format='hdf5',
+                 smoothness=pyweno.smoothness.szs3,
                  grid=None):
 
         # compute or load from cache
@@ -119,7 +118,13 @@ class WENO(object):
         else:
             self._init_with_cache(cache, order, format)
 
+        # smoothness
+        self._smoothness = smoothness
+
         # pre-allocate
+        N = self.grid.N
+        k = self.order
+
         self.sigma = np.zeros((N+1,k))
         self.alpha_m = np.zeros((N+1,k))
         self.alpha_p = np.zeros((N+1,k))
@@ -169,7 +174,7 @@ class WENO(object):
         # compute optimal weights $\varpi$
         #
 
-        stncl  = stencil.Stencil(grid, 2*k-1, k-1)
+        stncl  = pyweno.stencil.Stencil(grid=grid, order=2*k-1, shift=k-1)
         cstarm = stncl.c_m
         cstarp = stncl.c_p
 
@@ -177,7 +182,7 @@ class WENO(object):
         c_m = np.zeros((N,k,k))
         c_p = np.zeros((N,k,k))
         for l in xrange(k):
-            stncl       = stencil.Stencil(grid, k, l)
+            stncl      = pyweno.stencil.Stencil(grid=grid, order=k, shift=l)
             c_m[:,l,:] = stncl.c_m[:,:]
             c_p[:,l,:] = stncl.c_p[:,:]
 
@@ -201,8 +206,8 @@ class WENO(object):
             cons.append(lambda x: 1.0 - sum(x))
             cons.append(lambda x: sum(x) - 1.0)
 
-            w_p[i,:] = sciopt.fmin_cobyla(fp, x0, cons, rhoend=1e-12, iprint=0)
-            w_m[i,:] = sciopt.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0) # XXX: this isn't necessary (by symmetry)
+            w_p[i,:] = scipy.optimize.fmin_cobyla(fp, x0, cons, rhoend=1e-12, iprint=0)
+            w_m[i,:] = scipy.optimize.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0) # XXX: this isn't necessary (by symmetry)
 
             # reset w^r_i to 0.0 if w^r_i <= 1e-12
             for j in xrange(k):
