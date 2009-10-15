@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>PyWENO API &mdash; PyWENO v0.1 documentation</title>
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="static/default.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
@@ -17,8 +17,8 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="PyWENO v0.1 documentation" href="index.html" />
     <link rel="next" title="PyWENO smoothness indicators" href="smoothness.html" />
     <link rel="prev" title="PyWENO Examples" href="examples.html" /> 
@@ -58,33 +58,33 @@
 class </em><tt class="descclassname">pyweno.weno.</tt><tt class="descname">WENO</tt><big>(</big><em>order</em>, <em>cache=None</em>, <em>format='hdf5'</em>, <em>smoothness=&lt;function szs3 at 0x86b05a74&gt;</em>, <em>grid=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO" title="Permalink to this definition">¶</a></dt>
 <dd><p>Weighted Essentially Non-Oscillatory reconstruction.</p>
 <p>The basic idea of WENO is to use a convex combination of several
-stencils to form the reconstruction of <img class="math" src="_images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> at cell
+stencils to form the reconstruction of <img class="math" src="images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> at cell
 boundaries, and, if a stencil contains a discontinuity, its weight
-<img class="math" src="_images/math/54d7d48553f4d9e7ab418118607ea324cbfddfda.png" alt="\omega"/> should be close to zero.  In smooth regions, using
+<img class="math" src="images/math/54d7d48553f4d9e7ab418118607ea324cbfddfda.png" alt="\omega"/> should be close to zero.  In smooth regions, using
 several stencils will also serve to increase the order of
 accuracy.</p>
 <p>Briefly, a WENO reconstruction takes a convex combination of all
-<img class="math" src="_images/math/4834bdd11f7b36f03fd67f77a29167967fe16ff5.png" alt="v_{i+1/2}^r"/> defined by</p>
+<img class="math" src="images/math/4834bdd11f7b36f03fd67f77a29167967fe16ff5.png" alt="v_{i+1/2}^r"/> defined by</p>
 <blockquote>
-<img class="math" src="_images/math/d41bae840130dccd051c6740e52e42d9a3b71570.png" alt="v_{i+1/2}^r = \sum_{j=0}^{k-1}\; c_{ij}^r \bar{v}_{i-r+j} \quad \text{ for } \quad r=0,\dots,k-1"/></blockquote>
-<p>as a new approximation to <img class="math" src="_images/math/055fc9abc96cd43a47ff1409b72c78832a2daf2c.png" alt="v_{i+1/2}"/> according to</p>
+<img class="math" src="images/math/d41bae840130dccd051c6740e52e42d9a3b71570.png" alt="v_{i+1/2}^r = \sum_{j=0}^{k-1}\; c_{ij}^r \bar{v}_{i-r+j} \quad \text{ for } \quad r=0,\dots,k-1"/></blockquote>
+<p>as a new approximation to <img class="math" src="images/math/055fc9abc96cd43a47ff1409b72c78832a2daf2c.png" alt="v_{i+1/2}"/> according to</p>
 <blockquote>
-<img class="math" src="_images/math/18dea889f3657053515359119f15783301b726e7.png" alt="v_{i+1/2} = \sum_{r=0}^{k-1} \omega_i^r v_{i+1/2}^r"/></blockquote>
-<p>where we require <img class="math" src="_images/math/0a95c6ed927fbe042c5917c64b1b13c8aae68f81.png" alt="\omega_i^r \geq 0"/> and <img class="math" src="_images/math/d786f9197a92cfc37d5981744688ee70b2996bf5.png" alt="\sum_{r=0}^{k-1} \omega_i^r = 1"/>.</p>
+<img class="math" src="images/math/18dea889f3657053515359119f15783301b726e7.png" alt="v_{i+1/2} = \sum_{r=0}^{k-1} \omega_i^r v_{i+1/2}^r"/></blockquote>
+<p>where we require <img class="math" src="images/math/0a95c6ed927fbe042c5917c64b1b13c8aae68f81.png" alt="\omega_i^r \geq 0"/> and <img class="math" src="images/math/d786f9197a92cfc37d5981744688ee70b2996bf5.png" alt="\sum_{r=0}^{k-1} \omega_i^r = 1"/>.</p>
 <p>Instance variables:</p>
 <blockquote>
 <ul class="simple">
 <li><em>grid</em>  - spatial grid (&#8216;&#8217;pyweno.Grid&#8217;&#8216;)</li>
 <li><em>order</em> - order of approximation</li>
-<li><em>c_m</em>   - matrix of coefficients <img class="math" src="_images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/> (indexed as c_m[i,r,j])</li>
-<li><em>c_p</em>   - matrix of coefficients <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> (indexed as c_p[i,r,j])</li>
-<li><em>w_m</em>   - matrix of optimal weights <img class="math" src="_images/math/39be567d5cc0919d6dc9ce83b464f872260eff1c.png" alt="\tilde{\varpi}^r_i"/> (indexed as w_m[i,r])</li>
-<li><em>w_p</em>   - matrix of optimal weights <img class="math" src="_images/math/00cb5659daa2596afc19a11dedc446f53f31ab1a.png" alt="\varpi^r_i"/> (indexed as w_p[i,r])</li>
+<li><em>c_m</em>   - matrix of coefficients <img class="math" src="images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/> (indexed as c_m[i,r,j])</li>
+<li><em>c_p</em>   - matrix of coefficients <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> (indexed as c_p[i,r,j])</li>
+<li><em>w_m</em>   - matrix of optimal weights <img class="math" src="images/math/39be567d5cc0919d6dc9ce83b464f872260eff1c.png" alt="\tilde{\varpi}^r_i"/> (indexed as w_m[i,r])</li>
+<li><em>w_p</em>   - matrix of optimal weights <img class="math" src="images/math/00cb5659daa2596afc19a11dedc446f53f31ab1a.png" alt="\varpi^r_i"/> (indexed as w_p[i,r])</li>
 </ul>
 </blockquote>
 <p>The constructor precomputes the reconstruction coefficients
-<img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> of order <em>order</em> and the optimal weights
-<img class="math" src="_images/math/1d5009fe602a1fc84eae49bdf24be83e78494b19.png" alt="\varpi^{r}_{i}"/> for the unstructered grid <em>grid</em>, or loads
+<img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> of order <em>order</em> and the optimal weights
+<img class="math" src="images/math/1d5009fe602a1fc84eae49bdf24be83e78494b19.png" alt="\varpi^{r}_{i}"/> for the unstructered grid <em>grid</em>, or loads
 them from a cache.</p>
 <p>Arguments (without cache):</p>
 <blockquote>
@@ -204,34 +204,34 @@ uniformly spaced).</p>
 <em class="property">
 class </em><tt class="descclassname">pyweno.stencil.</tt><tt class="descname">Stencil</tt><big>(</big><em>grid=None</em>, <em>order=None</em>, <em>quad=None</em>, <em>shift=None</em>, <em>cache=None</em>, <em>format='hdf5'</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil" title="Permalink to this definition">¶</a></dt>
 <dd><p>Polynomial approximation stencil.</p>
-<p>The cell averages <img class="math" src="_images/math/d76323b6d493c009958683ff9e28d1eee33970f3.png" alt="\bar{v}_i"/> of a function <img class="math" src="_images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> can
-be used to approximate the value of <img class="math" src="_images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> at the cell
+<p>The cell averages <img class="math" src="images/math/d76323b6d493c009958683ff9e28d1eee33970f3.png" alt="\bar{v}_i"/> of a function <img class="math" src="images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> can
+be used to approximate the value of <img class="math" src="images/math/a9f23bf124b6b2b2a993eb313c72e678664ac74a.png" alt="v"/> at the cell
 boundaries of the grid.  In the interior of the grid, the
-approximations <img class="math" src="_images/math/055fc9abc96cd43a47ff1409b72c78832a2daf2c.png" alt="v_{i+1/2}"/> and <img class="math" src="_images/math/f4533fe86d5dcb7c1262eedea82cab35b7eb21a4.png" alt="v_{i-1/2}"/> are given
+approximations <img class="math" src="images/math/055fc9abc96cd43a47ff1409b72c78832a2daf2c.png" alt="v_{i+1/2}"/> and <img class="math" src="images/math/f4533fe86d5dcb7c1262eedea82cab35b7eb21a4.png" alt="v_{i-1/2}"/> are given
 by</p>
 <blockquote>
-<img class="math" src="_images/math/ae85f3992588246ede0e3bc24fa3e0897028d317.png" alt="v_{i+1/2} = \sum_{j=0}^{k-1} c^r_{ij} \bar{v}_{i-r+j}"/></blockquote>
+<img class="math" src="images/math/ae85f3992588246ede0e3bc24fa3e0897028d317.png" alt="v_{i+1/2} = \sum_{j=0}^{k-1} c^r_{ij} \bar{v}_{i-r+j}"/></blockquote>
 <p>and</p>
 <blockquote>
-<img class="math" src="_images/math/edfe769cb1ac62a5bf2d2c91c8597a5e1c1acf4f.png" alt="v_{i-1/2} = \sum_{j=0}^{k-1} \tilde{c}^r_{ij} \bar{v}_{i-r+j}"/></blockquote>
-<p>for <img class="math" src="_images/math/c92e5346f437c4e082610808a3c2d584b0c0a70b.png" alt="i=0,\ldots,N"/> where <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and
-<img class="math" src="_images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/> are the <em>reconstruction coefficients</em>.</p>
+<img class="math" src="images/math/edfe769cb1ac62a5bf2d2c91c8597a5e1c1acf4f.png" alt="v_{i-1/2} = \sum_{j=0}^{k-1} \tilde{c}^r_{ij} \bar{v}_{i-r+j}"/></blockquote>
+<p>for <img class="math" src="images/math/c92e5346f437c4e082610808a3c2d584b0c0a70b.png" alt="i=0,\ldots,N"/> where <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and
+<img class="math" src="images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/> are the <em>reconstruction coefficients</em>.</p>
 <p>Instance variables:</p>
 <blockquote>
 <ul class="simple">
 <li><em>grid</em>  - spatial grid (&#8216;&#8217;pyweno.Grid&#8217;&#8216;)</li>
-<li><em>order</em> - order of approximation (usually denoted <img class="math" src="_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>)</li>
+<li><em>order</em> - order of approximation (usually denoted <img class="math" src="images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>)</li>
 <li><em>k</em>     - as above</li>
-<li><em>shift</em> - left shift (usually denoted <img class="math" src="_images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/>)</li>
+<li><em>shift</em> - left shift (usually denoted <img class="math" src="images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/>)</li>
 <li><em>r</em>     - as above</li>
-<li><em>c_p</em>   - matrix of coefficients <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/></li>
-<li><em>c_m</em>   - matrix of coefficients <img class="math" src="_images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/></li>
+<li><em>c_p</em>   - matrix of coefficients <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/></li>
+<li><em>c_m</em>   - matrix of coefficients <img class="math" src="images/math/e8067d1a8605184072a440c4dbcff09145656409.png" alt="\tilde{c}^r_{ij}"/></li>
 <li><em>quad</em>  - number of quadrature points</li>
 <li><em>c_q</em>   - matrix of coefficients used to approximate at quadrature points</li>
 </ul>
 </blockquote>
 <p>The constructor precomputes the polynomial (of order <em>order</em>)
-reconstruction coefficients <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> based on stencils with
+reconstruction coefficients <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> based on stencils with
 left shift <em>shift</em> in the <strong>interior</strong> of the grid (ie, k &lt;= i &lt;=
 N-k).  The matricies <em>c_m</em> and <em>c_p</em> are padded with zeros for
 cells not in the interior of the grid.</p>
@@ -273,7 +273,7 @@ each stencil.</dd></dl>
 <dl class="function">
 <dt id="pyweno.stencil.reconstruction_coeffs">
 <tt class="descclassname">pyweno.stencil.</tt><tt class="descname">reconstruction_coeffs</tt><big>(</big><em>i</em>, <em>r</em>, <em>k</em>, <em>x</em>, <em>c</em>, <em>b='-'</em><big>)</big><a class="headerlink" href="#pyweno.stencil.reconstruction_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute reconstruction coefficients <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and store
+<dd><p>Compute reconstruction coefficients <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and store
 the result in <em>c</em> (indexed as c[i,j]).</p>
 <p>This function calls the appropriate C function from
 pyweno.cstencil if available.</p>
@@ -293,7 +293,7 @@ pyweno.cstencil if available.</p>
 <dl class="function">
 <dt id="pyweno.stencil.xi_reconstruction_coeffs">
 <tt class="descclassname">pyweno.stencil.</tt><tt class="descname">xi_reconstruction_coeffs</tt><big>(</big><em>i</em>, <em>r</em>, <em>k</em>, <em>xi</em>, <em>x</em>, <em>c</em><big>)</big><a class="headerlink" href="#pyweno.stencil.xi_reconstruction_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute reconstruction coefficients <img class="math" src="_images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and store
+<dd><p>Compute reconstruction coefficients <img class="math" src="images/math/6532365307a8bd46dadbbbe6a4f39d675f9ea004.png" alt="c^r_{ij}"/> and store
 the result in <em>c</em> (indexed as c[i,j]).</p>
 <p>This function calls the appropriate C function from
 pyweno.cstencil if available.</p>
@@ -343,7 +343,7 @@ polynomial approximation at the gaussian n-point quadrature points.</dd></dl>
                                   title="next chapter">PyWENO smoothness indicators</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="_sources/weno.txt"
+              <li><a href="sources/weno.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <div id="searchbox" style="display: none">
