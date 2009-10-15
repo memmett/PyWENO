@@ -1,82 +1,154 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyWENO &mdash; PyWENO v0.1 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyWENO v0.1 documentation" href="" />
+    <link rel="next" title="PyWENO Examples" href="examples.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="PyWENO Examples"
+             accesskey="N">next</a> |</li>
+        <li><a href="">PyWENO v0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
 
-	<title>memmett/PyWENO @ GitHub</title>
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyweno">
+<h1>PyWENO<a class="headerlink" href="#pyweno" title="Permalink to this headline">¶</a></h1>
+<p>PyWENO is a Python implementation of one-dimensional Weighted
+Essentially Non-oscillatory (WENO) approximations over unstructured
+(non-uniform) grids.</p>
+<p>Please see Matthew&#8217;s <a href="_downloads/WENO.pdf"><strong class="xref">WENO</strong></a> document for the
+mathematics behind PyWENO.</p>
+<p>Check out some <a class="reference external" href="examples.html"><em>examples</em></a> to learn more about what
+PyWENO is all about.</p>
+<div class="section" id="obtaining-pyweno">
+<h2>Obtaining PyWENO<a class="headerlink" href="#obtaining-pyweno" title="Permalink to this headline">¶</a></h2>
+<p>Download, build, and install from source.  The latest source
+distribution is available in either
+<a class="reference external" href="http://github.com/memmett/PyWENO/zipball/master">zip</a> or
+<a class="reference external" href="http://github.com/memmett/PyWENO/tarball/master">tar</a> format.</p>
+<p>PyWENO uses the Python
+<a class="reference external" href="http://pypi.python.org/pypi/setuptools">setuptools</a>
+package for installation.  Once this is installed, the following is
+helpful:</p>
+<div class="highlight-python"><pre>$ python setup.py develop -d &lt;your python path&gt;</pre>
+</div>
+<p>You can also obtain the source code on GitHub through the <a class="reference external" href="http://github.com/memmett/PyWENO">PyWENO
+project page</a>.  You can clone the
+project by running:</p>
+<div class="highlight-python"><pre>$ git clone git://github.com/memmett/PyWENO</pre>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="weno.html"><em>WENO, Grid, and Stencil classes</em></a></li>
+<li><a class="reference external" href="smoothness.html"><em>Smoothness indicators</em></a></li>
+</ul>
+</div>
+<div class="section" id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Contributions are welcome!  Please send comments, suggestions, and/or
+patches to the primary author (Matthew Emmett).  You will be credited.</p>
+<p>If you plan to extend or modify PyWENO in a more substantial way,
+please let the author know (so that we can create a central
+repository).</p>
+</div>
+</div>
 
-	<style type="text/css">
-		body {
-  		margin-top: 1.0em;
-  		background-color: #254627;
-		  font-family: "Helvetica,Arial,FreeSans";
-  		color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-		h1 { font-size: 3.8em; color: #dab9d8; margin-bottom: 3px; }
-		h1 .small { font-size: 0.4em; }
-		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; color: #dab9d8; }
-    h3 { text-align: center; color: #dab9d8; }
-    a { color: #dab9d8; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-		pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-	</style>
 
-</head>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">PyWENO</a><ul>
+<li><a class="reference external" href="#obtaining-pyweno">Obtaining PyWENO</a></li>
+<li><a class="reference external" href="#api">API</a></li>
+<li><a class="reference external" href="#contributing">Contributing</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
-<body>
-  <a href="http://github.com/memmett/PyWENO"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/memmett/PyWENO/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/memmett/PyWENO/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="examples.html"
+                                  title="next chapter">PyWENO Examples</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
     </div>
-
-    <h1><a href="http://github.com/memmett/PyWENO">PyWENO</a>
-      <span class="small">by <a href="http://github.com/memmett">memmett</a></span></h1>
-
-    <div class="description">
-      PyWENO is a Python implementation of one-dimensional Weighted Essentially Non-oscillatory (WENO) approximations over unstructured (non-uniform) grids.
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="PyWENO Examples"
+             >next</a> |</li>
+        <li><a href="">PyWENO v0.1 documentation</a> &raquo;</li> 
+      </ul>
     </div>
-
-    <h2>Authors</h2>
-<p>Matthew Emmett (matthew@emmett.ca)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Matthew Emmett (matthew@emmett.ca)<br/>      </p>
-
-
-<p>Woot woot.</p>
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/memmett/PyWENO/zipball/master">zip</a> or
-      <a href="http://github.com/memmett/PyWENO/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/memmett/PyWENO</pre>
-    </p>
-
     <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/memmett/PyWENO">memmett/PyWENO</a>
+      &copy; Copyright 2009, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
     </div>
-
-  </div>
-
-
-</body>
+  </body>
 </html>
