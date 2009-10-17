@@ -5,28 +5,37 @@ PyWENO is a Python implementation of one-dimensional Weighted
 Essentially Non-oscillatory (WENO) approximations over unstructured
 (non-uniform) grids.
 
-Please see Matthew's :download:`WENO <WENO.pdf>` document for the
-mathematics behind PyWENO.
+For all the gory details of the mathematics behind WENO
+approximations, check out Matthew's :download:`WENO <weno.pdf>`
+document.
 
-Check out some :doc:`examples <examples>` to learn more about what
-PyWENO is all about.
+To learn more about how PyWENO is used, check out some :doc:`examples
+<examples>`.
+
+Keep the :doc:`notation <notation>` guide handy to avoid becoming
+horribly confused.
+
 
 Obtaining PyWENO
 ----------------
 
-Download, build, and install :download:`PyWENO 0.1
-<PyWENO-0.1.tar.gz>` from source.
+Download, build, and install from source.
 
-The following is helpful::
+The latest source distribution is available in either zip_ or tar_
+format.  You can also obtain the source code on GitHub through the
+`PyWENO project page`_.  You can clone the project by running::
 
-  $ python setup.py develop -d <your python path>
+  $ git clone git://github.com/memmett/PyWENO
+
+PyWENO uses the Python setuptools_ package for installation.
 
 
-API
----
+API documentation
+-----------------
 
 * :doc:`WENO, Grid, and Stencil classes <weno>`
 * :doc:`Smoothness indicators <smoothness>`
+
 
 Contributing
 ------------
@@ -34,15 +43,23 @@ Contributing
 Contributions are welcome!  Please send comments, suggestions, and/or
 patches to the primary author (Matthew Emmett).  You will be credited.
 
+
 If you plan to extend or modify PyWENO in a more substantial way,
-please let the author know (so that we can create a central
-repository).
+please see the `PyWENO project page`_.
+
 
 
 .. toctree::
    :hidden:
 
    self
+   notation
    examples
    weno
    smoothness
+
+
+.. _zip: http://github.com/memmett/PyWENO/zipball/master
+.. _tar: http://github.com/memmett/PyWENO/tarball/master
+.. _setuptools: http://pypi.python.org/pypi/setuptools
+.. _`PyWENO project page`: http://github.com/memmett/PyWENO

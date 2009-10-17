@@ -11,6 +11,12 @@ build
 dist
 PyWENO*
 
+# tex
+*.aux
+*.log
+*.out
+
 # sphinx
 _build
 _doctrees
+_ghpages
