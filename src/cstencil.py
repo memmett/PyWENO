@@ -3,7 +3,7 @@
 
 ######################################################################
 
-def coeff_loops_boundary(k, b='-'):
+def coeff_loops_boundary(k, b='left'):
     """Print the C loops used to compute the reconstruction
     coefficients :math:`c^r_{ij}`."""
 
@@ -12,7 +12,7 @@ def coeff_loops_boundary(k, b='-'):
     print "   */"
     print ""
 
-    if b == '-':
+    if b == 'left':
         print "  i--;"
         print "  r--;"
 
@@ -121,7 +121,7 @@ def coeff_loops_xi(k):
 
 coeff_fcn_bndry_c_head = """
 void
-coeffs_%(k)d%(bndry)s(long int i, int r, double *x, double *c)
+coeffs_%(k)d_%(bndry)s(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 """
@@ -132,7 +132,7 @@ coeff_fcn_bndry_c_foot = """
 
 coeff_fcn_bndry_py = """
 PyObject *
-coeffs_%(k)d%(bndry)s_py(PyObject *self, PyObject *args)
+coeffs_%(k)d_%(bndry)s_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -165,7 +165,7 @@ coeffs_%(k)d%(bndry)s_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_%(k)d%(bndry)s(i, r, x, c);
+  coeffs_%(k)d_%(bndry)s(i, r, x, c);
 
   /*
    * done
@@ -178,24 +178,14 @@ coeffs_%(k)d%(bndry)s_py(PyObject *self, PyObject *args)
 
 def coeff_c_boundary(k, b):
 
-    if b == '-':
-        bndry = 'm'
-    else:
-        bndry = 'p'
-
-    print coeff_fcn_bndry_c_head % {'k': k, 'bndry': bndry}
+    print coeff_fcn_bndry_c_head % {'k': k, 'bndry': b}
     coeff_loops_boundary(k, b)
     print coeff_fcn_bndry_c_foot
 
 
 def coeff_py_boundary(k, b):
 
-    if b == '-':
-        bndry = 'm'
-    else:
-        bndry = 'p'
-
-    print coeff_fcn_bndry_py % {'k': k, 'bndry': bndry}
+    print coeff_fcn_bndry_py % {'k': k, 'bndry': b}
 
 ######################################################################
 ## xi
@@ -284,10 +274,10 @@ K = range(3, 10)
 
 for k in K:
 
-    coeff_c_boundary(k, '-')
-    coeff_c_boundary(k, '+')
-    coeff_py_boundary(k, '-')
-    coeff_py_boundary(k, '+')
+    coeff_c_boundary(k, 'left')
+    coeff_c_boundary(k, 'right')
+    coeff_py_boundary(k, 'left')
+    coeff_py_boundary(k, 'right')
     coeff_c_xi(k)
     coeff_py_xi(k)
 
@@ -351,8 +341,8 @@ print 'static PyMethodDef CStencilMethods[] = {'
 print '  {"reconstruction_coeffs", coeffs_xi_py, METH_VARARGS, "Compute the reconstruction coefficients to reconstruct at xi."},'
 
 for k in K:
-    print '  {"reconstruction_coeffs_%(k)dm", coeffs_%(k)dm_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=%(k)d."},' % {'k': k}
-    print '  {"reconstruction_coeffs_%(k)dp", coeffs_%(k)dp_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=%(k)d."},' % {'k': k}
+    print '  {"reconstruction_coeffs_%(k)d_left", coeffs_%(k)d_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=%(k)d."},' % {'k': k}
+    print '  {"reconstruction_coeffs_%(k)d_right", coeffs_%(k)d_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=%(k)d."},' % {'k': k}
     print '  {"reconstruction_coeffs_%(k)d", coeffs_%(k)d_py, METH_VARARGS, "Compute the reconstruction coefficients for k=%(k)d to reconstruct at xi."},' % {'k': k}
 
 print """  {NULL, NULL, 0, NULL}

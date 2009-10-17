@@ -17,7 +17,7 @@ import numpy as np
 
 import pyweno.cstencil
 
-def _reconstruction_coeffs(i, r, k, x, c, b='-'):
+def _reconstruction_coeffs(i, r, k, x, c, b='left'):
     """Compute reconstruction coefficients :math:`c^r_{ij}` and store
     the result in *c* (indexed as c[j]).
 
@@ -30,11 +30,11 @@ def _reconstruction_coeffs(i, r, k, x, c, b='-'):
       * *k* - order
       * *x* - cell boundaries
       * *c* - computed reconstruction coefficients
-      * *b* - boundry: '+' or '-'
+      * *b* - boundry: 'right' or 'left'
 
     """
 
-    if b == '-':
+    if b == 'left':
         i = i - 1
         r = r - 1
         b = 1
@@ -75,7 +75,7 @@ def _reconstruction_coeffs(i, r, k, x, c, b='-'):
         c[j] = lacc
 
 
-def reconstruction_coeffs(i, r, k, x, c, b='-'):
+def reconstruction_coeffs(i, r, k, x, c, b='left'):
     """Compute reconstruction coefficients :math:`c^r_{ij}` and store
     the result in *c* (indexed as c[i,j]).
 
@@ -89,16 +89,16 @@ def reconstruction_coeffs(i, r, k, x, c, b='-'):
       * *k* - order
       * *x* - cell boundaries
       * *c* - computed reconstruction coefficients
-      * *b* - boundry: '+' or '-'
+      * *b* - boundry: 'left' or 'right'
 
     """
 
     try:
 
-        if b == '-':
-            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + 'm(i, r, x, c)'
+        if b == 'left':
+            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + '_left(i, r, x, c)'
         else:
-            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + 'p(i, r, x, c)'
+            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + '_right(i, r, x, c)'
 
         eval(rc)
 
@@ -177,8 +177,8 @@ class Stencil(object):
       * *k*     - as above
       * *shift* - left shift (usually denoted :math:`r`)
       * *r*     - as above
-      * *c_p*   - matrix of coefficients :math:`c^r_{ij}`
-      * *c_m*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}`
+      * *c_r*   - matrix of coefficients :math:`c^r_{ij}`
+      * *c_l*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}`
       * *quad*  - number of quadrature points
       * *c_q*   - matrix of coefficients used to approximate at quadrature points
 
@@ -250,15 +250,15 @@ class Stencil(object):
 
         # boundary coeffs
 
-        c_p = np.zeros((N,k))
-        c_m = np.zeros((N,k))
+        c_r = np.zeros((N,k))
+        c_l = np.zeros((N,k))
 
         for i in xrange(k,N-k+1):
-            reconstruction_coeffs(i, r, k, x, c_m[i,:], '-')
-            reconstruction_coeffs(i, r, k, x, c_p[i,:], '+')
+            reconstruction_coeffs(i, r, k, x, c_l[i,:], 'left')
+            reconstruction_coeffs(i, r, k, x, c_r[i,:], 'right')
 
-        self.c_p = c_p
-        self.c_m = c_m
+        self.c_r = c_r
+        self.c_l = c_l
 
         # quadrature coeffs
 
@@ -286,11 +286,11 @@ class Stencil(object):
 
             r_sgrp = hdf["stencil/k%d/r%d" % (k, r)]
 
-            dst = r_sgrp["boundary/c_p"]
-            self.c_p = dst[:,:]
+            dst = r_sgrp["boundary/c_r"]
+            self.c_r = dst[:,:]
 
-            dst = r_sgrp["boundary/c_m"]
-            self.c_m = dst[:,:]
+            dst = r_sgrp["boundary/c_l"]
+            self.c_l = dst[:,:]
 
             if "quadrature" in r_sgrp:
                 self.quad = r_sgrp["quadrature"].attrs["order"]
@@ -332,8 +332,8 @@ class Stencil(object):
 
             c_sgrp = r_sgrp.create_group("boundary")
             c_sgrp.attrs["description"] = "reconstruction coeffs for cell boundaries"
-            c_sgrp.create_dataset("c_p", data=self.c_p)
-            c_sgrp.create_dataset("c_m", data=self.c_m)
+            c_sgrp.create_dataset("c_r", data=self.c_r)
+            c_sgrp.create_dataset("c_l", data=self.c_l)
 
             if self.quad > 0:
                 g_sgrp = r_sgrp.create_group("quadrature")

@@ -8,12 +8,12 @@
 
 
 void
-coeffs_3m(long int i, int r, double *x, double *c)
+coeffs_3_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 3
+   * compute reconstruction (left) coeffs of order 3
    */
 
   i--;
@@ -206,12 +206,12 @@ coeffs_3m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_3p(long int i, int r, double *x, double *c)
+coeffs_3_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 3
+   * compute reconstruction (right) coeffs of order 3
    */
 
 
@@ -402,7 +402,7 @@ coeffs_3p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_3m_py(PyObject *self, PyObject *args)
+coeffs_3_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -435,7 +435,7 @@ coeffs_3m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_3m(i, r, x, c);
+  coeffs_3_left(i, r, x, c);
 
   /*
    * done
@@ -447,7 +447,7 @@ coeffs_3m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_3p_py(PyObject *self, PyObject *args)
+coeffs_3_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -480,7 +480,7 @@ coeffs_3p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_3p(i, r, x, c);
+  coeffs_3_right(i, r, x, c);
 
   /*
    * done
@@ -733,12 +733,12 @@ coeffs_3_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_4m(long int i, int r, double *x, double *c)
+coeffs_4_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 4
+   * compute reconstruction (left) coeffs of order 4
    */
 
   i--;
@@ -1158,12 +1158,12 @@ coeffs_4m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_4p(long int i, int r, double *x, double *c)
+coeffs_4_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 4
+   * compute reconstruction (right) coeffs of order 4
    */
 
 
@@ -1581,7 +1581,7 @@ coeffs_4p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_4m_py(PyObject *self, PyObject *args)
+coeffs_4_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -1614,7 +1614,7 @@ coeffs_4m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_4m(i, r, x, c);
+  coeffs_4_left(i, r, x, c);
 
   /*
    * done
@@ -1626,7 +1626,7 @@ coeffs_4m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_4p_py(PyObject *self, PyObject *args)
+coeffs_4_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -1659,7 +1659,7 @@ coeffs_4p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_4p(i, r, x, c);
+  coeffs_4_right(i, r, x, c);
 
   /*
    * done
@@ -2139,12 +2139,12 @@ coeffs_4_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_5m(long int i, int r, double *x, double *c)
+coeffs_5_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 5
+   * compute reconstruction (left) coeffs of order 5
    */
 
   i--;
@@ -2959,12 +2959,12 @@ coeffs_5m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_5p(long int i, int r, double *x, double *c)
+coeffs_5_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 5
+   * compute reconstruction (right) coeffs of order 5
    */
 
 
@@ -3777,7 +3777,7 @@ coeffs_5p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_5m_py(PyObject *self, PyObject *args)
+coeffs_5_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -3810,7 +3810,7 @@ coeffs_5m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_5m(i, r, x, c);
+  coeffs_5_left(i, r, x, c);
 
   /*
    * done
@@ -3822,7 +3822,7 @@ coeffs_5m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_5p_py(PyObject *self, PyObject *args)
+coeffs_5_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -3855,7 +3855,7 @@ coeffs_5p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_5p(i, r, x, c);
+  coeffs_5_right(i, r, x, c);
 
   /*
    * done
@@ -4730,12 +4730,12 @@ coeffs_5_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_6m(long int i, int r, double *x, double *c)
+coeffs_6_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 6
+   * compute reconstruction (left) coeffs of order 6
    */
 
   i--;
@@ -6182,12 +6182,12 @@ coeffs_6m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_6p(long int i, int r, double *x, double *c)
+coeffs_6_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 6
+   * compute reconstruction (right) coeffs of order 6
    */
 
 
@@ -7632,7 +7632,7 @@ coeffs_6p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_6m_py(PyObject *self, PyObject *args)
+coeffs_6_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -7665,7 +7665,7 @@ coeffs_6m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_6m(i, r, x, c);
+  coeffs_6_left(i, r, x, c);
 
   /*
    * done
@@ -7677,7 +7677,7 @@ coeffs_6m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_6p_py(PyObject *self, PyObject *args)
+coeffs_6_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -7710,7 +7710,7 @@ coeffs_6p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_6p(i, r, x, c);
+  coeffs_6_right(i, r, x, c);
 
   /*
    * done
@@ -9217,12 +9217,12 @@ coeffs_6_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_7m(long int i, int r, double *x, double *c)
+coeffs_7_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 7
+   * compute reconstruction (left) coeffs of order 7
    */
 
   i--;
@@ -11619,12 +11619,12 @@ coeffs_7m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_7p(long int i, int r, double *x, double *c)
+coeffs_7_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 7
+   * compute reconstruction (right) coeffs of order 7
    */
 
 
@@ -14019,7 +14019,7 @@ coeffs_7p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_7m_py(PyObject *self, PyObject *args)
+coeffs_7_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -14052,7 +14052,7 @@ coeffs_7m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_7m(i, r, x, c);
+  coeffs_7_left(i, r, x, c);
 
   /*
    * done
@@ -14064,7 +14064,7 @@ coeffs_7m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_7p_py(PyObject *self, PyObject *args)
+coeffs_7_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -14097,7 +14097,7 @@ coeffs_7p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_7p(i, r, x, c);
+  coeffs_7_right(i, r, x, c);
 
   /*
    * done
@@ -16554,12 +16554,12 @@ coeffs_7_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_8m(long int i, int r, double *x, double *c)
+coeffs_8_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 8
+   * compute reconstruction (left) coeffs of order 8
    */
 
   i--;
@@ -20317,12 +20317,12 @@ coeffs_8m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_8p(long int i, int r, double *x, double *c)
+coeffs_8_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 8
+   * compute reconstruction (right) coeffs of order 8
    */
 
 
@@ -24078,7 +24078,7 @@ coeffs_8p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_8m_py(PyObject *self, PyObject *args)
+coeffs_8_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -24111,7 +24111,7 @@ coeffs_8m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_8m(i, r, x, c);
+  coeffs_8_left(i, r, x, c);
 
   /*
    * done
@@ -24123,7 +24123,7 @@ coeffs_8m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_8p_py(PyObject *self, PyObject *args)
+coeffs_8_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -24156,7 +24156,7 @@ coeffs_8p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_8p(i, r, x, c);
+  coeffs_8_right(i, r, x, c);
 
   /*
    * done
@@ -27974,12 +27974,12 @@ coeffs_8_py(PyObject *self, PyObject *args)
 
 
 void
-coeffs_9m(long int i, int r, double *x, double *c)
+coeffs_9_left(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (-) coeffs of order 9
+   * compute reconstruction (left) coeffs of order 9
    */
 
   i--;
@@ -33614,12 +33614,12 @@ coeffs_9m(long int i, int r, double *x, double *c)
 
 
 void
-coeffs_9p(long int i, int r, double *x, double *c)
+coeffs_9_right(long int i, int r, double *x, double *c)
 {
   double sum_l, sum_m, prod_n, prod_m;
 
   /*
-   * compute reconstruction (+) coeffs of order 9
+   * compute reconstruction (right) coeffs of order 9
    */
 
 
@@ -39252,7 +39252,7 @@ coeffs_9p(long int i, int r, double *x, double *c)
 
 
 PyObject *
-coeffs_9m_py(PyObject *self, PyObject *args)
+coeffs_9_left_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -39285,7 +39285,7 @@ coeffs_9m_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_9m(i, r, x, c);
+  coeffs_9_left(i, r, x, c);
 
   /*
    * done
@@ -39297,7 +39297,7 @@ coeffs_9m_py(PyObject *self, PyObject *args)
 
 
 PyObject *
-coeffs_9p_py(PyObject *self, PyObject *args)
+coeffs_9_right_py(PyObject *self, PyObject *args)
 {
   double *x, *c;
   long int i;
@@ -39330,7 +39330,7 @@ coeffs_9p_py(PyObject *self, PyObject *args)
    * dispatch
    */
 
-  coeffs_9p(i, r, x, c);
+  coeffs_9_right(i, r, x, c);
 
   /*
    * done
@@ -45107,26 +45107,26 @@ coeffs_xi_py(PyObject *self, PyObject *args)
 
 static PyMethodDef CStencilMethods[] = {
   {"reconstruction_coeffs", coeffs_xi_py, METH_VARARGS, "Compute the reconstruction coefficients to reconstruct at xi."},
-  {"reconstruction_coeffs_3m", coeffs_3m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=3."},
-  {"reconstruction_coeffs_3p", coeffs_3p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=3."},
+  {"reconstruction_coeffs_3_left", coeffs_3_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=3."},
+  {"reconstruction_coeffs_3_right", coeffs_3_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=3."},
   {"reconstruction_coeffs_3", coeffs_3_py, METH_VARARGS, "Compute the reconstruction coefficients for k=3 to reconstruct at xi."},
-  {"reconstruction_coeffs_4m", coeffs_4m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=4."},
-  {"reconstruction_coeffs_4p", coeffs_4p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=4."},
+  {"reconstruction_coeffs_4_left", coeffs_4_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=4."},
+  {"reconstruction_coeffs_4_right", coeffs_4_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=4."},
   {"reconstruction_coeffs_4", coeffs_4_py, METH_VARARGS, "Compute the reconstruction coefficients for k=4 to reconstruct at xi."},
-  {"reconstruction_coeffs_5m", coeffs_5m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=5."},
-  {"reconstruction_coeffs_5p", coeffs_5p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=5."},
+  {"reconstruction_coeffs_5_left", coeffs_5_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=5."},
+  {"reconstruction_coeffs_5_right", coeffs_5_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=5."},
   {"reconstruction_coeffs_5", coeffs_5_py, METH_VARARGS, "Compute the reconstruction coefficients for k=5 to reconstruct at xi."},
-  {"reconstruction_coeffs_6m", coeffs_6m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=6."},
-  {"reconstruction_coeffs_6p", coeffs_6p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=6."},
+  {"reconstruction_coeffs_6_left", coeffs_6_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=6."},
+  {"reconstruction_coeffs_6_right", coeffs_6_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=6."},
   {"reconstruction_coeffs_6", coeffs_6_py, METH_VARARGS, "Compute the reconstruction coefficients for k=6 to reconstruct at xi."},
-  {"reconstruction_coeffs_7m", coeffs_7m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=7."},
-  {"reconstruction_coeffs_7p", coeffs_7p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=7."},
+  {"reconstruction_coeffs_7_left", coeffs_7_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=7."},
+  {"reconstruction_coeffs_7_right", coeffs_7_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=7."},
   {"reconstruction_coeffs_7", coeffs_7_py, METH_VARARGS, "Compute the reconstruction coefficients for k=7 to reconstruct at xi."},
-  {"reconstruction_coeffs_8m", coeffs_8m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=8."},
-  {"reconstruction_coeffs_8p", coeffs_8p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=8."},
+  {"reconstruction_coeffs_8_left", coeffs_8_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=8."},
+  {"reconstruction_coeffs_8_right", coeffs_8_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=8."},
   {"reconstruction_coeffs_8", coeffs_8_py, METH_VARARGS, "Compute the reconstruction coefficients for k=8 to reconstruct at xi."},
-  {"reconstruction_coeffs_9m", coeffs_9m_py, METH_VARARGS, "Compute the reconstruction coefficients (-) for k=9."},
-  {"reconstruction_coeffs_9p", coeffs_9p_py, METH_VARARGS, "Compute the reconstruction coefficients (+) for k=9."},
+  {"reconstruction_coeffs_9_left", coeffs_9_left_py, METH_VARARGS, "Compute the reconstruction coefficients (left) for k=9."},
+  {"reconstruction_coeffs_9_right", coeffs_9_right_py, METH_VARARGS, "Compute the reconstruction coefficients (right) for k=9."},
   {"reconstruction_coeffs_9", coeffs_9_py, METH_VARARGS, "Compute the reconstruction coefficients for k=9 to reconstruct at xi."},
   {NULL, NULL, 0, NULL}
 };

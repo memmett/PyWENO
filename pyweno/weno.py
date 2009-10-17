@@ -75,10 +75,10 @@ class WENO(object):
 
       * *grid*  - spatial grid (''pyweno.Grid'')
       * *order* - order of approximation
-      * *c_m*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}` (indexed as c_m[i,r,j])
-      * *c_p*   - matrix of coefficients :math:`c^r_{ij}` (indexed as c_p[i,r,j])
-      * *w_m*   - matrix of optimal weights :math:`\\tilde{\\varpi}^r_i` (indexed as w_m[i,r])
-      * *w_p*   - matrix of optimal weights :math:`\\varpi^r_i` (indexed as w_p[i,r])
+      * *c_l*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}` (indexed as c_l[i,r,j])
+      * *c_r*   - matrix of coefficients :math:`c^r_{ij}` (indexed as c_r[i,r,j])
+      * *w_l*   - matrix of optimal weights :math:`\\tilde{\\varpi}^r_i` (indexed as w_l[i,r])
+      * *w_r*   - matrix of optimal weights :math:`\\varpi^r_i` (indexed as w_r[i,r])
 
     The constructor precomputes the reconstruction coefficients
     :math:`c^r_{ij}` of order *order* and the optimal weights
@@ -126,12 +126,12 @@ class WENO(object):
         k = self.order
 
         self.sigma = np.zeros((N+1,k))
-        self.alpha_m = np.zeros((N+1,k))
-        self.alpha_p = np.zeros((N+1,k))
-        self.omega_m = np.zeros((N+1,k))
-        self.omega_p = np.zeros((N+1,k))
-        self.vr_m = np.zeros((N,k))
-        self.vr_p = np.zeros((N,k))
+        self.alpha_l = np.zeros((N+1,k))
+        self.alpha_r = np.zeros((N+1,k))
+        self.omega_l = np.zeros((N+1,k))
+        self.omega_r = np.zeros((N+1,k))
+        self.vr_l = np.zeros((N,k))
+        self.vr_r = np.zeros((N,k))
 
 
     def _init_with_cache(self, cache, order, format):
@@ -146,17 +146,19 @@ class WENO(object):
             try:
                 grp = hdf["weno/%d" % (self.order)]
 
-                dst = grp["c_m"]
-                self.c_m = dst[:,:,:]
-                dst = grp["c_p"]
-                self.c_p = dst[:,:,:]
-                dst = grp["w_m"]
-                self.w_m = dst[:,:]
-                dst = grp["w_p"]
-                self.w_p = dst[:,:]
+                dst = grp["c_l"]
+                self.c_l = dst[:,:,:]
+                dst = grp["c_r"]
+                self.c_r = dst[:,:,:]
+                dst = grp["w_l"]
+                self.w_l = dst[:,:]
+                dst = grp["w_r"]
+                self.w_r = dst[:,:]
 
             finally:
                 hdf.close()
+
+            self.grid = pyweno.grid.Grid(cache=cache, format='hdf5')
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
@@ -175,28 +177,28 @@ class WENO(object):
         #
 
         stncl  = pyweno.stencil.Stencil(grid=grid, order=2*k-1, shift=k-1)
-        cstarm = stncl.c_m
-        cstarp = stncl.c_p
+        cstarm = stncl.c_l
+        cstarp = stncl.c_r
 
         # order k coeffs: c[i,r,j]
-        c_m = np.zeros((N,k,k))
-        c_p = np.zeros((N,k,k))
+        c_l = np.zeros((N,k,k))
+        c_r = np.zeros((N,k,k))
         for l in xrange(k):
             stncl      = pyweno.stencil.Stencil(grid=grid, order=k, shift=l)
-            c_m[:,l,:] = stncl.c_m[:,:]
-            c_p[:,l,:] = stncl.c_p[:,:]
+            c_l[:,l,:] = stncl.c_l[:,:]
+            c_r[:,l,:] = stncl.c_r[:,:]
 
 
         # weights
-        w_m = np.zeros((N,k))
-        w_p = np.zeros((N,k))
+        w_l = np.zeros((N,k))
+        w_r = np.zeros((N,k))
 
         merr = 0.0
         for i in xrange(k,N-k):
 
             # function to minimise and initial guess
-            fm = lambda x: _omegaerr(x, cstarm[i,:], c_m[i,:,:])
-            fp = lambda x: _omegaerr(x, cstarp[i,:], c_p[i,:,:])
+            fm = lambda x: _omegaerr(x, cstarm[i,:], c_l[i,:,:])
+            fp = lambda x: _omegaerr(x, cstarp[i,:], c_r[i,:,:])
             x0 = 0.5 * np.ones(k)
 
             # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
@@ -206,30 +208,30 @@ class WENO(object):
             cons.append(lambda x: 1.0 - sum(x))
             cons.append(lambda x: sum(x) - 1.0)
 
-            w_p[i,:] = scipy.optimize.fmin_cobyla(fp, x0, cons, rhoend=1e-12, iprint=0)
-            w_m[i,:] = scipy.optimize.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0) # XXX: this isn't necessary (by symmetry)
+            w_r[i,:] = scipy.optimize.fmin_cobyla(fp, x0, cons, rhoend=1e-12, iprint=0)
+            w_l[i,:] = scipy.optimize.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0) # XXX: this isn't necessary (by symmetry)
 
             # reset w^r_i to 0.0 if w^r_i <= 1e-12
             for j in xrange(k):
-                if w_m[i,j] <= 1e-12:
-                    w_m[i,j] = 0.0
-                if w_p[i,j] <= 1e-12:
-                    w_p[i,j] = 0.0
+                if w_l[i,j] <= 1e-12:
+                    w_l[i,j] = 0.0
+                if w_r[i,j] <= 1e-12:
+                    w_r[i,j] = 0.0
 
             # maximum error
-            err = fp(w_p[i,:])
+            err = fp(w_r[i,:])
             if err > merr:
                 merr = err
 
-            err = fm(w_m[i,:])
+            err = fm(w_l[i,:])
             if err > merr:
                 merr = err
 
         # done
-        self.c_m = c_m
-        self.c_p = c_p
-        self.w_m = w_m
-        self.w_p = w_p
+        self.c_l = c_l
+        self.c_r = c_r
+        self.w_l = w_l
+        self.w_r = w_r
         self._omega_error = merr
 
 
@@ -252,16 +254,20 @@ class WENO(object):
 
                 sgrp = hdf.create_group("weno")
                 sgrp = sgrp.create_group("%d" % (self.order))
-                sgrp.create_dataset("c_m", data=self.c_m)
-                sgrp.create_dataset("c_p", data=self.c_p)
-                sgrp.create_dataset("w_m", data=self.w_m)
-                sgrp.create_dataset("w_p", data=self.w_p)
+                sgrp.create_dataset("c_l", data=self.c_l)
+                sgrp.create_dataset("c_r", data=self.c_r)
+                sgrp.create_dataset("w_l", data=self.w_l)
+                sgrp.create_dataset("w_r", data=self.w_r)
 
             finally:
                 hdf.close()
 
+            self.grid.cache(output, 'hdf5')
+
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
+
+
 
 
     ##################################################################
@@ -274,30 +280,30 @@ class WENO(object):
         return self._smoothness(self.grid, self.grid.N, self.order, q, sigma)
 
 
-    def omega(self, q, vr_m, vr_p, omega_m, omega_p):
+    def omega(self, q, vr_l, vr_r, omega_l, omega_r):
         """Return arrays of adjusted weights."""
 
         N   = self.grid.N
         k   = self.order
-        w_m = self.w_m
-        w_p = self.w_p
+        w_l = self.w_l
+        w_r = self.w_r
 
         sigma = self.sigma
-        alpha_m = self.alpha_m
-        alpha_p = self.alpha_p
+        alpha_l = self.alpha_l
+        alpha_r = self.alpha_r
 
         self.smoothness(q, sigma)
 
         for i in xrange(k,N-(k-1)+1):
             for r in xrange(k):
-                alpha_m[i,r] = w_m[i,r] / (10e-6 + sigma[i,r]) / (10e-6 + sigma[i,r])
-                alpha_p[i,r] = w_p[i,r] / (10e-6 + sigma[i,r]) / (10e-6 + sigma[i,r])
+                alpha_l[i,r] = w_l[i,r] / (10e-6 + sigma[i,r]) / (10e-6 + sigma[i,r])
+                alpha_r[i,r] = w_r[i,r] / (10e-6 + sigma[i,r]) / (10e-6 + sigma[i,r])
 
-            a_m = sum(alpha_m[i,:])
-            a_p = sum(alpha_p[i,:])
+            a_l = sum(alpha_l[i,:])
+            a_r = sum(alpha_r[i,:])
             for r in xrange(k):
-                omega_m[i,r] = alpha_m[i,r] / a_m
-                omega_p[i,r] = alpha_p[i,r] / a_p
+                omega_l[i,r] = alpha_l[i,r] / a_l
+                omega_r[i,r] = alpha_r[i,r] / a_r
 
 
     ##################################################################
@@ -307,7 +313,7 @@ class WENO(object):
     def reconstruct(self, q, v_m, v_p):
         """Reconstruct q.
 
-           XXX: expand this...
+           XXX: more info here
 
            XXX: quadrature?
         """
@@ -315,21 +321,21 @@ class WENO(object):
         N   = self.grid.N
         k   = self.order
 
-        c_m = self.c_m
-        c_p = self.c_p
-        vr_m = self.vr_m
-        vr_p = self.vr_p
-        omega_m = self.omega_m
-        omega_p = self.omega_p
+        c_l = self.c_l
+        c_r = self.c_r
+        vr_l = self.vr_l
+        vr_r = self.vr_r
+        omega_l = self.omega_l
+        omega_r = self.omega_r
 
         # XXX: this is slow, move to C
         for i in xrange(k,N-k):
             for r in xrange(k):
-                vr_m[i,r] = np.dot(c_m[i,r,:], q[i-r:i-r+k])
-                vr_p[i,r] = np.dot(c_p[i,r,:], q[i-r:i-r+k])
+                vr_l[i,r] = np.dot(c_l[i,r,:], q[i-r:i-r+k])
+                vr_r[i,r] = np.dot(c_r[i,r,:], q[i-r:i-r+k])
 
-        self.omega(q, vr_m, vr_p, omega_m, omega_p)
+        self.omega(q, vr_l, vr_r, omega_l, omega_r)
 
         for i in xrange(k,N-k):
-            v_m[i] = np.dot(vr_m[i,:], omega_m[i,:])
-            v_p[i] = np.dot(vr_p[i,:], omega_p[i,:])
+            v_p[i] = np.dot(vr_l[i,:], omega_l[i,:])
+            v_m[i] = np.dot(vr_r[i-1,:], omega_r[i-1,:])
