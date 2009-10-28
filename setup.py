@@ -1,6 +1,7 @@
-import setuptools
+"""PyWENO setup script."""
 
-# XXX: use distutils instead, add dependencies
+import setuptools
+import numpy as np
 
 setuptools.setup(
 
@@ -10,10 +11,12 @@ setuptools.setup(
 
     test_suite = 'nose.collector',
 
+    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0", "h5py >= 1.1.0" ],
+
     ext_modules = [
         setuptools.Extension('pyweno.cstencil',
                              sources = ['src/cstencil.c'],
-                             include_dirs=["/usr/local/lib/python2.5/site-packages/numpy/core/include/numpy/"]
+                             include_dirs=[np.get_include()]
                              )],
 
     author = "Matthew Emmett",

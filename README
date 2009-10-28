@@ -7,9 +7,19 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 
 Please see
 
-  http://www.math.ualberta.ca/~memmett/pyweno/
+  http://memmett.github.com/PyWENO/
 
 for more information.
+
+
+Installing PyWENO
+-----------------
+
+PyWENO uses the 'setuptools' package to automate building and
+installing PyWENO.  As such, to install PyWENO, you can follow the
+instructions described in
+
+  http://docs.python.org/install/index.html
 
 
 License

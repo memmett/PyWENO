@@ -267,7 +267,7 @@ print """
 #include <stdio.h>
 
 #include <Python.h>
-#include <ndarrayobject.h>
+#include <numpy/ndarrayobject.h>
 """
 
 K = range(3, 10)

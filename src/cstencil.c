@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include <Python.h>
-#include <ndarrayobject.h>
+#include <numpy/ndarrayobject.h>
 
 
 void
