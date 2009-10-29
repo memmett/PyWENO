@@ -1,221 +1,255 @@
-"""Construct C file to compute reconstruction coefficients as a python
-   extension module."""
+"""Construct the C files that comprise the cstencil extension module.
+
+   The purpose of the cstencil extension module is to speed up the
+   computation of the reconstruction coefficients.
+
+   This file generates fully un-rolled C functions.
+
+   First, for each k, we generate two C files to compute reconstruct
+   coefficients for a function (d0) and its derivative (d1).
+
+   Next, we generate a C file that defines a Python callable
+   dispatcher and the cstencil extension module.
+
+   """
 
 from textwrap import dedent
 
-K = range(3, 10)
+# set of k values to generate reconstruction functions for
+K = range(3, 9)
+
 
 ######################################################################
+# write each reconstruction coeff function in its own file
 
 def reconstruction_coeff_functions_d0(k):
-    """Print the C function (and Python callable function) used to
-    compute the reconstruction coefficients c_j of order *k* to
-    reconstruct at the point *xi*."""
 
-    print dedent('''\
+    f = open('reconstruction_coeffs_k%d_d%d.c' % (k, 0), 'w')
+
+    f.write(dedent('''\
              void
-             reconstruction_coeffs_k%d_d0(double xi, long int i, int r, double *x, double *c)
+             reconstruction_coeffs_k%d_d%d(double xi, long int i, int r, double *x, double *c)
              {
                double sum_l, sum_m, prod_n, prod_m;
-             ''' % (k))
-
-    print '  /*'
-    print '   * compute reconstruction coeffs of order %d' % (k)
-    print '   */'
-    print ''
+             ''' % (k, 0)))
 
     for j in xrange(k):
 
-        print ''
-        print '  /* j = %d */' % (j)
-        print '  sum_l = 0.0;'
+        f.write('  /* j = %d */\n' % (j))
+        f.write('  sum_l = 0.0;\n')
 
         for l in xrange(j+1, k+1):
 
-            print ''
-            print '  /* l = %d */' % (l)
-            print '  sum_m = 0.0;'
+            f.write('\n')
+            f.write('  /* l = %d */\n' % (l))
+            f.write('  sum_m = 0.0;\n')
 
             ms = range(0,k+1)
             ms.remove(l)
 
             for m in ms:
 
-                print ''
-                print '  /* m = %d */' % (m)
+                f.write('\n')
+                f.write('  /* m = %d */\n' % (m))
 
                 ns = range(0,k+1)
                 ns.remove(l)
                 ns.remove(m)
 
-                print '  prod_n = 1.0;'
+                f.write('  prod_n = 1.0;\n')
 
                 for n in ns:
-                    print '  prod_n *= xi - x[i-r+%d];  /* n = %d */' % (n,n)
+                    f.write('  prod_n *= xi - x[i-r+%d];  /* n = %d */\n' % (n,n))
 
-                print '  sum_m += prod_n;'
+                f.write('  sum_m += prod_n;\n')
 
 
-            print ''
-            print '  prod_m = 1.0;'
+            f.write('\n')
+            f.write('  prod_m = 1.0;\n')
             for m in ms:
-                print '  prod_m *= x[i-r+%d] - x[i-r+%d];' % (l,m)
+                f.write('  prod_m *= x[i-r+%d] - x[i-r+%d];\n' % (l,m))
 
 
-            print ''
-            print '  sum_l += sum_m / prod_m * (x[i-r+%d+1] - x[i-r+%d]);' % (j, j)
+            f.write('\n')
+            f.write('  sum_l += sum_m / prod_m * (x[i-r+%d+1] - x[i-r+%d]);\n' % (j, j))
 
-        print ''
-        print '  c[%d] = sum_l;' % (j)
+        f.write('\n')
+        f.write('  c[%d] = sum_l;\n' % (j))
 
-    print '}'
-    print ''
+    f.write('}\n')
 
-    print dedent('''\
-             PyObject *
-             reconstruction_coeffs_k%(k)d_d0_py(PyObject *self, PyObject *args)
+    f.close()
+
+
+def reconstruction_coeff_functions_d1(k):
+
+    f = open('reconstruction_coeffs_k%d_d%d.c' % (k, 1), 'w')
+
+    f.write(dedent('''\
+             void
+             reconstruction_coeffs_k%d_d%d(double xi, long int i, int r, double *x, double *c)
              {
-               double *x, *c, xi;
-               long int i;
-               int r;
+               double sum_l, sum_m, sum_n, prod_p, prod_m;
+             ''' % (k,1)))
 
-               PyObject *bndry, *coeffs;
+    for j in xrange(k):
 
-               /*
-                * parse options
-                */
+        f.write('  /* j = %d */\n' % (j))
+        f.write('  sum_l = 0.0;\n')
 
-               if (! PyArg_ParseTuple(args, "dlidOO", &xi, &i, &r, &bndry, &coeffs))
-                 return NULL;
+        for l in xrange(j+1, k+1):
 
-               if ((PyArray_FLAGS(bndry) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-                 PyErr_SetString(PyExc_TypeError, "bndry is not contiguous and/or aligned");
-                 return NULL;
-               }
-               Py_INCREF(bndry);
-               x = (double *) PyArray_DATA(bndry);
+            f.write('\n')
+            f.write('  /* l = %d */\n' % (l))
+            f.write('  sum_m = 0.0;\n')
 
-               if ((PyArray_FLAGS(coeffs) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-                 PyErr_SetString(PyExc_TypeError, "coeffs is not contiguous and/or aligned");
-                 return NULL;
-               }
-               Py_INCREF(coeffs);
-               c = (double *) PyArray_DATA(coeffs);
+            ms = range(0,k+1)
+            ms.remove(l)
 
-               /*
-                * dispatch
-                */
+            for m in ms:
 
-               reconstruction_coeffs_k%(k)d_d0(xi, i, r, x, c);
+                f.write('\n')
+                f.write('  /* m = %d */\n' % (m))
 
-               /*
-                * done
-                */
-               Py_INCREF(Py_None);
-               return Py_None;
-             }
-             ''' % {'k': k})
+                ns = range(0,k+1)
+                ns.remove(l)
+                ns.remove(m)
 
-def reconstruction_coeff_generic_function_d0(K):
+                f.write('  sum_n = 0.0;\n')
 
-    print dedent('''\
-             PyObject *
-             reconstruction_coeffs_d0_py(PyObject *self, PyObject *args)
-             {
-               double *x, *c, xi;
-               long int i;
-               int r, k;
+                for n in ns:
 
-               PyObject *bndry, *coeffs;
+                    f.write('\n')
+                    f.write('  /* n = %d */\n' % (n))
 
-               /*
-                * parse options
-                */
+                    ps = range(0,k+1)
+                    ps.remove(l)
+                    ps.remove(m)
+                    ps.remove(n)
 
-               if (! PyArg_ParseTuple(args, "dliiOO", &xi, &i, &r, &k, &bndry, &coeffs))
-                 return NULL;
+                    f.write('  prod_p = 1.0;\n')
 
-               if ((PyArray_FLAGS(bndry) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-                 PyErr_SetString(PyExc_TypeError, "bndry is not contiguous and/or aligned");
-                 return NULL;
-               }
-               Py_INCREF(bndry);
-               x = (double *) PyArray_DATA(bndry);
+                    for p in ps:
+                        f.write('  prod_p *= xi - x[i-r+%d];  /* p = %d */\n' % (p, p))
 
-               if ((PyArray_FLAGS(coeffs) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-                 PyErr_SetString(PyExc_TypeError, "coeffs is not contiguous and/or aligned");
-                 return NULL;
-               }
-               Py_INCREF(coeffs);
-               c = (double *) PyArray_DATA(coeffs);
+                    f.write('  sum_n += prod_p;\n')
 
-               /*
-                * dispatch
-                */
+                f.write('  sum_m += sum_n;\n')
 
-               switch (k) {
-             ''')
 
-    for k in K:
-        print dedent('''\
-                 case %(k)d:
-                   reconstruction_coeffs_k%(k)d_d0(xi, i, r, x, c);
-                   break;
-                 ''' % {'k': k})
+            f.write('\n')
+            f.write('  prod_m = 1.0;\n')
+            for m in ms:
+                f.write('  prod_m *= x[i-r+%d] - x[i-r+%d];\n' % (l,m))
 
-    print dedent('''\
-               }
 
-               /*
-                * done
-                */
-               Py_INCREF(Py_None);
-               return Py_None;
-             }
-             ''')
+            f.write('\n')
+            f.write('  sum_l += sum_m / prod_m * (x[i-r+%d+1] - x[i-r+%d]);\n' % (j, j))
+
+        f.write('\n')
+        f.write('  c[%d] = sum_l;\n' % (j))
+
+    f.write('}\n')
+
+    f.close()
+
+for k in K:
+    reconstruction_coeff_functions_d0(k)
+    reconstruction_coeff_functions_d1(k)
 
 
 ######################################################################
+# write the python c extension (cstenil.c) file
 
+f = open('cstencil.c', 'w')
 
-## c header
-print dedent('''\
+f.write(dedent('''\
          #define PY_ARRAY_UNIQUE_SYMBOL PYWENO_ARRAY_API
 
          #include <stdio.h>
 
          #include <Python.h>
          #include <numpy/ndarrayobject.h>
-         ''')
 
-## specific reconstruction functions
-
-for k in K:
-    reconstruction_coeff_functions_d0(k)
-
-## generic reconstruction functions
-
-reconstruction_coeff_generic_function_d0(K)
-
-## cstencil methods
-
-print '''static PyMethodDef CStencilMethods[] = {
-           {"reconstruction_coeffs", reconstruction_coeffs_d0_py, METH_VARARGS, "Compute the reconstruction coefficients to reconstruct at xi."},
-      '''
+         '''))
 
 for k in K:
-    print '''  {"reconstruction_coeffs_k%(k)d_d0", reconstruction_coeffs_k%(k)d_d0_py, METH_VARARGS, "Compute the reconstruction coefficients for k=%(k)d to reconstruct at xi."},''' % {'k': k}
+    f.write(dedent('''\
+             void reconstruction_coeffs_k%(k)d_d0(double xi, long int i, int r, double *x, double *c);
+             void reconstruction_coeffs_k%(k)d_d1(double xi, long int i, int r, double *x, double *c);
+             ''' % {'k': k}))
 
-print '  {NULL, NULL, 0, NULL}'
-print '};'
+f.write(dedent('''\
 
-## init function
 
-print dedent('''\
+         PyObject *
+         reconstruction_coeffs_py(PyObject *self, PyObject *args)
+         {
+           double *x, *c, xi;
+           long int i;
+           int r, k, d=0;
+
+           PyObject *bndry, *coeffs;
+
+           /*
+            * parse options
+            */
+
+           if (! PyArg_ParseTuple(args, "dliiiOO", &xi, &i, &r, &k, &d, &bndry, &coeffs))
+             return NULL;
+
+           if ((PyArray_FLAGS(bndry) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+             PyErr_SetString(PyExc_TypeError, "bndry is not contiguous and/or aligned");
+             return NULL;
+           }
+           Py_INCREF(bndry);
+           x = (double *) PyArray_DATA(bndry);
+
+           if ((PyArray_FLAGS(coeffs) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+             PyErr_SetString(PyExc_TypeError, "coeffs is not contiguous and/or aligned");
+             return NULL;
+           }
+           Py_INCREF(coeffs);
+           c = (double *) PyArray_DATA(coeffs);
+
+           /*
+            * dispatch
+            */
+
+           switch (k) {
+         '''))
+
+for k in K:
+    f.write(dedent('''\
+             case %(k)d:
+               if (d==0)
+                 reconstruction_coeffs_k%(k)d_d0(xi, i, r, x, c);
+               else if (d==1)
+                 reconstruction_coeffs_k%(k)d_d1(xi, i, r, x, c);
+               break;
+             ''' % {'k': k}))
+
+f.write(dedent('''\
+           }
+
+           /*
+            * done
+            */
+           Py_INCREF(Py_None);
+           return Py_None;
+         }
+
+         static PyMethodDef CStencilMethods[] = {
+           {"reconstruction_coeffs", reconstruction_coeffs_py, METH_VARARGS, "Compute the reconstruction coefficients to reconstruct at xi."},
+           {NULL, NULL, 0, NULL}
+         };
+
          PyMODINIT_FUNC
          initcstencil(void)
          {
            (void) Py_InitModule("cstencil", CStencilMethods);
            import_array();
          }
-         ''')
+         '''))
+
+f.close()

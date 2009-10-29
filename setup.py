@@ -1,6 +1,8 @@
 """PyWENO setup script."""
 
 import setuptools
+
+import glob
 import numpy as np
 
 setuptools.setup(
@@ -15,7 +17,7 @@ setuptools.setup(
 
     ext_modules = [
         setuptools.Extension('pyweno.cstencil',
-                             sources = ['src/cstencil.c'],
+                             sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
                              include_dirs=[np.get_include()]
                              )],
 

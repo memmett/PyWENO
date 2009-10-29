@@ -98,7 +98,7 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
 
     """
 
-    eval('pyweno.cstencil.reconstruction_coeffs_k%d_d%d(xi, i, r, x, c)' % (k, d))
+    pyweno.cstencil.reconstruction_coeffs(xi, i, r, k, d, x, c)
 
 
 def gauss_reconstruction_coeffs(n, i, r, k, x, g):

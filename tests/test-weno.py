@@ -42,10 +42,10 @@ def test_weno():
     weno.reconstruct(fbar, frcnst_m, frcnst_p)
 
     # assert
-    d  = fbndry[k:-k-1] - frcnst_m[k:-k-1]
+    d  = fbndry[k+1:-k-1] - frcnst_m[k+1:-k-1]
     l2 = math.sqrt(np.dot(d, d))
     assert l2 < 1e-10, "WENO (-) is broken"
 
-    d  = fbndry[k+1:-k] - frcnst_p[k:-k-1]
+    d  = fbndry[k+1:-k-1] - frcnst_p[k+1:-k-1]
     l2 = math.sqrt(np.dot(d, d))
     assert l2 < 1e-10, "WENO (+) is broken"
