@@ -13,6 +13,11 @@ def f(x):
 
     return x * x
 
+def fp(x):
+    """Derivative of test function."""
+
+    return 2.0*x
+
 
 def test_stencils():
 
@@ -33,10 +38,12 @@ def test_stencils():
             # average values of f
             fbar = grid.average(f)
 
-            # f at boundaries
+            # f and its first derivative at boundaries
             fbndry = np.zeros(x.size)
+            fpbndry = np.zeros(x.size)
             for i in range(x.size):
-                fbndry[i] = f(x[i])
+                fbndry[i]  = f(x[i])
+                fpbndry[i] = fp(x[i])
 
             # f reconstructed at boundaries
             frcnst_l = np.zeros(x.size)
@@ -44,6 +51,13 @@ def test_stencils():
             for i in range(k, x.size-k):
                 frcnst_l[i]   = np.dot(stencil.c_l[i,:], fbar[i-r:i-r+k])
                 frcnst_r[i+1] = np.dot(stencil.c_r[i,:], fbar[i-r:i-r+k])
+
+            # f' reconstructed at boundaries
+            fprcnst = np.zeros(x.size)
+            c = np.zeros(k)
+            for i in range(k, x.size-k):
+                pyweno.stencil.reconstruction_coeffs(x[i], i, r, k, x, c, d=1)
+                fprcnst[i]   = np.dot(c, fbar[i-r:i-r+k])
 
             # assert
             d  = fbndry[k:-k] - frcnst_l[k:-k]
@@ -53,3 +67,7 @@ def test_stencils():
             d  = fbndry[k+1:-k] - frcnst_r[k+1:-k]
             l2 = math.sqrt(np.dot(d, d))
             assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d, +) are broken" % (k, r)
+
+            d  = fpbndry[k+1:-k] - fprcnst[k+1:-k]
+            l2 = math.sqrt(np.dot(d, d))
+            assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d, prime) are broken" % (k, r)
