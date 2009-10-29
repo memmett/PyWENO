@@ -18,10 +18,10 @@ import numpy as np
 import pyweno.cstencil
 
 def _reconstruction_coeffs(i, r, k, x, c, b='left'):
-    """Compute reconstruction coefficients :math:`c^r_{ij}` and store
-    the result in *c* (indexed as c[j]).
+    """Compute reconstruction coefficients *c_j* and store the result
+    in *c* (indexed as c[j]).
 
-    This is a pure python implementation.
+    This is a pure Python implementation and is more-or-less deprecated.
 
     Arguments:
 
@@ -75,68 +75,38 @@ def _reconstruction_coeffs(i, r, k, x, c, b='left'):
         c[j] = lacc
 
 
-def reconstruction_coeffs(i, r, k, x, c, b='left'):
-    """Compute reconstruction coefficients :math:`c^r_{ij}` and store
-    the result in *c* (indexed as c[i,j]).
+def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
+    """Compute reconstruction coefficients *c_j* and store the result
+    in *c* (indexed as c[i,j]).
 
     This function calls the appropriate C function from
     pyweno.cstencil if available.
 
     Arguments:
 
+      * *xi* - reconstruction point
       * *i* - cell number
       * *r* - left shift
       * *k* - order
       * *x* - cell boundaries
-      * *c* - computed reconstruction coefficients
-      * *b* - boundry: 'left' or 'right'
+      * *c* - computed reconstruction coefficients (returned)
+      * *d* - derivative (defaults to 0)
+
+    XXX
+
+    Return: the reconstruction coefficients are stored in *c*.
 
     """
 
-    try:
-
-        if b == 'left':
-            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + '_left(i, r, x, c)'
-        else:
-            rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + '_right(i, r, x, c)'
-
-        eval(rc)
-
-    except:
-        _reconstruction_coeffs(i, r, k, x, c, b)
+    eval('pyweno.cstencil.reconstruction_coeffs_k%d_d%d(xi, i, r, x, c)' % (k, d))
 
 
-def xi_reconstruction_coeffs(i, r, k, xi, x, c):
-    """Compute reconstruction coefficients :math:`c^r_{ij}` and store
-    the result in *c* (indexed as c[i,j]).
-
-    This function calls the appropriate C function from
-    pyweno.cstencil if available.
-
-    Arguments:
-
-      * *i*  - cell number
-      * *r*  - left shift
-      * *k*  - order
-      * *xi* - point at which to reconstruct
-      * *x*  - cell boundaries
-      * *c*  - computed reconstruction coefficients
-
-    """
-
-    try:
-        rc = 'pyweno.cstencil.reconstruction_coeffs_' + str(k) + '(i, r, xi, x, c)'
-        eval(rc)
-    except:
-        raise NotImplementedError, "k = %d reconstruction not implemented yet" % (k)
-
-
-def gauss_reconstruction_coeffs(i, r, n, k, x, g):
+def gauss_reconstruction_coeffs(n, i, r, k, x, g):
     """Compute the reconstruction coeffs used to compute the
     polynomial approximation at the gaussian n-point quadrature points."""
 
     if (n != 3):
-        raise NotImplementedError, "only 3-point Gaussian quadrature supported"
+        raise NotImplementedError, "only 3-point Gaussian quadrature is currently supported (adding more is straight forward, please see pyweno/stencil.py)"
 
     x3 = math.sqrt(3.0/5.0)
     x2 = 0.0
@@ -149,7 +119,7 @@ def gauss_reconstruction_coeffs(i, r, n, k, x, g):
 
     for l, xl in enumerate([x1, x2, x3]):
         xi = w*xl + c
-        xi_reconstruction_coeffs(i, r, k, xi, x, g[l,:])
+        reconstruction_coeffs(xi, i, r, k, x, g[l,:])
 
 
 class Stencil(object):
@@ -254,8 +224,8 @@ class Stencil(object):
         c_l = np.zeros((N,k))
 
         for i in xrange(k,N-k+1):
-            reconstruction_coeffs(i, r, k, x, c_l[i,:], 'left')
-            reconstruction_coeffs(i, r, k, x, c_r[i,:], 'right')
+            reconstruction_coeffs(x[i],   i, r, k, x, c_l[i,:])
+            reconstruction_coeffs(x[i+1], i, r, k, x, c_r[i,:])
 
         self.c_r = c_r
         self.c_l = c_l
@@ -268,8 +238,8 @@ class Stencil(object):
             c_q = np.zeros((N,n,k))
 
             for i in xrange(k,N-k+1):
-                gauss_reconstruction_coeffs(i, r, n, k, x, c_q[i,:,:])
-                gauss_reconstruction_coeffs(i, r, n, k, x, c_q[i,:,:])
+                gauss_reconstruction_coeffs(n, i, r, k, x, c_q[i,:,:])
+                gauss_reconstruction_coeffs(n, i, r, k, x, c_q[i,:,:])
 
             self.c_q = c_q
 
