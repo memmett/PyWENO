@@ -177,16 +177,20 @@ class WENO(object):
         #
 
         stncl  = pyweno.stencil.Stencil(grid=grid, order=2*k-1, shift=k-1)
-        cstarm = stncl.c_l
-        cstarp = stncl.c_r
+        stncl.reconstruction_coeffs('left')
+        stncl.reconstruction_coeffs('right')
+        cstarm = stncl.c['left']
+        cstarp = stncl.c['right']
 
         # order k coeffs: c[i,r,j]
         c_l = np.zeros((N,k,k))
         c_r = np.zeros((N,k,k))
         for l in xrange(k):
-            stncl      = pyweno.stencil.Stencil(grid=grid, order=k, shift=l)
-            c_l[:,l,:] = stncl.c_l[:,:]
-            c_r[:,l,:] = stncl.c_r[:,:]
+            stncl = pyweno.stencil.Stencil(grid=grid, order=k, shift=l)
+            stncl.reconstruction_coeffs('left')
+            stncl.reconstruction_coeffs('right')
+            c_l[:,l,:] = stncl.c['left'][:,:]
+            c_r[:,l,:] = stncl.c['right'][:,:]
 
 
         # weights
@@ -208,8 +212,9 @@ class WENO(object):
             cons.append(lambda x: 1.0 - sum(x))
             cons.append(lambda x: sum(x) - 1.0)
 
+            # XXX: the second call isn't necessary (by symmetry)
             w_r[i,:] = scipy.optimize.fmin_cobyla(fp, x0, cons, rhoend=1e-12, iprint=0)
-            w_l[i,:] = scipy.optimize.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0) # XXX: this isn't necessary (by symmetry)
+            w_l[i,:] = scipy.optimize.fmin_cobyla(fm, x0, cons, rhoend=1e-12, iprint=0)
 
             # reset w^r_i to 0.0 if w^r_i <= 1e-12
             for j in xrange(k):

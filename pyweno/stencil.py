@@ -17,82 +17,34 @@ import numpy as np
 
 import pyweno.cstencil
 
-def _reconstruction_coeffs(i, r, k, x, c, b='left'):
-    """Compute reconstruction coefficients *c_j* and store the result
-    in *c* (indexed as c[j]).
-
-    This is a pure Python implementation and is more-or-less deprecated.
-
-    Arguments:
-
-      * *i* - cell number
-      * *r* - left shift
-      * *k* - order
-      * *x* - cell boundaries
-      * *c* - computed reconstruction coefficients
-      * *b* - boundry: 'right' or 'left'
-
-    """
-
-    if b == 'left':
-        i = i - 1
-        r = r - 1
-        b = 1
-    else:
-        b = 0
-
-    for j in xrange(k):
-
-        lacc = 0.0
-        for l in xrange(j+1, k+1):
-
-            ms = range(0,k+1)
-            ms.remove(l)
-
-            macc = 0.0
-            for m in ms:
-
-                ns = range(0,k+1)
-                ns.remove(l)
-                ns.remove(m)
-
-                nacc = 1.0
-                for n in ns:
-                    nacc = nacc * (x[i+1] - x[i-r+n])
-
-                macc = macc + nacc
-
-            nmrtrp = macc
-
-            macc = 1.0
-            for m in ms:
-                macc = macc * (x[i-r+l] - x[i-r+m])
-
-            dnmntrp = macc
-
-            lacc = lacc + nmrtrp / dnmntrp * (x[i-r+j+1] - x[i-r+j])
-
-        c[j] = lacc
-
+######################################################################
+# reconstruction_coeffs (c wrapper)
 
 def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
-    """Compute reconstruction coefficients *c_j* and store the result
-    in *c* (indexed as c[i,j]).
+    """Compute the reconstruction coefficients c_j and store the
+    results in *c* (indexed as c[j]).
 
-    This function calls the appropriate C function from
-    pyweno.cstencil if available.
+    The reconstruction coefficients c_j are used to approximate the
+    d'th derivative of a function v given its cell averages v_j
+    according to
+
+    ..math:: v^{(d)}(\\xi) \approx \sum_{j=0}^k c_j v_{i-r+j}.
+
+    The reconstruction coefficients c_j depend on the point xi, cell
+    i, shift r, order k, derivative d, and grid x; but *not* on the
+    function v.
+
+    This function wraps a fast C implementation.
 
     Arguments:
 
       * *xi* - reconstruction point
-      * *i* - cell number
+      * *i* - cell index
       * *r* - left shift
       * *k* - order
+      * *d* - order of derivative (defaults to 0)
       * *x* - cell boundaries
       * *c* - computed reconstruction coefficients (returned)
-      * *d* - derivative (defaults to 0)
-
-    XXX
 
     Return: the reconstruction coefficients are stored in *c*.
 
@@ -101,80 +53,77 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
     pyweno.cstencil.reconstruction_coeffs(xi, i, r, k, d, x, c)
 
 
-def gauss_reconstruction_coeffs(n, i, r, k, x, g):
-    """Compute the reconstruction coeffs used to compute the
-    polynomial approximation at the gaussian n-point quadrature points."""
+######################################################################
+# quadrature points (helper)
 
-    if (n != 3):
-        raise NotImplementedError, "only 3-point Gaussian quadrature is currently supported (adding more is straight forward, please see pyweno/stencil.py)"
+def _quad_pts(a, b, x):
 
-    x3 = math.sqrt(3.0/5.0)
-    x2 = 0.0
-    x1 = -x3
+    w = 0.5 * (b - a)
+    c = 0.5 * (a + b)
 
-    b = x[i+1]
-    a = x[i]
-    w = (b-a)/2.0
-    c = (a+b)/2.0
+    return w * x + c
 
-    for l, xl in enumerate([x1, x2, x3]):
-        xi = w*xl + c
-        reconstruction_coeffs(xi, i, r, k, x, g[l,:])
 
+######################################################################
+# Stencil
 
 class Stencil(object):
     """Polynomial approximation stencil.
 
-    The cell averages :math:`\\bar{v}_i` of a function :math:`v` can
-    be used to approximate the value of :math:`v` at the cell
-    boundaries of the grid.  In the interior of the grid, the
-    approximations :math:`v_{i+1/2}` and :math:`v_{i-1/2}` are given
-    by
+    The cell averages v_i of a function v can be used to approximate
+    the value of v (and its derivatives) according to
 
-      :math:`v_{i+1/2} = \sum_{j=0}^{k-1} c^r_{ij} \\bar{v}_{i-r+j}`
+    ..math:: v^{(d)}(\\xi) \approx \sum_{j=0}^k c_j v_{i-r+j}
 
-    and
+    where the coefficients c_j are the *reconstruction coefficients*.
+    The reconstruction coefficients depend on the point xi, cell i,
+    shift r, order k, derivative d, and grid x; but *not* on the
+    function v.
 
-      :math:`v_{i-1/2} = \sum_{j=0}^{k-1} \\tilde{c}^r_{ij} \\bar{v}_{i-r+j}`
+    The Stencil class is used to precompute various sets of
+    reconstruction coefficients and cache them.  For example::
 
-    for :math:`i=0,\ldots,N` where :math:`c^r_{ij}` and
-    :math:`\\tilde{c}^r_{ij}` are the *reconstruction coefficients*.
+      >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, grid=grid)
+      >>> stencil.reconstruction_coeffs('left')
+      >>> stencil.reconstruction_coeffs('right')
+
+    pre-computes the reconstruction coefficients c_j of order k and
+    left-shift r at the left and right boundaries of each cell in the
+    grid.  Subsequently::
+
+      >>> c = stencil.c['left'][i,:]
+      >>> y = numpy.dot(c, v[i-r:i-r+k])
+
+    approximates the function v at the left edge of the i'th cell.
+    That is::
+
+      .. math:: y \approx v(x_{i-1/2}).
 
     Instance variables:
 
-      * *grid*  - spatial grid (''pyweno.Grid'')
-      * *order* - order of approximation (usually denoted :math:`k`)
+      * *c*     - dictionary of reconstruction coefficients
+      * *order* - order of approximation (usually denoted k)
       * *k*     - as above
-      * *shift* - left shift (usually denoted :math:`r`)
+      * *shift* - left shift (usually denoted r)
       * *r*     - as above
-      * *c_r*   - matrix of coefficients :math:`c^r_{ij}`
-      * *c_l*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}`
-      * *quad*  - number of quadrature points
-      * *c_q*   - matrix of coefficients used to approximate at quadrature points
-
-    The constructor precomputes the polynomial (of order *order*)
-    reconstruction coefficients :math:`c^r_{ij}` based on stencils with
-    left shift *shift* in the **interior** of the grid (ie, k <= i <=
-    N-k).  The matricies *c_m* and *c_p* are padded with zeros for
-    cells not in the interior of the grid.
-
-    Arguments: (without cache)
-
       * *grid*  - spatial grid (''pyweno.Grid'')
+
+    Keyword arguments (without cache):
+
       * *order* - order of approximation
-      * *quad*  - order of quadrature (defaults to no quadrature)
       * *shift* - left shift of the stencil or ''None''
+      * *grid*  - spatial grid (''pyweno.Grid'')
 
     The default shift (computed when shift is ''None'') is a centered
-    difference shift.
+    difference shift (ie, shift = order/2 + order%2).
 
     The left shift *shift* can take values from 0 to *order*-1.
 
-    Arguments: (with cache)
+    Keyword arguments (with cache):
 
-      * *cache*  - cache filename
       * *order*  - order of approximation
       * *shift*  - left shift of the stencil or ''None''
+      * *cache*  - cache filename
       * *format* - cache format (default is HDF5)
 
     """
@@ -198,10 +147,9 @@ class Stencil(object):
         self.shift = shift
         self.r     = shift
 
-        # quadrature
-        self.quad = quad
-
         # initialise
+        self.c = {}
+
         if (grid is not None) and (cache is None):
             self._init_with_grid(grid)
         elif (cache is not None) and (grid is None):
@@ -209,39 +157,10 @@ class Stencil(object):
         else:
             raise ValueError, 'both grid and cache specified'
 
+
     def _init_with_grid(self, grid):
 
-        self.grid  = grid
-
-        N = self.grid.size
-        k = self.order
-        r = self.shift
-        x = self.grid.boundaries()
-
-        # boundary coeffs
-
-        c_r = np.zeros((N,k))
-        c_l = np.zeros((N,k))
-
-        for i in xrange(k,N-k+1):
-            reconstruction_coeffs(x[i],   i, r, k, x, c_l[i,:])
-            reconstruction_coeffs(x[i+1], i, r, k, x, c_r[i,:])
-
-        self.c_r = c_r
-        self.c_l = c_l
-
-        # quadrature coeffs
-
-        if self.quad is not None:
-            n = self.quad
-
-            c_q = np.zeros((N,n,k))
-
-            for i in xrange(k,N-k+1):
-                gauss_reconstruction_coeffs(n, i, r, k, x, c_q[i,:,:])
-                gauss_reconstruction_coeffs(n, i, r, k, x, c_q[i,:,:])
-
-            self.c_q = c_q
+        self.grid = grid
 
 
     def _init_with_cache(self, cache, format):
@@ -256,22 +175,59 @@ class Stencil(object):
 
             r_sgrp = hdf["stencil/k%d/r%d" % (k, r)]
 
-            dst = r_sgrp["boundary/c_r"]
-            self.c_r = dst[:,:]
-
-            dst = r_sgrp["boundary/c_l"]
-            self.c_l = dst[:,:]
-
-            if "quadrature" in r_sgrp:
-                self.quad = r_sgrp["quadrature"].attrs["order"]
-
-                dst = r_sgrp["quadrature/c_q"]
-                self.c_q = dst[:,:,:]
+            for key in r_sgrp:
+                dst = r_sgrp[key + '/c']
+                self.c[key] = np.array(dst)
 
             hdf.close()
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
+
+
+    def reconstruction_coeffs(self, key, xi=None, d=0):
+        """XXX"""
+
+        N = self.grid.size
+        k = self.order
+        r = self.shift
+        x = self.grid.x
+
+        if xi is None:
+            if key == 'left':
+                xi = lambda i: x[i]
+            elif key == 'right':
+                xi = lambda i: x[i+1]
+            elif key == 'gauss_quad3':
+                x3 = math.sqrt(3.0/5.0)
+                x2 = 0.0
+                x1 = -x3
+                pts = np.array([x1, x2, x3])
+
+                xi = lambda i: _quad_pts(x[i], x[i+1], pts)
+
+        if xi is None:
+            raise ValueError, "xi not passed or key '%s' not recognised" % (key)
+
+        # number of pts
+        try:
+            n = len(xi(0))
+        except:
+            n = 1
+
+        # compute reconstruction coeffs
+        if n == 1:
+            c = np.zeros((N,k))
+            for i in xrange(k,N-k+1):
+                reconstruction_coeffs(xi(i), i, r, k, x, c[i,:], d)
+        else:
+            c = np.zeros((N,n,k))
+            for i in xrange(k,N-k+1):
+                for l, z in enumerate(xi(i)):
+                    reconstruction_coeffs(z, i, r, k, x, c[i,l,:], d)
+
+        # save and we're done!
+        self.c[key] = c
 
 
     def cache(self, output, format='hdf5'):
@@ -300,33 +256,12 @@ class Stencil(object):
 
             r_sgrp = sgrp.create_group(rstr)
 
-            c_sgrp = r_sgrp.create_group("boundary")
-            c_sgrp.attrs["description"] = "reconstruction coeffs for cell boundaries"
-            c_sgrp.create_dataset("c_r", data=self.c_r)
-            c_sgrp.create_dataset("c_l", data=self.c_l)
-
-            if self.quad > 0:
-                g_sgrp = r_sgrp.create_group("quadrature")
-                g_sgrp.attrs["description"] = "reconstruction coeffs for gaussian quadrature points"
-                g_sgrp.attrs["order"] = self.quad
-                g_sgrp.create_dataset("c_q", data=self.c_q)
+            for key in self.c:
+                c_sgrp = r_sgrp.create_group(key)
+                c_sgrp.create_dataset("c", data=self.c[key])
 
             hdf.close()
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
 
-
-    def max_cell_size(self):
-        """Return array of the maximum sizes of the grid cells within
-        each stencil."""
-        grid = self.grid
-        N    = self.grid.size
-        k    = self.order
-        r    = self.shift
-
-        msz = zeros(N)
-        for i in xrange(N):
-            msz[i] = max(grid.sz[i-r:i-r+k])
-
-        return msz

@@ -11,17 +11,17 @@ import pyweno.stencil
 def f(x):
     """Test function (quadratic)."""
 
-    return x * x
+    return 1.0 - x + x*x
 
 def fp(x):
     """Derivative of test function."""
 
-    return 2.0*x
+    return -1.0 + 2.0*x
 
 
 def test_stencils():
 
-    K = range(3, 9)
+    K = range(5, 9)
 
     x = np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5,
                   -1.0, -0.8, -0.6, -0.4,
@@ -34,39 +34,36 @@ def test_stencils():
         for r in range(0, k):
 
             stencil = pyweno.stencil.Stencil(grid=grid, order=k, shift=r)
+            stencil.reconstruction_coeffs('left', d=0)
+            stencil.reconstruction_coeffs('pleft', xi=lambda i: x[i], d=1)
 
             # average values of f
             fbar = grid.average(f)
 
-            # f and its first derivative at boundaries
+            # f and f' evaluated at boundaries
             fbndry = np.zeros(x.size)
             fpbndry = np.zeros(x.size)
             for i in range(x.size):
                 fbndry[i]  = f(x[i])
                 fpbndry[i] = fp(x[i])
 
-            # f reconstructed at boundaries
-            frcnst_l = np.zeros(x.size)
-            frcnst_r = np.zeros(x.size)
-            for i in range(k, x.size-k):
-                frcnst_l[i]   = np.dot(stencil.c_l[i,:], fbar[i-r:i-r+k])
-                frcnst_r[i+1] = np.dot(stencil.c_r[i,:], fbar[i-r:i-r+k])
-
-            # f' reconstructed at boundaries
+            # f and f' reconstructed at boundaries
+            frcnst = np.zeros(x.size)
             fprcnst = np.zeros(x.size)
-            c = np.zeros(k)
             for i in range(k, x.size-k):
-                pyweno.stencil.reconstruction_coeffs(x[i], i, r, k, x, c, d=1)
-                fprcnst[i]   = np.dot(c, fbar[i-r:i-r+k])
+                frcnst[i] = np.dot(stencil.c['left'][i,:], fbar[i-r:i-r+k])
+                fprcnst[i] = np.dot(stencil.c['pleft'][i,:], fbar[i-r:i-r+k])
+
+            print fbndry
+            print frcnst
+
+            print fpbndry
+            print fprcnst
 
             # assert
-            d  = fbndry[k:-k] - frcnst_l[k:-k]
+            d  = fbndry[k:-k] - frcnst[k:-k]
             l2 = math.sqrt(np.dot(d, d))
-            assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d, -) are broken" % (k, r)
-
-            d  = fbndry[k+1:-k] - frcnst_r[k+1:-k]
-            l2 = math.sqrt(np.dot(d, d))
-            assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d, +) are broken" % (k, r)
+            assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d) are broken" % (k, r)
 
             d  = fpbndry[k+1:-k] - fprcnst[k+1:-k]
             l2 = math.sqrt(np.dot(d, d))
