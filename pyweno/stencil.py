@@ -185,7 +185,7 @@ class Stencil(object):
             raise ValueError, "cache format '%s' not supported" % (format)
 
 
-    def reconstruction_coeffs(self, key, xi=None, d=0):
+    def reconstruction_coeffs(self, key, xi=None):
         """XXX"""
 
         N = self.grid.size
@@ -193,12 +193,19 @@ class Stencil(object):
         r = self.shift
         x = self.grid.x
 
+        if key.find('|') > 0:
+            (dstr, pkey) = key.rsplit('|')
+        else:
+            (dstr, pkey) = ('', key)
+
+        d = len(dstr)
+
         if xi is None:
-            if key == 'left':
+            if pkey == 'left':
                 xi = lambda i: x[i]
-            elif key == 'right':
+            elif pkey == 'right':
                 xi = lambda i: x[i+1]
-            elif key == 'gauss_quad3':
+            elif pkey == 'gauss_quad3':
                 x3 = math.sqrt(3.0/5.0)
                 x2 = 0.0
                 x1 = -x3
@@ -207,13 +214,14 @@ class Stencil(object):
                 xi = lambda i: _quad_pts(x[i], x[i+1], pts)
 
         if xi is None:
-            raise ValueError, "xi not passed or key '%s' not recognised" % (key)
+            raise ValueError, "xi not passed or key '%s' not recognised" % (pkey)
 
         # number of pts
-        try:
-            n = len(xi(0))
-        except:
+
+        if isinstance(xi(0), float):
             n = 1
+        else:
+            n = len(xi(0))
 
         # compute reconstruction coeffs
         if n == 1:
