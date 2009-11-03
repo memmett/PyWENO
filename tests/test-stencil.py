@@ -30,29 +30,29 @@ def test_stencils():
                   1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
     grid = pyweno.grid.Grid(boundaries=x)
 
+    # f and f' evaluated at boundaries
+    fbndry = np.zeros(x.size)
+    fpbndry = np.zeros(x.size)
+    for i in range(x.size):
+        fbndry[i]  = f(x[i])
+        fpbndry[i] = fp(x[i])
+
+    # average of f
+    fbar = grid.average(f)
+
     for k in K:
         for r in range(0, k):
 
             stencil = pyweno.stencil.Stencil(grid=grid, order=k, shift=r)
-            stencil.reconstruction_coeffs('left', d=0)
-            stencil.reconstruction_coeffs('pleft', xi=lambda i: x[i], d=1)
-
-            # average values of f
-            fbar = grid.average(f)
-
-            # f and f' evaluated at boundaries
-            fbndry = np.zeros(x.size)
-            fpbndry = np.zeros(x.size)
-            for i in range(x.size):
-                fbndry[i]  = f(x[i])
-                fpbndry[i] = fp(x[i])
+            stencil.reconstruction_coeffs('left')
+            stencil.reconstruction_coeffs('d|left')
 
             # f and f' reconstructed at boundaries
             frcnst = np.zeros(x.size)
             fprcnst = np.zeros(x.size)
             for i in range(k, x.size-k):
                 frcnst[i] = np.dot(stencil.c['left'][i,:], fbar[i-r:i-r+k])
-                fprcnst[i] = np.dot(stencil.c['pleft'][i,:], fbar[i-r:i-r+k])
+                fprcnst[i] = np.dot(stencil.c['d|left'][i,:], fbar[i-r:i-r+k])
 
             print fbndry
             print frcnst
