@@ -38,7 +38,8 @@ def test_weno():
         fpbndry[i] = fp(x[i])
 
     # average of f
-    fbar = grid.average(f)
+    fbar = np.zeros((3,grid.N))
+    fbar[0,:] = grid.average(f)
 
     for k in K:
         sigma = np.zeros((grid.N+1,k))
@@ -47,25 +48,28 @@ def test_weno():
         weno.reconstruction('d|left')
 
         # f reconstructed at boundaries
-        frcnst = np.zeros(x.size)
-        fprcnst = np.zeros(x.size)
+        frcnst = np.zeros((x.size,3))
+        fprcnst = np.zeros((x.size,3))
 
-        weno.smoothness(fbar, sigma)
-        weno.reconstruct(fbar, 'left', sigma, frcnst)
-        weno.reconstruct(fbar, 'd|left', sigma, fprcnst)
+        weno.smoothness(fbar[0,:], sigma)
+        weno.reconstruct(fbar[0,:], 'left', sigma, frcnst[:,0])
+        weno.reconstruct(fbar[0,:], 'd|left', sigma, fprcnst[:,0])
 
         print fbndry
         print frcnst
 
-        print fpbndry
-        print fprcnst
+#        print fpbndry
+#        print fprcnst
 
         # assert
-        d  = fbndry[k+1:-k-1] - frcnst[k+1:-k-1]
+        d  = fbndry[k+1:-k-1] - frcnst[k+1:-k-1,0]
         l2 = math.sqrt(np.dot(d, d))
         assert l2 < 1e-10, "WENO (k=%d, left) is broken" % (k)
 
-        d  = fpbndry[k+1:-k-1] - fprcnst[k+1:-k-1]
+        d  = fpbndry[k+1:-k-1] - fprcnst[k+1:-k-1,0]
         l2 = math.sqrt(np.dot(d, d))
         assert l2 < 1e-10, "WENO (k=%d, d|left) is broken" % (k)
 
+
+if __name__ == '__main__':
+    test_weno()

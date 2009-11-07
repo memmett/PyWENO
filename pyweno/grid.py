@@ -60,6 +60,10 @@ class Grid(object):
         for i in xrange(sz.size):
             sz[i] = bndry[i+1] - bndry[i]
 
+        self.structured = False
+        if abs(max(sz) - min(sz)) < 1e-12:
+            self.structured = True
+
         # init self
         self._bndry     = bndry
         self._cntr      = cntr

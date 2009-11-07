@@ -19,6 +19,7 @@ import scipy.optimize
 
 import pyweno.stencil
 import pyweno.smoothness
+import pyweno.cweno
 
 
 ######################################################################
@@ -55,6 +56,8 @@ def _makecons(j):
 
 class WENO(object):
     """Weighted Essentially Non-Oscillatory reconstruction.
+
+    XXX: this docstring needs work!
 
     The basic idea of WENO is to use a convex combination of several
     stencils to form the reconstruction of :math:`v` at cell
@@ -103,8 +106,8 @@ class WENO(object):
     c = {}                              # reconstruction coeffs
     w = {}                              # optimal weights
 
-    _qr = {}                            # pre-allocated storage
-    _w  = {}                            # pre-allocated storage
+    _q = {}                             # pre-allocated storage
+    _w = {}                             # pre-allocated storage
 
     _omega_error = {}                   # maximum error produced by optimal weights
 
@@ -149,11 +152,16 @@ class WENO(object):
                 k_sgrp = hdf['weno/k%d' % (self.order)]
 
                 for key in k_sgrp:
+
                     dst = k_sgrp[key + '/c']
-                    self.c[key] = np.array(dst)
+                    self.c[key] = np.zeros(dst.shape)
+                    self.c[key][:,:,:,:] = dst[:,:,:,:]
 
                     dst = k_sgrp[key + '/w']
-                    self.w[key] = np.array(dst)
+                    self.w[key] = np.zeros(dst.shape)
+                    self.w[key][:,:] = dst[:,:]
+
+                    self.pre_allocate(key)
 
             finally:
                 hdf.close()
@@ -168,6 +176,17 @@ class WENO(object):
 
         self.grid  = grid
         self.order = order
+
+    def pre_allocate(self, key):
+
+        shape = self.c[key].shape
+
+        N = shape[0]
+        k = shape[1]
+        n = shape[2]
+
+        self._q[key] = np.zeros((N,k,n))
+        self._w[key] = np.zeros((N,k))
 
 
     ##################################################################
@@ -207,11 +226,14 @@ class WENO(object):
         # optimal weights (varpi)
         w = np.zeros((N,k))
 
-        merr = 0.0
-        for i in xrange(k,N-k):
+        if grid.structured:
 
-            # function to minimise and initial guess
-            f = lambda x: _omegaerr(x, cstar[i,:,:], c[i,:,:,:])
+            # XXX: this can be made better...
+
+            wc = np.zeros(k)
+            merr = 0.0
+
+            f = lambda x: _omegaerr(x, cstar[N/2,:,:], c[N/2,:,:,:])
             x0 = 0.5 * np.ones(k)
 
             # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
@@ -221,25 +243,55 @@ class WENO(object):
             cons.append(lambda x: 1.0 - sum(x))
             cons.append(lambda x: sum(x) - 1.0)
 
-            w[i,:] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
+            wc[:] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
 
             # reset w^r_i to 0.0 if w^r_i <= 1e-12
             for j in xrange(k):
-                if w[i,j] <= 1e-12:
-                    w[i,j] = 0.0
+                if wc[j] <= 1e-12:
+                    wc[j] = 0.0
 
             # maximum error
-            err = f(w[i,:])
+            err = f(wc[:])
             if err > merr:
                 merr = err
+
+            for i in xrange(k,N-k):
+                w[i,:] = wc[:]
+
+
+        else:
+            merr = 0.0
+            for i in xrange(k,N-k):
+
+                # function to minimise and initial guess
+                f = lambda x: _omegaerr(x, cstar[i,:,:], c[i,:,:,:])
+                x0 = 0.5 * np.ones(k)
+
+                # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
+                cons = list(range(k))
+                for j in xrange(k):
+                    cons[j] = _makecons(j)
+                cons.append(lambda x: 1.0 - sum(x))
+                cons.append(lambda x: sum(x) - 1.0)
+
+                w[i,:] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
+
+                # reset w^r_i to 0.0 if w^r_i <= 1e-12
+                for j in xrange(k):
+                    if w[i,j] <= 1e-12:
+                        w[i,j] = 0.0
+
+                # maximum error
+                err = f(w[i,:])
+                if err > merr:
+                    merr = err
 
 
         # store and pre-allocate
         self.c[key] = c
         self.w[key] = w
 
-        self._qr[key] = np.zeros((N,n,k))
-        self._w[key]  = np.zeros((N,k))
+        self.pre_allocate(key)
 
         self._omega_error[key] = merr
 
@@ -292,11 +344,13 @@ class WENO(object):
     def smoothness(self, q, sigma):
         """Return array of the smoothness indicators of q."""
 
-        return self._smoothness(self.grid, self.grid.N, self.order, q, sigma)
+        return self._smoothness(self.grid, self.order, q, sigma)
 
 
     def omega(self, q, varpi, sigma, w):
         """Return arrays of adjusted weights."""
+
+        # XXX: deprecated
 
         N   = self.grid.N
         k   = self.order
@@ -331,29 +385,37 @@ class WENO(object):
         """
 
         c = self.c[key]
+        w = self.w[key]
 
-        shape = c.shape
-        N = shape[0]
-        k = shape[1]
-        n = shape[2]
+        _q = self._q[key]
+        _w = self._w[key]
 
-        qr = self._qr[key]
-        w  = self._w[key]
+        pyweno.cweno.reconstruct(q, sigma, c, w, _q, _w, qs)
 
-        # XXX: move to C
-        for i in xrange(k,N-k):
-            for r in xrange(k):
-                for l in xrange(n):
-                    qr[i,l,r] = np.dot(c[i,r,l,:], q[i-r:i-r+k])
 
-        self.omega(q, self.w[key], sigma, w)
 
-        if n == 1:
-            # XXX: move to C
-            for i in xrange(k,N-k):
-                qs[i] = np.dot(qr[i,0,:], w[i,:])
-        else:
-            # XXX: move to C
-            for i in xrange(k,N-k):
-                for l in xrange(n):
-                    qs[i,l] = np.dot(qr[i,l,:], w[i,:])
+#         shape = c.shape
+#         N = shape[0]
+#         k = shape[1]
+#         n = shape[2]
+
+#         qr = self._qr[key]
+#         w  = self._w[key]
+
+#         # XXX: move to C
+#         for i in xrange(k,N-k):
+#             for r in xrange(k):
+#                 for l in xrange(n):
+#                     qr[i,l,r] = np.dot(c[i,r,l,:], q[i-r:i-r+k])
+
+#         self.omega(q, self.w[key], sigma, w)
+
+#         if n == 1:
+#             # XXX: move to C
+#             for i in xrange(k,N-k):
+#                 qs[i] = np.dot(qr[i,0,:], w[i,:])
+#         else:
+#             # XXX: move to C
+#             for i in xrange(k,N-k):
+#                 for l in xrange(n):
+#                     qs[i,l] = np.dot(qr[i,l,:], w[i,:])

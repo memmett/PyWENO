@@ -19,6 +19,14 @@ setuptools.setup(
         setuptools.Extension('pyweno.cstencil',
                              sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
                              include_dirs=[np.get_include()]
+                             ),
+        setuptools.Extension('pyweno.cweno',
+                             sources = ['src/cweno.c'],
+                             include_dirs=[np.get_include()]
+                             ),
+        setuptools.Extension('pyweno.csmoothness',
+                             sources = ['src/csmoothness.c'],
+                             include_dirs=[np.get_include()]
                              )],
 
     author = "Matthew Emmett",

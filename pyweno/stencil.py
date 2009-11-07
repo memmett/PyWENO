@@ -80,6 +80,8 @@ class Stencil(object):
     shift r, order k, derivative d, and grid x; but *not* on the
     function v.
 
+    XXX: move the next few paragraphs to reST documentation
+
     The Stencil class is used to precompute various sets of
     reconstruction coefficients and cache them.  For example::
 
@@ -171,13 +173,17 @@ class Stencil(object):
         if format is 'hdf5':
             import h5py as h5
 
-            hdf = h5.File(cache, "r")
+            hdf = h5.File(cache, 'r')
 
-            r_sgrp = hdf["stencil/k%d/r%d" % (k, r)]
+            r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
 
             for key in r_sgrp:
                 dst = r_sgrp[key + '/c']
-                self.c[key] = np.array(dst)
+                self.c[key] = np.zeros(dst.shape)
+                if len(dst.shape) > 2:
+                    self.c[key][:,:,:] = dst[:,:,:]
+                else:
+                    self.c[key][:,:] = dst[:,:]
 
             hdf.close()
 
@@ -186,13 +192,50 @@ class Stencil(object):
 
 
     def reconstruction_coeffs(self, key, xi=None):
-        """XXX"""
+        """Pre-compute reconstruction coefficients.
+
+           The reconstruction coeffs c_j are computed and stored in
+           the instance dictionary *c*.
+
+           Arguments:
+
+             * *key* - key used to store this set of reconstruction coeffs
+             * *xi* - callable to return array of points within each
+               cell at which to compute the reconstruction
+               coefficients (called as ''xi(i)'')
+
+           Preceeding the key with d| will compute the reconstruction
+           coefficients to approximate the first derivative at the
+           reconstruction points.
+
+           There are several predefined keys:
+
+             * 'left' - the left edge of each cell
+             * 'right' - the right edge of each cell
+             * 'gauss_quad3' - the Gaussian 3-point quadrature points
+
+           For example, to compute the reconstruction coeffs used to
+           reconstruct the derivative of a function f at the left edge
+           of each grid cell::
+
+             >>> stencil.reconstruction_ceoffs('d|left')
+             >>> c = stencil.c['d|left']
+
+           As another example, to compute the reconstruction coeffs
+           used to reconstruct the value of a function at some other
+           point(s) within each cell::
+
+             >>> stencil.reconstruction_ceoffs('mypts', lambda i: 0.5 * (grid.x[i] + grid.x[i+1]))
+             >>> c = stencil.c['d|left']
+
+        """
 
         N = self.grid.size
         k = self.order
         r = self.shift
         x = self.grid.x
 
+        # parse key for derivatives: d|key
         if key.find('|') > 0:
             (dstr, pkey) = key.rsplit('|')
         else:
@@ -200,6 +243,7 @@ class Stencil(object):
 
         d = len(dstr)
 
+        # if xi is not passed, check key against predefined choices
         if xi is None:
             if pkey == 'left':
                 xi = lambda i: x[i]
@@ -216,14 +260,14 @@ class Stencil(object):
         if xi is None:
             raise ValueError, "xi not passed or key '%s' not recognised" % (pkey)
 
-        # number of pts
-
+        # number of points
         if isinstance(xi(0), float):
             n = 1
         else:
             n = len(xi(0))
 
         # compute reconstruction coeffs
+        # XXX: structred grid
         if n == 1:
             c = np.zeros((N,k))
             for i in xrange(k,N-k+1):
@@ -245,29 +289,32 @@ class Stencil(object):
         if format is 'hdf5':
             import h5py as h5
 
-            hdf = h5.File(output, "a")
+            hdf = h5.File(output, 'a')
 
-            if "stencil" in hdf:
-                sgrp = hdf["stencil"]
+            # cache in 'stencil/kX/rX'
+            if 'stencil' in hdf:
+                sgrp = hdf['stencil']
             else:
-                sgrp = hdf.create_group("stencil")
+                sgrp = hdf.create_group('stencil')
 
-            kstr = "k%d" % (self.order)
+            kstr = 'k%d' % (self.order)
             if kstr in sgrp:
                 sgrp = sgrp[kstr]
             else:
                 sgrp = sgrp.create_group(kstr)
 
-            rstr = "r%d" % (self.shift)
+            rstr = 'r%d' % (self.shift)
             if rstr in sgrp:
                 del sgrp[rstr]
 
             r_sgrp = sgrp.create_group(rstr)
 
+            # create a dataset for each key
             for key in self.c:
                 c_sgrp = r_sgrp.create_group(key)
-                c_sgrp.create_dataset("c", data=self.c[key])
+                c_sgrp.create_dataset('c', data=self.c[key])
 
+            # done
             hdf.close()
 
         else:

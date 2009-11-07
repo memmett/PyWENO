@@ -4,16 +4,26 @@
 
 import numpy as np
 
+import pyweno.csmoothness
 
-def uszs3(grid, N, k, f, sigma):
+
+def uszs3(grid, k, f, sigma):
     """Unstructured Zhang and Shu smoothness indicator (not yet implemented)."""
     raise NotImplementedError, 'uszs3 smoothness indicator not yet implemented'
 
 
-def szs3(grid, N, k, f, sigma):
-    """Structured Zhang and Shu smoothness indicator."""
+def szs3(grid, k, f, sigma):
+    """Structured Zhang and Shu smoothness indicator.
 
-    for i in xrange(k,N-(k-1)):
-        sigma[i,0] = (3.0*f[i] - 4.0*f[i+1] + f[i+2]) * (3.0*f[i] - 4.0*f[i+1] + f[i+2])
-        sigma[i,1] = (f[i-1] - f[i+1]) * (f[i-1] - f[i+1])
-        sigma[i,2] = (f[i-2] - 4.0*f[i-1] + 3.0*f[i]) * (f[i-2] - 4.0*f[i-1] + 3.0*f[i])
+       XXX: more info here
+    """
+
+    if __debug__:
+        if not grid.structured:
+            raise ValueError, 'szs3 smoothness indicator works for structured grids only'
+
+        if k != 3:
+            raise ValueError, 'szs3 smoothness indicator works for k=3 only'
+
+
+    pyweno.csmoothness.szs3(f, sigma)
