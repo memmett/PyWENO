@@ -16,10 +16,16 @@ Installing PyWENO
 -----------------
 
 PyWENO uses the 'setuptools' package to automate building and
-installing PyWENO.  As such, to install PyWENO, you can follow the
-instructions described in
+installing PyWENO.  Once you have installed setuptools, you can
+install PyWENO by running
 
-  http://docs.python.org/install/index.html
+  # python setup.py install
+
+If you plan on modifying PyWENO you can install PyWENO into your
+PYHTONPATH in development mode by running, eg,
+
+  $ python setup.py develop -d /home/memmett/local/python
+  $ export PYTHONPATH=/home/memmett/local/python:$PYTHONPATH
 
 
 License
