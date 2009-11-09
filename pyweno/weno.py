@@ -99,7 +99,7 @@ class WENO(object):
     Arguments (with cache):
 
       * *cache*  - cache file
-      * *format* - format of cache file (hdf5 by default)
+      * *format* - format of cache file (default is 'mat')
 
     """
 
@@ -118,7 +118,7 @@ class WENO(object):
     def __init__(self,
                  order,
                  cache=None,
-                 format='hdf5',
+                 format='mat',
                  smoothness=None,
                  grid=None):
 
@@ -143,7 +143,7 @@ class WENO(object):
 
         self.order = order
 
-        if format is 'hdf5':
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(cache, 'r')
@@ -167,6 +167,24 @@ class WENO(object):
                 hdf.close()
 
             self.grid = pyweno.grid.Grid(cache=cache, format='hdf5')
+
+        elif format is 'mat':
+            import scipy.io as sio
+            import re
+
+            mat = sio.loadmat(cache, struct_as_record=True)
+
+            for key in mat:
+                m = re.match(r'stencil.k(\d+).c.(.+)', key)
+                if (m is not None) and (int(m.group(1)) == order):
+                    self.c[m.group(2)] = mat[m.group(2)]
+
+                m = re.match(r'stencil.k(\d+).w.(.+)', key)
+                if (m is not None) and (int(m.group(1)) == order):
+                    self.w[m.group(2)] = mat[m.group(2)]
+                    self.pre_allocate(m.group(2))
+
+            self.grid = pyweno.grid.Grid(cache=cache, format='mat')
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
@@ -223,12 +241,12 @@ class WENO(object):
             else:
                 c[:,r,:,:] = stncl.c[key][:,:,:]
 
-        # optimal weights (varpi)
+        #### optimal weights (varpi)
         w = np.zeros((N,k))
 
         if grid.structured:
 
-            # XXX: this can be made better...
+            #### structured grid, only do one cell
 
             wc = np.zeros(k)
             merr = 0.0
@@ -258,9 +276,12 @@ class WENO(object):
             for i in xrange(k,N-k):
                 w[i,:] = wc[:]
 
-
         else:
+
+            #### unstructured grid, cycle through all cells
+
             merr = 0.0
+
             for i in xrange(k,N-k):
 
                 # function to minimise and initial guess
@@ -300,11 +321,14 @@ class WENO(object):
     # cache
     #
 
-    def cache(self, output, format='hdf5'):
+    def cache(self, output, format='mat'):
         """Cache spatial grid, reconstruction coefficients, and
-           optimal weights."""
+           optimal weights.
 
-        if format is 'hdf5':
+           XXX.
+           """
+
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(output, 'a')
@@ -331,45 +355,35 @@ class WENO(object):
 
             self.grid.cache(output, 'hdf5')
 
+        elif format is 'mat':
+            import scipy.io as sio
+
+            mat = {}
+            for key in self.c:
+                mat_key = 'weno.k%d.c.%s' % (self.order, key)
+                mat[mat_key] = self.c[key]
+
+                mat_key = 'weno.k%d.w.%s' % (self.order, key)
+                mat[mat_key] = self.w[key]
+
+            mat['grid.bndry'] = self.grid.x
+
+            sio.savemat(output, mat)
+
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
 
 
-
-
     ##################################################################
-    # smoothness, omega
+    # smoothness and reconstruct wrappers
     #
 
     def smoothness(self, q, sigma):
-        """Return array of the smoothness indicators of q."""
+        """Compute smoothness indicators of q and store result in
+           sigma."""
 
         return self._smoothness(self.grid, self.order, q, sigma)
 
-
-    def omega(self, q, varpi, sigma, w):
-        """Return arrays of adjusted weights."""
-
-        # XXX: deprecated
-
-        N   = self.grid.N
-        k   = self.order
-
-        alpha = np.zeros((N,k))
-
-        # XXX: move to C
-        for i in xrange(k,N-(k-1)+1):
-            for r in xrange(k):
-                alpha[i,r] = varpi[i,r] / (10e-6 + sigma[i,r]) / (10e-6 + sigma[i,r])
-
-            sum_alpha = sum(alpha[i,:])
-            for r in xrange(k):
-                w[i,r] = alpha[i,r] / sum_alpha
-
-
-    ##################################################################
-    # reconstruct!
-    #
 
     def reconstruct(self, q, key, sigma, qs):
         """Reconstruct q.
@@ -391,31 +405,3 @@ class WENO(object):
         _w = self._w[key]
 
         pyweno.cweno.reconstruct(q, sigma, c, w, _q, _w, qs)
-
-
-
-#         shape = c.shape
-#         N = shape[0]
-#         k = shape[1]
-#         n = shape[2]
-
-#         qr = self._qr[key]
-#         w  = self._w[key]
-
-#         # XXX: move to C
-#         for i in xrange(k,N-k):
-#             for r in xrange(k):
-#                 for l in xrange(n):
-#                     qr[i,l,r] = np.dot(c[i,r,l,:], q[i-r:i-r+k])
-
-#         self.omega(q, self.w[key], sigma, w)
-
-#         if n == 1:
-#             # XXX: move to C
-#             for i in xrange(k,N-k):
-#                 qs[i] = np.dot(qr[i,0,:], w[i,:])
-#         else:
-#             # XXX: move to C
-#             for i in xrange(k,N-k):
-#                 for l in xrange(n):
-#                     qs[i,l] = np.dot(qr[i,l,:], w[i,:])

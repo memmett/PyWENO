@@ -126,13 +126,13 @@ class Stencil(object):
       * *order*  - order of approximation
       * *shift*  - left shift of the stencil or ''None''
       * *cache*  - cache filename
-      * *format* - cache format (default is HDF5)
+      * *format* - cache format (default is 'mat')
 
     """
 
     def __init__(self,
                  grid=None, order=None, quad=None, shift=None,
-                 cache=None, format='hdf5'
+                 cache=None, format='mat'
                  ):
 
         # check order
@@ -170,11 +170,10 @@ class Stencil(object):
         k = self.order
         r = self.shift
 
-        if format is 'hdf5':
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(cache, 'r')
-
             r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
 
             for key in r_sgrp:
@@ -186,6 +185,17 @@ class Stencil(object):
                     self.c[key][:,:] = dst[:,:]
 
             hdf.close()
+
+        elif format is 'mat':
+            import scipy.io as sio
+            import re
+
+            mat = sio.loadmat(cache, struct_as_record=True)
+
+            for key in mat:
+                m = re.match(r'stencil.k(\d+).r(\d+).(.+)', key)
+                if (m is not None) and (int(m.group(1)) == k) and (int(m.group(2)) == r):
+                    self.c[m.group(3)] = mat[m.group(3)]
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
@@ -282,11 +292,14 @@ class Stencil(object):
         self.c[key] = c
 
 
-    def cache(self, output, format='hdf5'):
+    def cache(self, output, format='mat'):
         """Cache reconstruction coeffs and quadrature coeffs (if
-        defined)."""
+           defined).
 
-        if format is 'hdf5':
+           XXX
+        """
+
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(output, 'a')
@@ -317,6 +330,15 @@ class Stencil(object):
             # done
             hdf.close()
 
+        elif format is 'mat':
+            import scipy.io as sio
+
+            mat = {}
+            for key in self.c:
+                mat_key = 'stencil.k%d.r%d.%s' % (self.order, self.shift, key)
+                mat[mat_key] = self.c[key]
+
+            sio.savemat(output, mat)
+
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
-

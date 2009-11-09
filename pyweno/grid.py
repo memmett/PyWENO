@@ -5,6 +5,8 @@
 import math
 
 import numpy as np
+import scipy.integrate
+
 
 class Grid(object):
     """Unstructured spatial grid (discretisation).
@@ -29,13 +31,13 @@ class Grid(object):
     Arguments: (with cache)
 
       * *cache*  - cache filename
-      * *format* - cache format (default is HDF5)
+      * *format* - cache format (default is 'mat')
 
     """
 
     def __init__(self,
                  boundaries=None,
-                 cache=None, format='hdf5'
+                 cache=None, format='mat'
                  ):
 
         if (boundaries is not None) and (cache is None):
@@ -65,16 +67,15 @@ class Grid(object):
             self.structured = True
 
         # init self
-        self._bndry     = bndry
         self._cntr      = cntr
         self._sz        = sz
         self.size       = cntr.size
         self.N          = cntr.size
-        self.x          = self._bndry
+        self.x          = self.bndry
 
     def _init_with_cache(self, cache, format):
 
-        if format is 'hdf5':
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(cache, "r")
@@ -86,31 +87,46 @@ class Grid(object):
 
             hdf.close()
 
+        elif format is 'mat':
+
+            import scipy.io as sio
+            mat = sio.loadmat(cache, struct_as_record=True)
+
+            boundaries = mat['grid.bndry']
+
+            self._init_with_boundaries(boundaries)
+
         else:
             pass
 
 
-    def cache(self, output, format='hdf5'):
-        """Cache grid."""
+    def cache(self, output, format='mat'):
+        """Cache grid.
 
-        if format is 'hdf5':
+           XXX.
+        """
 
+        if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(output, "a")
-
             sgrp = hdf.create_group("grid")
-            sgrp.create_dataset("bndry", data=self._bndry)
-
+            sgrp.create_dataset("bndry", data=self.x)
             hdf.close()
 
+        elif format is 'mat':
+            import scipy.io as sio
+
+            sio.savemat(output, {'grid.bndry': self.x})
+
         else:
+
             raise NotImplementedError, "cache format '%s' not supported" % (format)
 
 
     def boundaries(self):
         """Return array of *N+1* cell boundaries."""
-        return self._bndry
+        return self.x
 
     def centres(self):
         """Return array of *N* cell centres."""
@@ -126,34 +142,11 @@ class Grid(object):
 
     def average(self, f):
         """Return cell averages of *f*."""
-        bndry = self._bndry
 
-        fbar = np.zeros(bndry.size-1)
+        x = self.x
+        a = np.zeros(x.size-1)
 
-        try:
-            import scipy.integrate
+        for i in xrange(x.size-1):
+            (a[i], err) = scipy.integrate.quad(f, x[i], x[i+1]) / (x[i+1] - x[i])
 
-        except:
-            # use 3-point gaussian quadrature
-            x3 = math.sqrt(3.0/5.0)
-            x2 = 0.0
-            x1 = -x3
-
-            w3 = 5.0/9.0
-            w2 = 8.0/9.0
-            w1 = 5.0/9.0
-
-            for i in xrange(bndry.size-1):
-                b = bndry[i+1]
-                a = bndry[i]
-                w = (b-a)/2.0
-                c = (a+b)/2.0
-
-                fbar[i] = 0.5 * ( w1*f(w*x1+c) + w2*f(w*x2+c) + w3*f(w*x3+c) )
-
-        else:
-            # use scipy's quadrature
-            for i in xrange(bndry.size-1):
-                (fbar[i], abserr) = scipy.integrate.quad(f, bndry[i], bndry[i+1]) / (bndry[i+1] - bndry[i])
-
-        return fbar
+        return a

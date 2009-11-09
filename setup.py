@@ -10,10 +10,11 @@ setuptools.setup(
     name = "PyWENO",
     version = "0.1",
     packages = ['pyweno'],
+    exclude_package_data = {'': ['.gitignore']},
 
     test_suite = 'nose.collector',
 
-    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0", "h5py >= 1.1.0" ],
+    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0" ],
 
     ext_modules = [
         setuptools.Extension('pyweno.cstencil',
