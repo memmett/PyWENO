@@ -1,16 +1,65 @@
 """PyWENO setup script."""
 
+import glob
+import os
+import re
+
 import setuptools
 
-import glob
 import numpy as np
+
+######################################################################
+# version
+version = '0.3'
+release = False
+
+if not release:
+    version += '.a1.dev'
+
+
+######################################################################
+# save git version to 'pyweno/__git_version__.py'
+
+try:
+    git_head_file = os.path.join(os.path.dirname(__file__), '.git', 'HEAD')
+    f = open(git_head_file)
+    m = re.match(r'ref: (.+)', f.readline())
+    ref = m.group(1)
+    f.close()
+
+    git_head_file = os.path.join(os.path.dirname(__file__), '.git', ref)
+    f = open(git_head_file)
+    git_version = f.readline().rstrip()
+    f.close()
+
+except:
+    git_version = 'not_available'
+
+git_version_file = os.path.join(os.path.dirname(__file__),
+                                'pyweno','__git_version__.py')
+f = open(git_version_file, 'w')
+f.write("version = '%s'\n" % (git_version))
+f.close()
+
+
+######################################################################
+# save version to 'pyweno/__version__.py'
+
+version_file = os.path.join(os.path.dirname(__file__),
+                            'pyweno','__version__.py')
+f = open(version_file, 'w')
+f.write("version = '%s'\n" % (version))
+f.close()
+
+
+######################################################################
+# setup!
 
 setuptools.setup(
 
     name = "PyWENO",
-    version = "0.1",
+    version = version,
     packages = ['pyweno'],
-    exclude_package_data = {'': ['.gitignore']},
 
     test_suite = 'nose.collector',
 
@@ -29,6 +78,9 @@ setuptools.setup(
                              sources = ['src/csmoothness.c'],
                              include_dirs=[np.get_include()]
                              )],
+
+    package_data = {'': ['__version__.py', '__git_version__.py']},
+    exclude_package_data = {'': ['.gitignore']},
 
     author = "Matthew Emmett",
     author_email = "matthew.emmett@ualberta.ca",

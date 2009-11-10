@@ -1,3 +1,3 @@
 """The PyWENO module."""
 
-__all__ = [ 'grid', 'stencil', 'weno', 'smoothness' ]
+__all__ = [ 'grid', 'stencil', 'weno', 'smoothness', 'version' ]
