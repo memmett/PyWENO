@@ -1,9 +1,6 @@
 Downloading and installing
 ==========================
 
-Obtaining PyWENO
-----------------
-
 To install PyWENO, please download, build, and install from source
 (there aren't any prebuilt packages).
 

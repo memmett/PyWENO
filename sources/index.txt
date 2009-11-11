@@ -75,6 +75,13 @@ PyWENO has a few known issues:
   * some of the generated C files are quite big.
 
 
+Download
+--------
+
+Check out the :doc:`download page <download>` for instructions on
+obtaining and installing PyWENO.
+
+
 Related projects
 ----------------
 
