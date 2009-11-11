@@ -283,6 +283,51 @@ Therefore, the reconstruction coefficients $c^r_{ij}$ are given by
 \end{equation}
 and depend on $r$ and $k$.
 
+% XXX: note re: c(\xi)...
+
+\subsection{Further derivatives}
+
+In order to approximate the spatial derivative $v'(x)$ we consider the
+first derivative of $p^r_i(x)$.  We obtain
+\begin{align*}
+  \dd{}{x} p^r_i(x) &= \dd{}{x} \Biggl[ \sum_{l=1}^{k} \Biggl(
+  \bigl( V(x_{i-r+l-1/2}) - V(x_{i-r-1/2}) \bigr) \
+    \frac{\sum_{m=0, m \neq l}^{k} \prod_{n=0, n \neq l,m}^{k}
+      (x - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
+      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr) \Biggr] \\
+    &= \sum_{l=1}^{k} \Biggl(
+    \bigl( V(x_{i-r+l-1/2}) - V(x_{i-r-1/2}) \bigr) \
+    \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
+      (x - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
+\end{align*}
+Evaluating the above at $x = \xi$ and employing \eqref{eq:Vsum}, we
+obtain
+\begin{equation*}
+  v'(\xi) \approx \dd{}{x} p^r_i(\xi) = \sum_{l=1}^{k} \Biggl(
+    \biggl( \sum_{j=0}^{l-1} \overline{v}_{i-r+j} \Delta x_{i-r+j} \biggr)
+    \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
+      (\xi - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
+\end{equation*}
+Rearranging, we obtain
+\begin{equation*}
+  v'(\xi) \approx \dd{}{x} p^r_i(\xi) = \sum_{j=0}^{k-1} \sum_{l=j+1}^k
+  \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
+    (\xi - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x_{i-r+l-1/2} - x_{i-r+m-1/2})}
+  \ \Delta x_{i-r+j} \overline{v}_{i-r+j}.
+\end{equation*}
+Therefore, the reconstruction coefficients for the first derivative
+are
+\begin{equation*}
+  c_j = \sum_{l=j+1}^k
+  \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
+    (\xi - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x_{i-r+l-1/2} - x_{i-r+m-1/2})}
+  \ \Delta x_{i-r+j}
+\end{equation*}
+
 \subsection{Summary}
 
 In summary, given a stencil $S_i^{r,k}$ and the cell averages

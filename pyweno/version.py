@@ -20,7 +20,9 @@ def _version(name):
     return version.version
 
 def version():
+    """Return current version."""
     return _version('__version__')
 
 def git_version():
+    """Return current *git* version (if available)."""
     return _version('__git_version__')

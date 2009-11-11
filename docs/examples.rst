@@ -1,5 +1,5 @@
-PyWENO Examples
-===============
+Examples
+========
 
 Reconstruct a function given its cell averages
 ----------------------------------------------

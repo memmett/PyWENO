@@ -1,5 +1,5 @@
-PyWENO API
-==========
+Reference
+=========
 
 WENO
 ----
@@ -21,7 +21,8 @@ Stencil
 
 .. autofunction:: pyweno.stencil.reconstruction_coeffs
 
-.. autofunction:: pyweno.stencil.xi_reconstruction_coeffs
 
-.. autofunction:: pyweno.stencil.gauss_reconstruction_coeffs
+Version
+-------
 
+.. automodule:: pyweno.version

@@ -1,5 +1,5 @@
-PyWENO smoothness indicators
-============================
+Smoothness indicators
+=====================
 
 .. automodule:: pyweno.smoothness
    :members:
