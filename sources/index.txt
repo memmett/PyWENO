@@ -5,55 +5,100 @@ PyWENO is a Python implementation of one-dimensional Weighted
 Essentially Non-oscillatory (WENO) approximations over unstructured
 (non-uniform) grids.
 
-Please see Matthew's :download:`WENO <WENO.pdf>` document for the
-mathematics behind PyWENO.
 
-Check out some :doc:`examples <examples>` to learn more about what
-PyWENO is all about.
+News
+----
 
-Obtaining PyWENO
+PyWENO is in early development, and is a bit rough around the edges.
+
+
+Documentation
+-------------
+
+Check out the :doc:`documentation page <documentation>` for a
+tutorial, reference, and the maths behind PyWENO.
+
+
+Features
+--------
+
+PyWENO is designed to:
+
+  * Work on unstructured (and structured) grids.
+
+  * Reconstruct at arbitrary points within each grid cell.  For
+    example, we can reconstruct a function at the left edge, right
+    edge, or at various quadrature points within each cell.
+
+  * Reconstruct derivatives at arbitrary points with each grid cell
+    too.
+
+  * Cache reconstruction coefficients and weights.  After the
+    reconstruction coefficients and optimal weights are pre-computed
+    for a given grid, they can be cached for future runs.
+
+  * Be fast and easy to use.  The time sensitive routines are
+    implemented in C.
+
+
+Usage
+-----
+
+Briefly, to use PyWENO to reconstruct a function given its cell
+averages, we first define the grid::
+
+  >>> x = np.linspace(-10.0, 10.0, 21)
+  >>> grid = pyweno.grid.Grid(boundaries=x)
+
+Next, we define a WENO reconstructor and tell it to pre-compute
+everything needed to reconstruct a function at the left side of each
+cell::
+
+  >>> weno5 = pyweno.weno.WENO(grid=grid, order=3)
+  >>> weno5.reconstruction('left')
+
+Finally, given the cell averages f_avg of f, we can reconstruct f at
+the left side of each cell::
+
+  >>> f_left = np.zeros(grid.size)
+  >>> sigma = np.zeros((grid.size, weno.order))
+  >>> weno5.smoothness(f_avg, sigma)
+  >>> weno5.reconstruct(f_avg, 'left', sigma, f_left)
+
+
+Known issues
+------------
+
+PyWENO has a few known issues:
+
+  * boundaries are avoided; and
+  * some of the generated C files are quite big.
+
+
+Related projects
 ----------------
 
-Download, build, and install from source.  The latest source
-distribution is available in either
-`zip <http://github.com/memmett/PyWENO/zipball/master>`_ or
-`tar <http://github.com/memmett/PyWENO/tarball/master>`_ format.
+Adrian Townsend (University of Washington) is working on a Python
+implementation of WENO interpolations and reconstructions as well.
 
-PyWENO uses the Python
-`setuptools <http://pypi.python.org/pypi/setuptools>`_
-package for installation.  Once this is installed, the following is
-helpful::
-
-  $ python setup.py develop -d <your python path>
-
-You can also obtain the source code on GitHub through the `PyWENO
-project page <http://github.com/memmett/PyWENO>`_.  You can clone the
-project by running::
-
-  $ git clone git://github.com/memmett/PyWENO
-
-
-API
----
-
-* :doc:`WENO, Grid, and Stencil classes <weno>`
-* :doc:`Smoothness indicators <smoothness>`
 
 Contributing
 ------------
 
 Contributions are welcome!  Please send comments, suggestions, and/or
-patches to the primary author (Matthew Emmett).  You will be credited.
+patches to the primary author (`Matthew Emmett`_).  You will be credited.
+
 
 If you plan to extend or modify PyWENO in a more substantial way,
-please let the author know (so that we can create a central
-repository).
+please see the `PyWENO project page`_.
 
 
 .. toctree::
    :hidden:
 
    self
-   examples
-   weno
-   smoothness
+   documentation
+   download
+
+.. _`PyWENO project page`: http://github.com/memmett/PyWENO
+.. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/
