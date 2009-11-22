@@ -54,16 +54,29 @@
 <h1>Smoothness indicators<a class="headerlink" href="#module-pyweno.smoothness" title="Permalink to this headline">¶</a></h1>
 <p>PyWENO smoothness indicators.</p>
 <dl class="function">
-<dt id="pyweno.smoothness.szs3">
-<tt class="descclassname">pyweno.smoothness.</tt><tt class="descname">szs3</tt><big>(</big><em>grid</em>, <em>k</em>, <em>f</em>, <em>sigma</em><big>)</big><a class="headerlink" href="#pyweno.smoothness.szs3" title="Permalink to this definition">¶</a></dt>
-<dd><p>Structured Zhang and Shu smoothness indicator.</p>
-<p>XXX: more info here</p>
+<dt id="pyweno.smoothness.beta">
+<tt class="descclassname">pyweno.smoothness.</tt><tt class="descname">beta</tt><big>(</big><em>smoothness</em>, <em>grid</em>, <em>k</em>, <em>beta</em><big>)</big><a class="headerlink" href="#pyweno.smoothness.beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute smoothness indicator coefficients and store result in
+<em>beta</em>.</p>
+<p>Arguments:</p>
+<blockquote>
+<ul class="simple">
+<li><em>smoothness</em> - smoothness indicator type</li>
+<li><em>grid</em> - grid (can be unstructured)</li>
+<li><em>k</em> - order</li>
+</ul>
+</blockquote>
+<p>In general, the smoothness indicator <em>sigma</em> for the cell <em>i</em>
+and stencil with left shift <em>r</em> is of the form</p>
+<div class="math">
+<p><img src="images/math/57dd98543d3f39e45f263188abbe325c7ce08724.png" alt="\sigma = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \beta_{i,r,m,n} \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}" />
+</div></p><p>The smoothness indicator type can be one of:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">'jiang_shu'</span></tt></li>
+</ul>
+</blockquote>
 </dd></dl>
-
-<dl class="function">
-<dt id="pyweno.smoothness.uszs3">
-<tt class="descclassname">pyweno.smoothness.</tt><tt class="descname">uszs3</tt><big>(</big><em>grid</em>, <em>k</em>, <em>f</em>, <em>sigma</em><big>)</big><a class="headerlink" href="#pyweno.smoothness.uszs3" title="Permalink to this definition">¶</a></dt>
-<dd>Unstructured Zhang and Shu smoothness indicator (not yet implemented).</dd></dl>
 
 </div>
 

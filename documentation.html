@@ -52,6 +52,8 @@
 <h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="tutorial">
 <h2>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="basic-usage">
+<h3>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h3>
 <p>Briefly, to use PyWENO to reconstruct a function given its cell
 averages, we first define the grid:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
@@ -62,23 +64,58 @@ averages, we first define the grid:</p>
 everything needed to reconstruct a function at the left side of each
 cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mf">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Finally, given the cell averages f_avg of f, we can reconstruct f at
 the left side of each cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">weno</span><span class="o">.</span><span class="n">order</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="more-reconstructions-caching">
+<h3>More reconstructions, caching<a class="headerlink" href="#more-reconstructions-caching" title="Permalink to this headline">¶</a></h3>
+<p>Here we use PyWENO to reconstruct a function at the left and right
+edges of each cell, and take advantage of PyWENOs caching features.</p>
+<p>If the cache file doesn&#8217;t exist, we define the grid and pre-compute
+everything we need to reconstruct:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mf">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;grid_k</span><span class="si">%d</span><span class="s">.mat&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we load from the cache:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we compute the smoothness of f_avg (once) and subsequently
+reconstruct:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstrct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstrct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">f_right</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="more-examples">
+<h3>More examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h3>
 <p>To learn more about how PyWENO is used, check out some <a class="reference external" href="examples.html"><em>examples</em></a>.</p>
+</div>
+<div class="section" id="version-information">
+<h3>Version information<a class="headerlink" href="#version-information" title="Permalink to this headline">¶</a></h3>
 <p>To obtain the version of PyWENO:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyweno.version</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pyweno</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">version</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pyweno</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">git_version</span><span class="p">()</span>
 </pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="mathematics">
@@ -105,7 +142,13 @@ document.</p>
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">Documentation</a><ul>
-<li><a class="reference external" href="#tutorial">Tutorial</a></li>
+<li><a class="reference external" href="#tutorial">Tutorial</a><ul>
+<li><a class="reference external" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference external" href="#more-reconstructions-caching">More reconstructions, caching</a></li>
+<li><a class="reference external" href="#more-examples">More examples</a></li>
+<li><a class="reference external" href="#version-information">Version information</a></li>
+</ul>
+</li>
 <li><a class="reference external" href="#mathematics">Mathematics</a></li>
 <li><a class="reference external" href="#reference">Reference</a><ul>
 </ul>

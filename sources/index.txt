@@ -33,12 +33,14 @@ PyWENO is designed to:
   * Reconstruct derivatives at arbitrary points with each grid cell
     too.
 
-  * Cache reconstruction coefficients and weights.  After the
-    reconstruction coefficients and optimal weights are pre-computed
-    for a given grid, they can be cached for future runs.
+  * Cache the reconstruction coefficients, optimal weights, and
+    smoothness indicator coefficients for a given grid (for future
+    runs).
 
-  * Be fast and easy to use.  The time sensitive routines are
-    implemented in C.
+  * Be fast (except for pre-computing).  The time sensitive routines
+    that would appear in loops are implemented in C.
+
+  * Be easy to use.
 
 
 Usage
@@ -55,15 +57,14 @@ everything needed to reconstruct a function at the left side of each
 cell::
 
   >>> weno5 = pyweno.weno.WENO(grid=grid, order=3)
-  >>> weno5.reconstruction('left')
+  >>> weno5.precompute_reconstruction('left')
 
-Finally, given the cell averages f_avg of f, we can reconstruct f at
-the left side of each cell::
+Finally, given the cell averages f_avg of f, we reconstruct f at the
+left side of each cell::
 
   >>> f_left = np.zeros(grid.size)
-  >>> sigma = np.zeros((grid.size, weno.order))
-  >>> weno5.smoothness(f_avg, sigma)
-  >>> weno5.reconstruct(f_avg, 'left', sigma, f_left)
+  >>> weno5.smoothness(f_avg)
+  >>> weno5.reconstruct(f_avg, 'left', f_left)
 
 
 Known issues
@@ -71,8 +72,9 @@ Known issues
 
 PyWENO has a few known issues:
 
-  * boundaries are avoided; and
-  * some of the generated C files are quite big.
+  * Domain boundaries are avoided.
+  * Pre-computing the optimal weights is slow.
+  * Pre-computing the smoothness indicator coefficients is slow.
 
 
 Download

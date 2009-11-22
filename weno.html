@@ -57,7 +57,7 @@
 <dl class="class">
 <dt id="pyweno.weno.WENO">
 <em class="property">
-class </em><tt class="descclassname">pyweno.weno.</tt><tt class="descname">WENO</tt><big>(</big><em>order</em>, <em>cache=None</em>, <em>format='mat'</em>, <em>smoothness=None</em>, <em>grid=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO" title="Permalink to this definition">¶</a></dt>
+class </em><tt class="descclassname">pyweno.weno.</tt><tt class="descname">WENO</tt><big>(</big><em>order=3</em>, <em>cache=None</em>, <em>format='mat'</em>, <em>smoothness='jiang_shu'</em>, <em>grid=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO" title="Permalink to this definition">¶</a></dt>
 <dd><p>Weighted Essentially Non-Oscillatory reconstruction.</p>
 <p>XXX: this docstring needs work!</p>
 <p>The basic idea of WENO is to use a convex combination of several
@@ -106,38 +106,28 @@ them from a cache.</p>
 <dl class="method">
 <dt id="pyweno.weno.WENO.cache">
 <tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Cache spatial grid, reconstruction coefficients, and
-optimal weights.</p>
-<ol class="upperroman simple" start="30">
-<li></li>
-</ol>
+<dd>Cache grid, reconstruction coefficients, and optimal
+weights.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.weno.WENO.precompute_reconstruction">
+<tt class="descname">precompute_reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.precompute_reconstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Precompute reconstruction coefficients and optimal weights
+for reconstructing at the points specified by <em>key</em>.</p>
+<p>If <em>xi</em> is None, XXX</p>
+<p>If <em>xi</em> isn&#8217;t None, XXX</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.reconstruct">
-<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>sigma</em>, <em>qs</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct q.</p>
-<p>XXX: more info here</p>
-<p>should be called as, eg:</p>
-<blockquote>
-weno.smoothness(q, sigma)
-weno.reconstruct(q, &#8216;left&#8217;, sigma, ql)
-weno.reconstruct(q, &#8216;right&#8217;, sigma, qr)</blockquote>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.weno.WENO.reconstruction">
-<tt class="descname">reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruction" title="Permalink to this definition">¶</a></dt>
-<dd><ol class="upperroman simple" start="30">
-<li></li>
-</ol>
-</dd></dl>
+<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd>Reconstruct <em>q</em> at the points specified by <em>key</em> and store
+result in <em>qs</em>.</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.smoothness">
-<tt class="descname">smoothness</tt><big>(</big><em>q</em>, <em>sigma</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.smoothness" title="Permalink to this definition">¶</a></dt>
-<dd>Compute smoothness indicators of q and store result in
-sigma.</dd></dl>
+<tt class="descname">smoothness</tt><big>(</big><em>q</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.smoothness" title="Permalink to this definition">¶</a></dt>
+<dd>Compute smoothness indicators of <em>q</em>.</dd></dl>
 
 </dd></dl>
 

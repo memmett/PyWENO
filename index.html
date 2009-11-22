@@ -69,11 +69,12 @@ example, we can reconstruct a function at the left edge, right
 edge, or at various quadrature points within each cell.</li>
 <li>Reconstruct derivatives at arbitrary points with each grid cell
 too.</li>
-<li>Cache reconstruction coefficients and weights.  After the
-reconstruction coefficients and optimal weights are pre-computed
-for a given grid, they can be cached for future runs.</li>
-<li>Be fast and easy to use.  The time sensitive routines are
-implemented in C.</li>
+<li>Cache the reconstruction coefficients, optimal weights, and
+smoothness indicator coefficients for a given grid (for future
+runs).</li>
+<li>Be fast (except for pre-computing).  The time sensitive routines
+that would appear in loops are implemented in C.</li>
+<li>Be easy to use.</li>
 </ul>
 </blockquote>
 </div>
@@ -89,15 +90,14 @@ averages, we first define the grid:</p>
 everything needed to reconstruct a function at the left side of each
 cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mf">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally, given the cell averages f_avg of f, we can reconstruct f at
-the left side of each cell:</p>
+<p>Finally, given the cell averages f_avg of f, we reconstruct f at the
+left side of each cell:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">weno</span><span class="o">.</span><span class="n">order</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -106,8 +106,9 @@ the left side of each cell:</p>
 <p>PyWENO has a few known issues:</p>
 <blockquote>
 <ul class="simple">
-<li>boundaries are avoided; and</li>
-<li>some of the generated C files are quite big.</li>
+<li>Domain boundaries are avoided.</li>
+<li>Pre-computing the optimal weights is slow.</li>
+<li>Pre-computing the smoothness indicator coefficients is slow.</li>
 </ul>
 </blockquote>
 </div>

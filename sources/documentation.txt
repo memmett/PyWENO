@@ -4,6 +4,9 @@ Documentation
 Tutorial
 --------
 
+Basic usage
+^^^^^^^^^^^
+
 Briefly, to use PyWENO to reconstruct a function given its cell
 averages, we first define the grid::
 
@@ -15,18 +18,56 @@ everything needed to reconstruct a function at the left side of each
 cell::
 
   >>> weno5 = pyweno.weno.WENO(grid=grid, order=3)
-  >>> weno5.reconstruction('left')
+  >>> weno5.precompute_reconstruction('left')
 
 Finally, given the cell averages f_avg of f, we can reconstruct f at
 the left side of each cell::
 
   >>> f_left = np.zeros(grid.size)
-  >>> sigma = np.zeros((grid.size, weno.order))
-  >>> weno5.smoothness(f_avg, sigma)
-  >>> weno5.reconstruct(f_avg, 'left', sigma, f_left)
+  >>> weno5.smoothness(f_avg)
+  >>> weno5.reconstruct(f_avg, 'left', f_left)
+
+
+More reconstructions, caching
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Here we use PyWENO to reconstruct a function at the left and right
+edges of each cell, and take advantage of PyWENOs caching features.
+
+If the cache file doesn't exist, we define the grid and pre-compute
+everything we need to reconstruct::
+
+  >>> k = 3
+  >>> cache = 'grid_k%d.mat' % (k)
+  >>> if not os.access(cache, os.F_OK):
+  >>>     grid = pyweno.grid.Grid(x)
+  >>>     weno = pyweno.weno.WENO(grid=grid, order=k)
+  >>>
+  >>>     weno.precompute_reconstruction('left')
+  >>>     weno.precompute_reconstruction('right')
+  >>>     weno.cache(cache)
+
+Next, we load from the cache::
+
+  >>> weno = pyweno.weno.WENO(order=k, cache=cache)
+
+Finally, we compute the smoothness of f_avg (once) and subsequently
+reconstruct::
+
+  >>> weno.smoothness(f_avg)
+  >>> weno.reconstrct(f_avg, 'left', f_left)
+  >>> weno.reconstrct(f_avg, 'right', f_right)
+
+
+More examples
+^^^^^^^^^^^^^
 
 To learn more about how PyWENO is used, check out some :doc:`examples
 <examples>`.
+
+
+Version information
+^^^^^^^^^^^^^^^^^^^
 
 To obtain the version of PyWENO::
 
