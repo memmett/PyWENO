@@ -5,21 +5,29 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
-PyObject *
-szs3(PyObject *self, PyObject *args)
-{
-  double *f, *sigma;
-  PyObject *f_py, *sigma_py;
+/************************************************************************/
 
+PyObject *
+sigma(PyObject *self, PyObject *args)
+{
+  double *fm, *fn, *beta, *sigma;
+  PyObject *f_py, *beta_py, *sigma_py;
+
+  double sum;
   long int N, i;
-  int f_stride;
+  int k, r, m, n;
 
   /*
    * parse options
    */
 
-  if (! PyArg_ParseTuple(args, "OO", &f_py, &sigma_py))
+  if (! PyArg_ParseTuple(args, "OOO", &f_py, &beta_py, &sigma_py))
     return NULL;
+
+  if ((PyArray_FLAGS(beta_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+    PyErr_SetString(PyExc_TypeError, "beta is not contiguous and/or aligned");
+    return NULL;
+  }
 
   if ((PyArray_FLAGS(sigma_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
     PyErr_SetString(PyExc_TypeError, "sigma is not contiguous and/or aligned");
@@ -30,29 +38,36 @@ szs3(PyObject *self, PyObject *args)
    * giv'r
    */
 
-  N = PyArray_DIM(f_py, 0);
+  N = PyArray_DIM(beta_py, 0);
+  k = PyArray_DIM(beta_py, 1);
 
   /*
-   * k order reconstructions
+   * compute sigma (smoothness indicators)
+   *
+   *   - beta is indexed as: beta[i,r,m,n]
+   *   - sigma is indexed as: sigma[i,r]
    */
 
-  f_stride = ((double *) PyArray_GETPTR1(f_py, 1)) - ((double *) PyArray_GETPTR1(f_py, 0));
+  for (i=k; i<N-k; i++) {
+    for (r=0; r<k; r++) {
 
-  f = (double *) PyArray_GETPTR1(f_py, 3);
-  sigma = (double *) PyArray_GETPTR2(sigma_py, 3, 0);
+      sum = 0.0;
+      for (m=k-1; m<2*k-1; m++) {
+        for (n=m; n<2*k-1; n++) {
 
-  for (i=3; i<N-3; i++) {
-    sigma[0] = f[-2] - 4.0 * f[-1] + 3.0 * f[0];
-    sigma[0] *= sigma[0];
+          beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
+          fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
+          fn = (double *) PyArray_GETPTR1(f_py, i-(k-1)+n);
 
-    sigma[1] = f[-1] - f[1];
-    sigma[1] *= sigma[1];
+          sum += (*beta) * (*fm) * (*fn);
 
-    sigma[2] = 3.0 * f[0] - 4.0 * f[1] + f[2];
-    sigma[2] *= sigma[2];
+        }
+      }
 
-    sigma += 3;
-    f++;
+      sigma = (double *) PyArray_GETPTR2(sigma_py, k, r);
+      *sigma = sum;
+
+    }
   }
 
   /*
@@ -62,8 +77,10 @@ szs3(PyObject *self, PyObject *args)
   return Py_None;
 }
 
+/************************************************************************/
+
 static PyMethodDef CSmoothnessMethods[] = {
-  {"szs3", szs3, METH_VARARGS, "XXX"},
+  {"sigma", sigma, METH_VARARGS, "XXX"},
   {NULL, NULL, 0, NULL}
 };
 

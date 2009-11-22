@@ -63,7 +63,7 @@ setuptools.setup(
 
     test_suite = 'nose.collector',
 
-    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0" ],
+    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0", "sympy >= 0.6.5" ],
 
     ext_modules = [
         setuptools.Extension('pyweno.cstencil',

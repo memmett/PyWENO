@@ -19,6 +19,7 @@ import scipy.optimize
 
 import pyweno.stencil
 import pyweno.smoothness
+import pyweno.csmoothness
 import pyweno.cweno
 
 
@@ -116,10 +117,10 @@ class WENO(object):
     #
 
     def __init__(self,
-                 order,
+                 order=3,
                  cache=None,
                  format='mat',
-                 smoothness=None,
+                 smoothness='jiang_shu',
                  grid=None):
 
         # compute or load from cache
@@ -128,15 +129,9 @@ class WENO(object):
         elif (grid is not None) and (cache is not None):
             raise ValueError, 'both grid and cache cannot be specified'
         elif (grid is not None):
-            self._init_with_grid(grid, order)
+            self._init_with_grid(grid, order, smoothness)
         else:
             self._init_with_cache(cache, order, format)
-
-        # smoothness
-        if smoothness is None:
-            self._smoothness = pyweno.smoothness.szs3
-        else:
-            self._smoothness = smoothness
 
 
     def _init_with_cache(self, cache, order, format):
@@ -161,12 +156,16 @@ class WENO(object):
                     self.w[key] = np.zeros(dst.shape)
                     self.w[key][:,:] = dst[:,:]
 
-                    self.pre_allocate(key)
+                    self._pre_allocate_key(key)
+
+                dst = k_sgrp['beta']
+                self.beta = np.zeros(dst.shape)
+                self.beta[:,:,:,:] = dst[:,:,:,]
 
             finally:
                 hdf.close()
 
-            self.grid = pyweno.grid.Grid(cache=cache, format='hdf5')
+            self.grid = pyweno.grid.Grid(cache=cache, format='h5py')
 
         elif format is 'mat':
             import scipy.io as sio
@@ -174,28 +173,42 @@ class WENO(object):
 
             mat = sio.loadmat(cache, struct_as_record=True)
 
+            self.c = {}
+            self.w = {}
             for key in mat:
-                m = re.match(r'stencil.k(\d+).c.(.+)', key)
+                m = re.match(r'weno.k(\d+).c.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    self.c[m.group(2)] = mat[m.group(2)]
+                    self.c[m.group(2)] = mat[m.group(0)]
 
-                m = re.match(r'stencil.k(\d+).w.(.+)', key)
+                m = re.match(r'weno.k(\d+).w.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    self.w[m.group(2)] = mat[m.group(2)]
-                    self.pre_allocate(m.group(2))
+                    self.w[m.group(2)] = mat[m.group(0)]
+                    self._pre_allocate_key(m.group(2))
 
+            self.beta = mat['weno.beta']
             self.grid = pyweno.grid.Grid(cache=cache, format='mat')
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
 
 
-    def _init_with_grid(self, grid, order):
+    def _init_with_grid(self, grid, order, smoothness):
 
         self.grid  = grid
         self.order = order
 
-    def pre_allocate(self, key):
+        N = self.grid.size
+        k = self.order
+
+        # allocate beta, sigma
+        self.sigma = np.zeros((N,k))
+        self.beta = np.zeros((N,k,2*k-1,2*k-1))
+
+        # pre-compute beta
+        pyweno.smoothness.beta(smoothness, self.grid, self.order, self.beta)
+
+
+    def _pre_allocate_key(self, key):
 
         shape = self.c[key].shape
 
@@ -211,11 +224,18 @@ class WENO(object):
     # reconstruction
     #
 
-    def reconstruction(self, key, xi=None):
-        """XXX."""
+    def precompute_reconstruction(self, key, xi=None):
+        """Precompute reconstruction coefficients and optimal weights
+           for reconstructing at the points specified by *key*.
+
+           If *xi* is None, XXX
+
+           If *xi* isn't None, XXX
+
+        """
 
         grid = self.grid
-        N = self.grid.N
+        N = self.grid.size
         k = self.order
 
         # order 2k-1 coeffs (c^*)
@@ -273,6 +293,7 @@ class WENO(object):
             if err > merr:
                 merr = err
 
+            # copy weights to other cells
             for i in xrange(k,N-k):
                 w[i,:] = wc[:]
 
@@ -311,10 +332,9 @@ class WENO(object):
         # store and pre-allocate
         self.c[key] = c
         self.w[key] = w
-
-        self.pre_allocate(key)
-
         self._omega_error[key] = merr
+
+        self._pre_allocate_key(key)
 
 
     ##################################################################
@@ -322,11 +342,13 @@ class WENO(object):
     #
 
     def cache(self, output, format='mat'):
-        """Cache spatial grid, reconstruction coefficients, and
-           optimal weights.
+        """Cache grid, reconstruction coefficients, and optimal
+           weights.
+        """
 
-           XXX.
-           """
+        k = self.order
+
+        self.grid.cache(output, format)
 
         if format is 'h5py':
             import h5py as h5
@@ -339,34 +361,35 @@ class WENO(object):
                 else:
                     sgrp = hdf.create_group('weno')
 
-                kstr = 'k%d' % (self.order)
+                kstr = 'k%d' % (k)
                 if kstr in sgrp:
-                    k_sgrp = sgrp[kstr]
-                else:
-                    k_sgrp = sgrp.create_group(kstr)
+                    del sgrp[kstr]
+
+                k_sgrp = sgrp.create_group(kstr)
 
                 for key in self.c:
                     key_sgrp = k_sgrp.create_group(key)
                     key_sgrp.create_dataset('c', data=self.c[key])
                     key_sgrp.create_dataset('w', data=self.w[key])
 
+                k_sgrp.create_dataset('beta', data=self.beta)
+
             finally:
                 hdf.close()
-
-            self.grid.cache(output, 'hdf5')
 
         elif format is 'mat':
             import scipy.io as sio
 
-            mat = {}
+            try:
+                mat = sio.loadmat(output, struct_as_record=True)
+            except:
+                mat = {}
+
             for key in self.c:
-                mat_key = 'weno.k%d.c.%s' % (self.order, key)
-                mat[mat_key] = self.c[key]
+                mat['weno.k%d.c.%s' % (k, key)] = self.c[key]
+                mat['weno.k%d.w.%s' % (k, key)] = self.w[key]
 
-                mat_key = 'weno.k%d.w.%s' % (self.order, key)
-                mat[mat_key] = self.w[key]
-
-            mat['grid.bndry'] = self.grid.x
+            mat['weno.beta'] = self.beta
 
             sio.savemat(output, mat)
 
@@ -378,24 +401,15 @@ class WENO(object):
     # smoothness and reconstruct wrappers
     #
 
-    def smoothness(self, q, sigma):
-        """Compute smoothness indicators of q and store result in
-           sigma."""
+    def smoothness(self, q):
+        """Compute smoothness indicators of *q*."""
 
-        return self._smoothness(self.grid, self.order, q, sigma)
+        return pyweno.cmoothness.sigma(q, self.beta, self.sigma)
 
 
-    def reconstruct(self, q, key, sigma, qs):
-        """Reconstruct q.
-
-           XXX: more info here
-
-           should be called as, eg:
-
-             weno.smoothness(q, sigma)
-             weno.reconstruct(q, 'left', sigma, ql)
-             weno.reconstruct(q, 'right', sigma, qr)
-
+    def reconstruct(self, q, key, qs):
+        """Reconstruct *q* at the points specified by *key* and store
+           result in *qs*.
         """
 
         c = self.c[key]
@@ -404,4 +418,10 @@ class WENO(object):
         _q = self._q[key]
         _w = self._w[key]
 
-        pyweno.cweno.reconstruct(q, sigma, c, w, _q, _w, qs)
+        pyweno.cweno.reconstruct(q,
+                                 self.sigma,
+                                 self.c[key],
+                                 self.w[key],
+                                 self._q[key],
+                                 self._w[key],
+                                 qs)
