@@ -192,10 +192,11 @@ class Stencil(object):
 
             mat = sio.loadmat(cache, struct_as_record=True)
 
+            self.c = {}
             for key in mat:
                 m = re.match(r'stencil.k(\d+).r(\d+).(.+)', key)
                 if (m is not None) and (int(m.group(1)) == k) and (int(m.group(2)) == r):
-                    self.c[m.group(3)] = mat[m.group(3)]
+                    self.c[m.group(3)] = mat[m.group(0)]
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
@@ -299,6 +300,9 @@ class Stencil(object):
            XXX
         """
 
+        k = self.order
+        r = self.shift
+
         if format is 'h5py':
             import h5py as h5
 
@@ -310,13 +314,13 @@ class Stencil(object):
             else:
                 sgrp = hdf.create_group('stencil')
 
-            kstr = 'k%d' % (self.order)
+            kstr = 'k%d' % (k)
             if kstr in sgrp:
                 sgrp = sgrp[kstr]
             else:
                 sgrp = sgrp.create_group(kstr)
 
-            rstr = 'r%d' % (self.shift)
+            rstr = 'r%d' % (r)
             if rstr in sgrp:
                 del sgrp[rstr]
 
@@ -333,10 +337,13 @@ class Stencil(object):
         elif format is 'mat':
             import scipy.io as sio
 
-            mat = {}
+            try:
+                mat = sio.loadmat(output, struct_as_record=True)
+            except:
+                mat = {}
+
             for key in self.c:
-                mat_key = 'stencil.k%d.r%d.%s' % (self.order, self.shift, key)
-                mat[mat_key] = self.c[key]
+                mat['stencil.k%d.r%d.%s' % (k, r, key)] = self.c[key]
 
             sio.savemat(output, mat)
 

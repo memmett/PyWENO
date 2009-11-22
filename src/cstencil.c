@@ -17,6 +17,8 @@ void reconstruction_coeffs_k7_d0(double xi, long int i, int r, double *x, double
 void reconstruction_coeffs_k7_d1(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k8_d0(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k8_d1(double xi, long int i, int r, double *x, double *c);
+void reconstruction_coeffs_k9_d0(double xi, long int i, int r, double *x, double *c);
+void reconstruction_coeffs_k9_d1(double xi, long int i, int r, double *x, double *c);
 
 
 PyObject *
@@ -89,6 +91,12 @@ case 8:
     reconstruction_coeffs_k8_d0(xi, i, r, x, c);
   else if (d==1)
     reconstruction_coeffs_k8_d1(xi, i, r, x, c);
+  break;
+case 9:
+  if (d==0)
+    reconstruction_coeffs_k9_d0(xi, i, r, x, c);
+  else if (d==1)
+    reconstruction_coeffs_k9_d1(xi, i, r, x, c);
   break;
   }
 

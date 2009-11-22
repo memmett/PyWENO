@@ -50,17 +50,17 @@ class Grid(object):
 
     def _init_with_boundaries(self, boundaries):
 
-        bndry = boundaries
+        x = boundaries
 
         # cell centres
-        cntr = np.zeros(bndry.size-1)
+        cntr = np.zeros(x.size-1)
         for i in xrange(cntr.size):
-            cntr[i] = (bndry[i+1] + bndry[i]) / 2.0
+            cntr[i] = (x[i+1] + x[i]) / 2.0
 
         # cell sizes
-        sz = np.zeros(bndry.size-1)
+        sz = np.zeros(x.size-1)
         for i in xrange(sz.size):
-            sz[i] = bndry[i+1] - bndry[i]
+            sz[i] = x[i+1] - x[i]
 
         self.structured = False
         if abs(max(sz) - min(sz)) < 1e-12:
@@ -71,7 +71,7 @@ class Grid(object):
         self._sz        = sz
         self.size       = cntr.size
         self.N          = cntr.size
-        self.x          = self.bndry
+        self.x          = x
 
     def _init_with_cache(self, cache, format):
 
@@ -79,25 +79,25 @@ class Grid(object):
             import h5py as h5
 
             hdf = h5.File(cache, "r")
-
             dst = hdf["grid/bndry"]
-            boundaries = dst[:]
+            boundaries = np.zeros(dst.shape)
+            boundaries[:] = dst[:]
 
             self._init_with_boundaries(boundaries)
 
             hdf.close()
 
         elif format is 'mat':
-
             import scipy.io as sio
-            mat = sio.loadmat(cache, struct_as_record=True)
 
+            mat = sio.loadmat(cache, struct_as_record=True)
             boundaries = mat['grid.bndry']
 
             self._init_with_boundaries(boundaries)
 
         else:
-            pass
+
+            raise NotImplementedError, "cache format '%s' not supported" % (format)
 
 
     def cache(self, output, format='mat'):
@@ -117,7 +117,13 @@ class Grid(object):
         elif format is 'mat':
             import scipy.io as sio
 
-            sio.savemat(output, {'grid.bndry': self.x})
+            try:
+                mat = sio.loadmat(output, struct_as_record=True)
+            except:
+                mat = {}
+
+            mat['grid.bndry'] = self.x
+            sio.savemat(output, mat)
 
         else:
 
