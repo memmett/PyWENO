@@ -56,51 +56,33 @@ def _makecons(j):
 #
 
 class WENO(object):
-    """Weighted Essentially Non-Oscillatory reconstruction.
+    """Weighted Essentially Non-Oscillatory reconstruction class.
 
-    XXX: this docstring needs work!
+    **Basic usage**
 
-    The basic idea of WENO is to use a convex combination of several
-    stencils to form the reconstruction of :math:`v` at cell
-    boundaries, and, if a stencil contains a discontinuity, its weight
-    :math:`\omega` should be close to zero.  In smooth regions, using
-    several stencils will also serve to increase the order of
-    accuracy.
+    XXX
 
-    Briefly, a WENO reconstruction takes a convex combination of all
-    :math:`v_{i+1/2}^r` defined by
+    **Instance variables**
 
-      :math:`v_{i+1/2}^r = \sum_{j=0}^{k-1}\; c_{ij}^r \\bar{v}_{i-r+j} \quad \\text{ for } \quad r=0,\dots,k-1`
+    * *grid*  - spatial grid
+    * *order* - order of stencil approximations
+    * *beta*  - smoothness indicator coefficients
+    * *c*     - dictionary of reconstruction coefficients
+    * *w*     - dictionary of optimal weights
 
-    as a new approximation to :math:`v_{i+1/2}` according to
+    **Keyword arguments (without cache)**
 
-      :math:`v_{i+1/2} = \sum_{r=0}^{k-1} \omega_i^r v_{i+1/2}^r`
+    * *grid*       - spatial grid (``pyweno.grid.Grid``)
+    * *order*      - order of approximation
+    * *smoothness* - type of smoothness indicator to use
 
-    where we require :math:`\omega_i^r \geq 0` and :math:`\sum_{r=0}^{k-1} \omega_i^r = 1`.
+    **Keyword arguments (with cache)**
 
-    Instance variables:
+    * *cache*  - cache file
+    * *order*  - order of stencil approximation
+    * *format* - format of cache file (default is ``'mat'``)
 
-      * *grid*  - spatial grid (''pyweno.Grid'')
-      * *order* - order of approximation
-      * *c_l*   - matrix of coefficients :math:`\\tilde{c}^r_{ij}` (indexed as c_l[i,r,j])
-      * *c_r*   - matrix of coefficients :math:`c^r_{ij}` (indexed as c_r[i,r,j])
-      * *w_l*   - matrix of optimal weights :math:`\\tilde{\\varpi}^r_i` (indexed as w_l[i,r])
-      * *w_r*   - matrix of optimal weights :math:`\\varpi^r_i` (indexed as w_r[i,r])
-
-    The constructor precomputes the reconstruction coefficients
-    :math:`c^r_{ij}` of order *order* and the optimal weights
-    :math:`\\varpi^{r}_{i}` for the unstructered grid *grid*, or loads
-    them from a cache.
-
-    Arguments (without cache):
-
-      * *grid*    - spatial grid (*Grid*)
-      * *order*   - order of approximation
-
-    Arguments (with cache):
-
-      * *cache*  - cache file
-      * *format* - format of cache file (default is 'mat')
+    **Methods**
 
     """
 
@@ -342,8 +324,20 @@ class WENO(object):
     #
 
     def cache(self, output, format='mat'):
-        """Cache grid, reconstruction coefficients, and optimal
-           weights.
+        """Store grid, all reconstruction coefficients, all optimal
+           weights, and smoothness indicator coefficients in the cache
+           file *output*.
+
+           Supported formats are:
+
+           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
+           * ``'h5py'`` - HDF5 file (through H5PY)
+
+           The reconstruction coefficients, optimal weights, and
+           smoothness indicator coefficients are *appended* to the
+           cache file.  That is, they are overwritten if they
+           previously existed (for *k*), but all other contents are
+           preserved.
         """
 
         k = self.order

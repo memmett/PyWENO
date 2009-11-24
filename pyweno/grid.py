@@ -11,27 +11,52 @@ import scipy.integrate
 class Grid(object):
     """Unstructured spatial grid (discretisation).
 
-    Instance variables:
+    **Basic usage**
 
-      * *size* - number of cells (usually denoted *N*)
-      * *N*    - as above
-      * *x*    - grid boundaries
+    From scratch::
 
-    The constructor precomputes cell centres and sizes from the cell
-    boundaries *boundaries*.
+    >>> x = numpy.array([-4.0, -1.0, -0.5, 0.0, 0.5, 1.0, 4.0, 10.0])
+    >>> grid = pyweno.grid.Grid(x)
 
-    Arguments: (without cache)
+    From a cache::
 
-      * *boundaries* - list of grid cell boundaries (eg,
-         ''numpy.linspace(-1.0, 1.0, 20+1)'')
+    >>> grid = pyweno.grid.Grid(cache='mycache.mat')
+
+    Averaging a function::
+
+    >>> f = lambda x: x**2
+    >>> f_avg = grid.average(f)
+
+    Cache to a MATLAB file (through SciPy)::
+
+    >>> grid.cache('mycache.mat')
+
+    Cache to an HDF5 file (through H5PY)::
+
+    >>> grid.cache('mycache.h5', format='h5py')
+
+    **Instance variables**
+
+    * *size* - number of cells (also *N*)
+    * *x*    - grid boundaries
+
+    The constructor precomputes the cell centres and sizes from the
+    cell boundaries.
+
+    **Keyword arguments (without cache)**
+
+    * *boundaries* - list of grid cell boundaries, eg,
+      ``numpy.linspace(-1.0, 1.0, 20+1)``
 
     The cell boundaries do **not** have to be structured (ie,
     uniformly spaced).
 
-    Arguments: (with cache)
+    **Keyword arguments (with cache)**
 
-      * *cache*  - cache filename
-      * *format* - cache format (default is 'mat')
+    * *cache*  - cache filename
+    * *format* - cache format (default is 'mat')
+
+    **Methods**
 
     """
 
@@ -101,9 +126,16 @@ class Grid(object):
 
 
     def cache(self, output, format='mat'):
-        """Cache grid.
+        """Store cell boundaries in the cache file *output*.
 
-           XXX.
+           Supported formats are:
+
+           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
+           * ``'h5py'`` - HDF5 file (through H5PY)
+
+           The cell boundaries are *appended* to the cache file.  That
+           is, they are overwritten if they previously existed, but
+           all other contents are preserved.
         """
 
         if format is 'h5py':

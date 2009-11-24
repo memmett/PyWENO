@@ -92,22 +92,23 @@ def beta(smoothness, grid, k, beta):
     """Compute smoothness indicator coefficients and store result in
        *beta*.
 
-       Arguments:
-
-         * *smoothness* - smoothness indicator type
-         * *grid* - grid (can be unstructured)
-         * *k* - order
+       This function is usually called by the WENO class.
 
        In general, the smoothness indicator *sigma* for the cell *i*
        and stencil with left shift *r* is of the form
 
        .. math::
 
-         \sigma = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \\beta_{i,r,m,n} \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}
+         \sigma_r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \\beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
 
-       The smoothness indicator type can be one of:
+       There is currently only one smoothness indicator type
+       implemented (``'jiang_shu'``).
 
-         * ``'jiang_shu'``
+       **Arguments**
+
+       * *smoothness* - smoothness indicator type
+       * *grid* - grid (can be unstructured)
+       * *k* - order
 
     """
 

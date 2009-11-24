@@ -21,32 +21,31 @@ import pyweno.cstencil
 # reconstruction_coeffs (c wrapper)
 
 def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
-    """Compute the reconstruction coefficients c_j and store the
-    results in *c* (indexed as c[j]).
+    """Compute the reconstruction coefficients *c_j* and store the
+    results in *c* (indexed as ``c[j]``).
 
-    The reconstruction coefficients c_j are used to approximate the
-    d'th derivative of a function v given its cell averages v_j
+    The reconstruction coefficients *c_j* are used to approximate the
+    *d*'th derivative of a function *f* given its cell averages *f_j*
     according to
 
-    ..math:: v^{(d)}(\\xi) \approx \sum_{j=0}^k c_j v_{i-r+j}.
+    .. math::
 
-    The reconstruction coefficients c_j depend on the point xi, cell
-    i, shift r, order k, derivative d, and grid x; but *not* on the
-    function v.
+      f^{(d)}(\\xi) \\approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}.
 
     This function wraps a fast C implementation.
 
     Arguments:
 
-      * *xi* - reconstruction point
-      * *i* - cell index
-      * *r* - left shift
-      * *k* - order
-      * *d* - order of derivative (defaults to 0)
-      * *x* - cell boundaries
-      * *c* - computed reconstruction coefficients (returned)
+    * *xi* - reconstruction point
+    * *i* - cell index (ie, index of the cell that containts *xi*)
+    * *r* - left shift
+    * *k* - order
+    * *d* - order of derivative (defaults to 0)
+    * *x* - cell boundaries
+    * *c* - computed reconstruction coefficients (returned)
 
-    Return: the reconstruction coefficients are stored in *c*.
+    Return: the reconstruction coefficients are destructively stored
+    in *c*.
 
     """
 
@@ -70,63 +69,74 @@ def _quad_pts(a, b, x):
 class Stencil(object):
     """Polynomial approximation stencil.
 
-    The cell averages v_i of a function v can be used to approximate
-    the value of v (and its derivatives) according to
+    The Stencil class is usually used the WENO class, but can be used
+    by itself too.
 
-    ..math:: v^{(d)}(\\xi) \approx \sum_{j=0}^k c_j v_{i-r+j}
+    The cell averages *f_j* of a function *f* can be used to
+    approximate the value of *f* (and its derivatives) according to
 
-    where the coefficients c_j are the *reconstruction coefficients*.
-    The reconstruction coefficients depend on the point xi, cell i,
-    shift r, order k, derivative d, and grid x; but *not* on the
-    function v.
+    .. math::
 
-    XXX: move the next few paragraphs to reST documentation
+      f^{(d)}(\\xi) \\approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}.
 
-    The Stencil class is used to precompute various sets of
-    reconstruction coefficients and cache them.  For example::
+    where the coefficients *c_j* are the *reconstruction
+    coefficients*.  The Stencil class is used to precompute various
+    sets of reconstruction coefficients and cache them.
 
-      >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, grid=grid)
-      >>> stencil.reconstruction_coeffs('left')
-      >>> stencil.reconstruction_coeffs('right')
+    **Basic usage**
 
-    pre-computes the reconstruction coefficients c_j of order k and
-    left-shift r at the left and right boundaries of each cell in the
-    grid.  Subsequently::
+    From scratch::
 
-      >>> c = stencil.c['left'][i,:]
-      >>> y = numpy.dot(c, v[i-r:i-r+k])
+    >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, grid=grid)
 
-    approximates the function v at the left edge of the i'th cell.
-    That is::
+    From a cache::
 
-      .. math:: y \approx v(x_{i-1/2}).
+    >>> stencil = pyweno.stencil.Stencil(orker=k, shift=r, cache='mycache.mat')
 
-    Instance variables:
+    Pre-compute reconstruction coefficients at the left and right boundaries::
 
-      * *c*     - dictionary of reconstruction coefficients
-      * *order* - order of approximation (usually denoted k)
-      * *k*     - as above
-      * *shift* - left shift (usually denoted r)
-      * *r*     - as above
-      * *grid*  - spatial grid (''pyweno.Grid'')
+    >>> stencil.reconstruction_coeffs('left')
+    >>> stencil.reconstruction_coeffs('right')
 
-    Keyword arguments (without cache):
+    Reconstruct a function at the left boundaries::
 
-      * *order* - order of approximation
-      * *shift* - left shift of the stencil or ''None''
-      * *grid*  - spatial grid (''pyweno.Grid'')
+    >>> c = stencil.c['left'][i,:]
+    >>> v_left = numpy.dot(c, v_avg[i-r:i-r+k])
 
-    The default shift (computed when shift is ''None'') is a centered
-    difference shift (ie, shift = order/2 + order%2).
+    Cache to a MATLAB file (through SciPy)::
+
+    >>> stencil.cache('mycache.mat')
+
+    Cache to an HDF5 file (through H5PY)::
+
+    >>> stencil.cache('mycache.h5', format='h5py')
+
+    **Instance variables**
+
+    * *grid*  - spatial grid (``pyweno.grid.Grid``)
+    * *order* - order of approximation (also *k*)
+    * *shift* - left shift (also *r*)
+    * *c*     - dictionary of reconstruction coefficients
+
+    **Keyword arguments (without cache)**
+
+    * *order* - order of approximation
+    * *shift* - left shift of the stencil or ``None``
+    * *grid*  - spatial grid
+
+    The default shift (computed when *shift* is ``None``) is a
+    centered difference shift (ie, ``shift = order/2 + order%2``).
 
     The left shift *shift* can take values from 0 to *order*-1.
 
-    Keyword arguments (with cache):
+    **Keyword arguments (with cache)**
 
-      * *order*  - order of approximation
-      * *shift*  - left shift of the stencil or ''None''
-      * *cache*  - cache filename
-      * *format* - cache format (default is 'mat')
+    * *order*  - order of approximation
+    * *shift*  - left shift of the stencil or ``None``
+    * *cache*  - cache filename
+    * *format* - cache format (default is ``'mat'``)
+
+    **Methods**
 
     """
 
@@ -205,39 +215,40 @@ class Stencil(object):
     def reconstruction_coeffs(self, key, xi=None):
         """Pre-compute reconstruction coefficients.
 
-           The reconstruction coeffs c_j are computed and stored in
+           The reconstruction coeffs *c_j* are computed and stored in
            the instance dictionary *c*.
 
            Arguments:
 
-             * *key* - key used to store this set of reconstruction coeffs
-             * *xi* - callable to return array of points within each
-               cell at which to compute the reconstruction
-               coefficients (called as ''xi(i)'')
+           * *key* - key used to store this set of reconstruction coeffs
+           * *xi* - callable which returns an array of points within
+             each cell at which to compute the reconstruction
+             coefficients (called as ``xi(i)``)
 
-           Preceeding the key with d| will compute the reconstruction
-           coefficients to approximate the first derivative at the
-           reconstruction points.
+           Preceeding the key with ``d|`` will compute the
+           reconstruction coefficients to approximate the first
+           derivative at the reconstruction points.
 
            There are several predefined keys:
 
-             * 'left' - the left edge of each cell
-             * 'right' - the right edge of each cell
-             * 'gauss_quad3' - the Gaussian 3-point quadrature points
+           * ``'left'`` - the left edge of each cell
+           * ``'right'`` - the right edge of each cell
+           * ``'gauss_quad3'`` - the Gaussian 3-point quadrature points
 
            For example, to compute the reconstruction coeffs used to
            reconstruct the derivative of a function f at the left edge
            of each grid cell::
 
-             >>> stencil.reconstruction_ceoffs('d|left')
-             >>> c = stencil.c['d|left']
+           >>> stencil.reconstruction_ceoffs('d|left')
+           >>> c = stencil.c['d|left']
 
            As another example, to compute the reconstruction coeffs
            used to reconstruct the value of a function at some other
            point(s) within each cell::
 
-             >>> stencil.reconstruction_ceoffs('mypts', lambda i: 0.5 * (grid.x[i] + grid.x[i+1]))
-             >>> c = stencil.c['d|left']
+           >>> xi_mypts = lambda i: 0.5 * (grid.x[i] + grid.x[i+1])
+           >>> stencil.reconstruction_ceoffs('mypts', xi_mypts)
+           >>> c = stencil.c['mypts']
 
         """
 
@@ -294,11 +305,19 @@ class Stencil(object):
 
 
     def cache(self, output, format='mat'):
-        """Cache reconstruction coeffs and quadrature coeffs (if
-           defined).
+        """Store all reconstruction coefficients in the cache file *output*.
 
-           XXX
+           Supported formats are:
+
+           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
+           * ``'h5py'`` - HDF5 file (through H5PY)
+
+           The reconstruction coefficients are *appended* to the cache
+           file.  That is, they are overwritten if they previously
+           existed (for *k* and *r*), but all other contents are
+           preserved.
         """
+
 
         k = self.order
         r = self.shift

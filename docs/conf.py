@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath('..'))
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath']
 
 # general configuration
-exclude_trees  = ['_build']
+#exclude_trees  = ['_build']
 source_suffix  = '.rst'
 master_doc     = 'index'
 
