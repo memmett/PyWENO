@@ -20,7 +20,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="PyWENO v0.1 documentation" href="" />
-    <link rel="next" title="Documentation" href="documentation.html" /> 
+    <link rel="next" title="PyWENO Tutorial" href="tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -33,7 +33,7 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="documentation.html" title="Documentation"
+          <a href="tutorial.html" title="PyWENO Tutorial"
              accesskey="N">next</a> |</li>
         <li><a href="">PyWENO v0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -49,19 +49,20 @@
 <p>PyWENO is a Python implementation of one-dimensional Weighted
 Essentially Non-oscillatory (WENO) approximations over unstructured
 (non-uniform) grids.</p>
-<div class="section" id="news">
-<h2>News<a class="headerlink" href="#news" title="Permalink to this headline">¶</a></h2>
-<p>PyWENO is in early development, and is a bit rough around the edges.</p>
-</div>
+<p><strong>News</strong></p>
+<ul class="simple">
+<li>Fall 2009: PyWENO is in early development, and is a bit rough around the edges.</li>
+</ul>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>Check out the <a class="reference external" href="documentation.html"><em>documentation page</em></a> for a
-tutorial, reference, and the maths behind PyWENO.</p>
-</div>
-<div class="section" id="features">
-<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<p><strong>Main parts of the documentation</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="tutorial.html"><em>Tutorial</em></a> - basic usage.</li>
+<li><a class="reference external" href="examples.html"><em>Examples</em></a> - more detailed examples.</li>
+<li><a class="reference external" href="reference.html"><em>Reference</em></a> - API documentation.</li>
+</ul>
+<p><strong>Features</strong></p>
 <p>PyWENO is designed to:</p>
-<blockquote>
 <ul class="simple">
 <li>Work on unstructured (and structured) grids.</li>
 <li>Reconstruct at arbitrary points within each grid cell.  For
@@ -76,51 +77,21 @@ runs).</li>
 that would appear in loops are implemented in C.</li>
 <li>Be easy to use.</li>
 </ul>
-</blockquote>
-</div>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>Briefly, to use PyWENO to reconstruct a function given its cell
-averages, we first define the grid:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">boundaries</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Next, we define a WENO reconstructor and tell it to pre-compute
-everything needed to reconstruct a function at the left side of each
-cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mf">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Finally, given the cell averages f_avg of f, we reconstruct f at the
-left side of each cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="known-issues">
-<h2>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h2>
+<p><strong>Known issues</strong></p>
 <p>PyWENO has a few known issues:</p>
-<blockquote>
 <ul class="simple">
 <li>Domain boundaries are avoided.</li>
 <li>Pre-computing the optimal weights is slow.</li>
 <li>Pre-computing the smoothness indicator coefficients is slow.</li>
 </ul>
-</blockquote>
+<p><strong>Related projects</strong></p>
+<p>Adrian Townsend (University of Washington) is working on a Python
+implementation of WENO interpolations and reconstructions as well.</p>
 </div>
 <div class="section" id="download">
 <h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
 <p>Check out the <a class="reference external" href="download.html"><em>download page</em></a> for instructions on
 obtaining and installing PyWENO.</p>
-</div>
-<div class="section" id="related-projects">
-<h2>Related projects<a class="headerlink" href="#related-projects" title="Permalink to this headline">¶</a></h2>
-<p>Adrian Townsend (University of Washington) is working on a Python
-implementation of WENO interpolations and reconstructions as well.</p>
 </div>
 <div class="section" id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
@@ -140,13 +111,8 @@ please see the <a class="reference external" href="http://github.com/memmett/PyW
             <h3><a href="">Table Of Contents</a></h3>
             <ul>
 <li><a class="reference external" href="">PyWENO</a><ul>
-<li><a class="reference external" href="#news">News</a></li>
 <li><a class="reference external" href="#documentation">Documentation</a></li>
-<li><a class="reference external" href="#features">Features</a></li>
-<li><a class="reference external" href="#usage">Usage</a></li>
-<li><a class="reference external" href="#known-issues">Known issues</a></li>
 <li><a class="reference external" href="#download">Download</a></li>
-<li><a class="reference external" href="#related-projects">Related projects</a></li>
 <li><a class="reference external" href="#contributing">Contributing</a><ul>
 </ul>
 </li>
@@ -155,8 +121,8 @@ please see the <a class="reference external" href="http://github.com/memmett/PyW
 </ul>
 
             <h4>Next topic</h4>
-            <p class="topless"><a href="documentation.html"
-                                  title="next chapter">Documentation</a></p>
+            <p class="topless"><a href="tutorial.html"
+                                  title="next chapter">PyWENO Tutorial</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="sources/index.txt"
@@ -189,7 +155,7 @@ please see the <a class="reference external" href="http://github.com/memmett/PyW
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="documentation.html" title="Documentation"
+          <a href="tutorial.html" title="PyWENO Tutorial"
              >next</a> |</li>
         <li><a href="">PyWENO v0.1 documentation</a> &raquo;</li> 
       </ul>

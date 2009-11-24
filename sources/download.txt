@@ -6,7 +6,7 @@ To install PyWENO, please download, build, and install from source
 
 The latest source distribution is available in either zip_ or tar_
 format.  You can also obtain the source code on GitHub through the
-`PyWENO project page`_, and you can clone the project by running::
+`PyWENO project page`_.  You can clone the project by running::
 
   $ git clone git://github.com/memmett/PyWENO
 
