@@ -148,19 +148,3 @@ def beta(smoothness, grid, k, beta):
                         c = s.coeff(f[m]*f[n])
                         if c is not None:
                             beta[i,r,m,n] = c
-
-
-
-if __name__ == '__main__':
-    import pyweno.grid
-    import numpy as np
-
-    x = np.linspace(-10.0, 10.0, 21)
-    grid = pyweno.grid.Grid(x)
-
-    N = grid.size
-    k = 3
-    b = np.zeros((N,k,2*k-1,2*k-1))
-
-    beta('jiang_shu', grid, k, b)
-    print b[k,:,:,:]
