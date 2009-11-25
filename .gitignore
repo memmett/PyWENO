@@ -15,6 +15,10 @@ build
 dist
 PyWENO*
 
+# examples
+*.png
+*.mat
+
 # tex
 *.aux
 *.log
