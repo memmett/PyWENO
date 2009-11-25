@@ -52,8 +52,8 @@ sigma(PyObject *self, PyObject *args)
     for (r=0; r<k; r++) {
 
       sum = 0.0;
-      for (m=k-1; m<2*k-1; m++) {
-        for (n=m; n<2*k-1; n++) {
+      for (m=k-1; m<2*k-1; m++) { /* XXX: this can be faster */
+        for (n=m; n<2*k-1; n++) { /* XXX: this can be faster */
 
           beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
           fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
@@ -64,7 +64,7 @@ sigma(PyObject *self, PyObject *args)
         }
       }
 
-      sigma = (double *) PyArray_GETPTR2(sigma_py, k, r);
+      sigma = (double *) PyArray_GETPTR2(sigma_py, i, r);
       *sigma = sum;
 
     }
