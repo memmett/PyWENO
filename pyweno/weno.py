@@ -142,7 +142,7 @@ class WENO(object):
 
                 dst = k_sgrp['beta']
                 self.beta = np.zeros(dst.shape)
-                self.beta[:,:,:,:] = dst[:,:,:,]
+                self.beta[:,:,:,:] = dst[:,:,:,:]
 
             finally:
                 hdf.close()
@@ -160,19 +160,26 @@ class WENO(object):
             for key in mat:
                 m = re.match(r'weno.k(\d+).c.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    self.c[m.group(2)] = mat[m.group(0)]
+                    self.c[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
 
                 m = re.match(r'weno.k(\d+).w.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    self.w[m.group(2)] = mat[m.group(0)]
-                    self._pre_allocate_key(m.group(2))
+                    self.w[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
 
-            self.beta = mat['weno.beta']
+            for key in self.c:
+                self._pre_allocate_key(key)
+
+            self.beta = np.ascontiguousarray(mat['weno.beta'])
             self.grid = pyweno.grid.Grid(cache=cache, format='mat')
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
 
+        # allocate sigma
+        N = self.grid.size
+        k = self.order
+
+        self.sigma = np.zeros((N,k))
 
     def _init_with_grid(self, grid, order, smoothness):
 
@@ -398,7 +405,7 @@ class WENO(object):
     def smoothness(self, q):
         """Compute smoothness indicators of *q*."""
 
-        return pyweno.cmoothness.sigma(q, self.beta, self.sigma)
+        pyweno.csmoothness.sigma(q, self.beta, self.sigma)
 
 
     def reconstruct(self, q, key, qs):
