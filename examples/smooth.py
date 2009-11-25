@@ -50,14 +50,26 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
+plt.subplot(2,1,1)
+
 plt.plot(grid.x, uf(grid.x), '-k')
 plt.plot(grid.x[:-1], f_left, 'or')
 plt.plot(grid.x[1:], f_right, 'ob')
 
-plt.title('PyWENO reconstruction')
+plt.title('PyWENO reconstruction and smoothness indicators')
 plt.ylabel('f')
 plt.xlabel('x')
 plt.legend(['actual', 'left', 'right'])
+
+plt.subplot(2,1,2)
+
+plt.plot(grid.centres(), weno.sigma[:,0], 'or')
+plt.plot(grid.centres(), weno.sigma[:,1], 'ok')
+plt.plot(grid.centres(), weno.sigma[:,2], 'ob')
+
+plt.ylabel('sigma')
+plt.xlabel('x')
+plt.legend(['r=0', 'r=1', 'r=2'])
 
 plt.savefig('smooth.png', format='png')
 
