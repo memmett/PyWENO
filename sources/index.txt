@@ -7,6 +7,7 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 
 **News**
 
+* November 26 2009: `PyWENO 0.3.a1`_ released.
 * Fall 2009: PyWENO is in early development, and is a bit rough around the edges.
 
 
@@ -89,3 +90,4 @@ please see the `PyWENO project page`_.
 
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
 .. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/
+.. _`PyWENO 0.3.a1`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.3.a1.tar.gz
