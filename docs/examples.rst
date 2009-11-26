@@ -30,7 +30,7 @@ In this example we reconstruct a polynomial and plot the result.
 
 The resulting plot is:
 
-.. image:: images/smooth.*
+.. image:: images/smooth.png
 
 
 Reconstructing a discontinuous function
@@ -43,5 +43,5 @@ result.
 
 The resulting plot is:
 
-.. image:: images/discontinuous.*
+.. image:: images/discontinuous.png
 
