@@ -19,8 +19,8 @@
 \newcommand{\xri}[0]{x_{i+1/2}}
 \newcommand{\xlj}[0]{x_{j-1/2}}
 \newcommand{\xrj}[0]{x_{j+1/2}}
-\newcommand{\vli}[0]{v_{i-1/2}}
-\newcommand{\vri}[0]{v_{i+1/2}}
+\newcommand{\fli}[0]{f_{i-1/2}}
+\newcommand{\fri}[0]{f_{i+1/2}}
 
 \numberwithin{equation}{section}
 
@@ -44,13 +44,15 @@ We follow C.W. Shu in ``Essentially Non-oscillatory and Weighted
 Essentially Non-oscillatory Schemes for Hyperbolic Conservation Laws''
 (NASA/CR-97-206253, ICASE report no. 97-65).
 
-We consider a one-dimensional hyperbolic conservation law of the form
+Weighted esstentially non-oscillatory (WENO) techniques have many
+applications.  We will focus our attention on one-dimensional
+hyperbolic conservation law of the form
 \begin{gather}
   \label{eq:pdecons}
   q_t + \bigl( f(q) \bigr)_x = 0.
 \end{gather}
-For finite-volume schemes we do not solve \eqref{eq:pdecons} directly,
-but its integrated version instead.  Integrating \eqref{eq:pdecons}
+Finite-volume schemes do not solve \eqref{eq:pdecons} directly.  They
+solve its integrated version instead.  Integrating \eqref{eq:pdecons}
 over the interval $[a,b]$ we obtain
 \begin{equation*}
   \dd{}{t} \overline{q}(t)
@@ -67,8 +69,6 @@ the central problems in implementing a numerical scheme to solve
 \eqref{eq:pdecons}: obtaining the values of $q$ at the boundaries $a$
 and $b$ based on the average $\overline{q}$ of $q$.  This is the
 \emph{reconsturction} problem.
-
-It is our intention here to study the reconstruction problem.
 
 \newpage
 \section{Grid}
@@ -111,54 +111,36 @@ boundaries.
 \section{One dimensional reconstruction for smooth functions}
 \label{sec:reconstruction}
 
-Given the cell averages $\overline{v}_j$ of a function $v$ where
+Given the cell averages $\overline{f}_j$ of a function $f$ where
 \begin{equation}
-  \overline{v}_j = \frac{1}{\Delta x_j} \int_{\xlj}^{\xrj} v(\xi) \;d\xi
+  \overline{f}_j = \frac{1}{\Delta x_j} \int_{\xlj}^{\xrj} f(\xi) \;d\xi
 \end{equation}
-we wish to find approximations $\vri$ to the function $v$ at the cell
-boundaries $\xri$, based on $k$ cell averages, that are $k$-order
-accruate.  The remainder of this section will be devoted to finding
-these approximations and showing that they are $k$-order accuarate.
-As it turns out, we will show that there are constants $c^r_{ij}$
-(hereafter called \emph{reconstruction coefficients}) such that the
-reconstructed values $\vri$ at the cell boundaries $\xri$ are given by
+we wish to find approximations to the function $f$ at various points
+within each cell.  In particular, we might be interested in
+approximating the function at the left cell boundary $\xli$, the right
+cell boundary $\xri$, or at any point $\xi$ within the cell $C_i$.  If
+the approximations are computed using $k$ cell averages, they should
+be $k$-order accruate.  The remainder of this section will be devoted
+to finding these approximations and showing that they are $k$-order
+accuarate.  As it turns out, we will show that there are constants
+$c_j$ (hereafter called \emph{reconstruction coefficients}) such that
+the reconstructed values are given by
 \begin{equation*}
-  \vri = \sum_{j=0}^{k-1} c^r_{ij}\; \overline{v}_{i-r+j}.
+  f(\xi) \approx \sum_{j=0}^{k-1} c_j\; \overline{f}_{i-r+j}.
 \end{equation*}
 That is, given a stencil $S_i^{r,k}$ that spans the $k$ cells
-$C_{i-r},\ldots,C_{i-r+k-1}$, the reconstructed value $\vri$ of the
-original function $v$ at the cell boundary $\xri$ can be obtained
-using the cell averages $\overline{v}_{j}$ over the cells $C_j$ in the
-stencil $S_i^{r,k}$.  In general, the reconstruction coefficients
-depend on the order $k$, left shift $r$, and cell $i$.
+$C_{i-r},\ldots,C_{i-r+k-1}$, the reconstructed value of the original
+function at some point $\xi$ in $C_i$ can be obtained using the cell
+averages $\overline{f}_{j}$ over the cells $C_j$ in the stencil
+$S_i^{r,k}$.  In general, the reconstruction coefficients $c_j$ depend
+on the reconstruction point $\xi$, order $k$, left shift $r$, and cell
+$C_i$, but \emph{not} on the function $f$.
 
-We can also reconstruct the values $\vli$ using the reconstruction
-coefficients $\tilde{c}^r_{ij}$ so that
-\begin{equation}
-  \label{eq:vli1}
-  \vli = \sum_{j=0}^{k-1} \tilde{c}^r_{ij}\; \overline{v}_{i-r+j}
-\end{equation}
-As it turns out, the reconstruction coefficients $c^r_{ij}$ and
-$\tilde{c}^r_{ij}$ are related.  This can be seen by considering the
-cell $C_{i-1}$ and the stencil $S_{i-1}^{r-1,k}$.  Then
-\begin{equation}
-  \label{eq:vli2}
-  \vli = v_{(i-1)+1/2}
-    = \sum_{j=0}^{k-1} c^{r-1}_{(i-1)\,j}\; \overline{v}_{(i-1)-(r-1)+j}
-    = \sum_{j=0}^{k-1} c^{r-1}_{(i-1)\,j}\; \overline{v}_{i-r+j}
-\end{equation}
-Comparing \eqref{eq:vli1} and \eqref{eq:vli2}, we see that
-\begin{equation*}
-  \tilde{c}^r_{ij} = c^{r-1}_{(i-1)\, j}.
-\end{equation*}
-
-In order to obtain the reconstruction coefficients $c^r_{ij}$ and
-prove accuracy, we first consider the following approximation problem:
-Given the cell averages $\overline{v}_j$ of a function $v$, find the
-polynomials $p^r_i$ of degree at most $k-1$ such that each $p^r_i$ is
-a $k$-order accurate approximation to $v$ inside $C_i$.  That is,
-given the cell averages $\overline{v}_j$, find polynomials $p^r_i$
-such that
+In order to obtain the reconstruction coefficients $c_j$ and prove
+accuracy, we will find polynomials $p^r_i$ of degree at most $k-1$
+such that each $p^r_i$ is a $k$-order accurate approximation to $f$
+inside $C_i$.  That is, given the cell averages $\overline{f}_j$, we
+will find polynomials $p^r_i$ such that
 \begin{equation*}
   p^r_i(x) = v(x) + O(\Delta x^k) \for x \in C_i.
 \end{equation*}
@@ -166,14 +148,14 @@ such that
 In order to find these polynomials, we consider the function
 \begin{equation}
   \label{eq:V}
-  V(x) = \int_a^x v(\xi) \;d\xi.
+  V(x) = \int_a^x f(\xi) \;d\xi.
 \end{equation}
-Using the cell averages $\overline{v}_j$ we can compute $V$ at the
+Using the cell averages $\overline{f}_j$ we can compute $V$ at the
 cell boundaries $\xri$ through
 \begin{align}
-  V(\xri) &= \int_a^{\xri} v(\xi) \;d\xi \nonumber \\
-          &= \sum_{j=1}^i \int_{\xlj}^{\xrj} v(\xi) \;d\xi \nonumber \\
-          &= \sum_{j=1}^i \overline{v}_j \Delta x_j.
+  V(\xri) &= \int_a^{\xri} f(\xi) \;d\xi \nonumber \\
+          &= \sum_{j=1}^i \int_{\xlj}^{\xrj} f(\xi) \;d\xi \nonumber \\
+          &= \sum_{j=1}^i \overline{f}_j \Delta x_j.
           \label{eq:Vsum}
 \end{align}
 
@@ -191,20 +173,16 @@ is given by
       \frac{(x - x_{i-r+m-1/2})}{(x_{i-r+l-1/2} - x_{i-r+m-1/2})}
     \Biggr).
 \end{equation}
-(This is the interpolating polynomial of $V$ in Lagrange form.)  We
-denote the derivative of $P^r_i$ by $p^r_i$, so that
-\begin{equation*}
-  p^r_i(x) = \dd{}{x} P^r_i(x).
-\end{equation*}
+This is the interpolating polynomial of $V$ in Lagrange form.
 It can be shown (see Appendix~\ref{app:lagrange}) that
 \begin{equation*}
   P^r_i(x) = V(x) + O(\Delta x^{k+1}) \for x \in S_i^{r,k}.
 \end{equation*}
-Therefore
+Therefore, the derivative $p^r_i$ of $P^r_i$ satisfies
 \begin{equation*}
-  p^r_i(x) = v(x) + O(\Delta x^k) \for x \in S_i^{r,k}
+  p^r_i(x) = \dd{}{x} P^r_i(x) = f(x) + O(\Delta x^k) \for x \in S_i^{r,k}
 \end{equation*}
-and $p^r_i(x)$ is of order $k-1$.
+and $p^r_i$ is of order $k-1$.
 
 Furthermore, the cell averages of $p^r_i$ over the cells $C_j$ that
 comprise the stencil $S_i^{r,k}$ satisfy
@@ -213,22 +191,22 @@ comprise the stencil $S_i^{r,k}$ satisfy
     &= \frac{1}{\Delta x_j} \int_{\xlj}^{\xrj} P'_i(\xi) \;d\xi \\
     &= \frac{1}{\Delta x_j} \biggl( P^r_i(\xrj) - P^r_i(\xlj) \biggr) \\
     &= \frac{1}{\Delta x_j} \biggl( V(\xrj) - V(\xlj) \biggr) \\
-    &= \frac{1}{\Delta x_j} \biggl( \int_a^{\xrj} v(\xi) \;d\xi
-      - \int_a^{\xlj} v(\xi) \;d\xi \biggr) \\
+    &= \frac{1}{\Delta x_j} \biggl( \int_a^{\xrj} f(\xi) \;d\xi
+      - \int_a^{\xlj} f(\xi) \;d\xi \biggr) \\
     &= \frac{1}{\Delta x_j} \biggl(
-      \int_{\xlj}^{\xrj} v(\xi) \;d\xi \biggr) \\
-    &= \overline{v}_j \for j=i-r,\ldots,i-r+k-1.
+      \int_{\xlj}^{\xrj} f(\xi) \;d\xi \biggr) \\
+    &= \overline{f}_j \for j=i-r,\ldots,i-r+k-1.
 \end{align*}
 That is, the cell averages of the approximating polynomials $p^r_i$
-match the cell averages the original function $v$ in each of the cells
+match the cell averages the original function in each of the cells
 $C_j$ which comprise the stencil $S_i^{r,k}$.
 
 So far we have constructed polynomials $p^r_i$ that approximate the
-original function $v$ on the stencils $S_{i}^{r,k}$ to $k$-order using
-only the cell averages $\overline{v}_j$ for $j=i-r,\ldots,i-r+k-1$.
+original function $f$ on the stencils $S_{i}^{r,k}$ to $k$-order using
+only the cell averages $\overline{f}_j$ for $j=i-r,\ldots,i-r+k-1$.
 
-Now we consider the practical problem of finding the constants
-$c^r_{ij}$.  Subtracting $V(x_{i-r-1/2})$ from $P^r_i(x)$ and using
+Now we consider the practical problem of finding the constants $c_j$.
+Subtracting $V(x_{i-r-1/2})$ from $P^r_i(x)$ and using
 \begin{equation*}
   \sum_{l=0}^{k} \prod_{m=0, m \neq l}^{k}
     \frac{(x - x_{i-r+m-1/2})}{(x_{i-r+l-1/2} - x_{i-r+m-1/2})} = 1
@@ -258,37 +236,36 @@ and hence
       (x - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
       (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr). \label{eq:pV}
 \end{equation}
-Evaluing $p^r_i$ at the cell boundary $\xri$ and employing
-\eqref{eq:Vsum}, we obtain
+Employing \eqref{eq:Vsum}, we obtain
 \begin{equation}
-  p^r_i(\xri) = \sum_{l=1}^{k} \Biggl(
-    \biggl( \sum_{j=0}^{l-1} \overline{v}_{i-r+j} \Delta x_{i-r+j} \biggr)
-    \frac{\sum_{m=0, m \neq l}^{k} \prod_{n=0, n \neq l,m}^{k}
-      (\xri - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
-      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
+  p^r_i(x) = \sum_{l=1}^{k} \Biggl(
+  \biggl( \sum_{j=0}^{l-1} \overline{f}_{i-r+j} \Delta x_{i-r+j} \biggr)
+  \frac{\sum_{m=0, m \neq l}^{k} \prod_{n=0, n \neq l,m}^{k}
+    (x - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
 \end{equation}
 Rearranging, we obtain
 \begin{equation*}
-  \vri = p^r_i(\xri) = \sum_{j=0}^{k-1} \sum_{l=j+1}^k
-    \frac{\sum_{m=0, m \neq l}^{k} \prod_{n=0, n \neq l,m}^{k}
-      (\xri - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
-      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \ \Delta x_{i-r+j} \overline{v}_{i-r+j}.
+  p^r_i(\xri) = \sum_{j=0}^{k-1} \sum_{l=j+1}^k
+  \frac{\sum_{m=0, m \neq l}^{k} \prod_{n=0, n \neq l,m}^{k}
+    (x - x_{i-r+n-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \ \Delta x_{i-r+j} \overline{v}_{i-r+j}.
 \end{equation*}
-Therefore, the reconstruction coefficients $c^r_{ij}$ are given by
+Therefore, the reconstruction coefficients $c_j$ used to reconstruct
+the function $f$ at the point $\xi$ are given by
 \begin{equation}
-  c^r_{ij} = \sum_{l=j+1}^k \frac{\sum_{m=0, m \neq l}^{k}
-    \prod_{n=0, n \neq l,m}^{k} (\xri - x_{i-r+n-1/2})}{
+  c_j = \sum_{l=j+1}^k \frac{\sum_{m=0, m \neq l}^{k}
+    \prod_{n=0, n \neq l,m}^{k} (\xi - x_{i-r+n-1/2})}{
     \prod_{m=0, m \neq l}^{k} (x_{i-r+l-1/2} - x_{i-r+m-1/2})}
-    \ \Delta x_{i-r+j}
+    \ \Delta x_{i-r+j}.
 \end{equation}
-and depend on $r$ and $k$.
-
-% XXX: note re: c(\xi)...
+Note that the the reconstruction coefficients $c_j$ depend on $\xi$,
+$i$, $r$, and $k$.
 
 \subsection{Further derivatives}
 
-In order to approximate the spatial derivative $v'(x)$ we consider the
-first derivative of $p^r_i(x)$.  We obtain
+In order to approximate the first derivative of the original function
+$f$ we consider the first derivative of $p^r_i(x)$.  We obtain
 \begin{align*}
   \dd{}{x} p^r_i(x) &= \dd{}{x} \Biggl[ \sum_{l=1}^{k} \Biggl(
   \bigl( V(x_{i-r+l-1/2}) - V(x_{i-r-1/2}) \bigr) \
@@ -301,20 +278,19 @@ first derivative of $p^r_i(x)$.  We obtain
       (x - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
       (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
 \end{align*}
-Evaluating the above at $x = \xi$ and employing \eqref{eq:Vsum}, we
-obtain
+Employing \eqref{eq:Vsum}, we obtain
 \begin{equation*}
-  v'(\xi) \approx \dd{}{x} p^r_i(\xi) = \sum_{l=1}^{k} \Biggl(
-    \biggl( \sum_{j=0}^{l-1} \overline{v}_{i-r+j} \Delta x_{i-r+j} \biggr)
-    \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
-      (\xi - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
-      (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
+  \dd{}{x} p^r_i(x) = \sum_{l=1}^{k} \Biggl(
+  \biggl( \sum_{j=0}^{l-1} \overline{v}_{i-r+j} \Delta x_{i-r+j} \biggr)
+  \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
+    (x - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x_{i-r+l-1/2} - x_{i-r+m-1/2})} \Biggr).
 \end{equation*}
 Rearranging, we obtain
 \begin{equation*}
-  v'(\xi) \approx \dd{}{x} p^r_i(\xi) = \sum_{j=0}^{k-1} \sum_{l=j+1}^k
+  \dd{}{x} p^r_i(x) = \sum_{j=0}^{k-1} \sum_{l=j+1}^k
   \frac{\sum_{m=0, m \neq l}^{k} \sum_{n=0, n \neq l,m}^{k} \prod_{p=0, p \neq l, m, n}
-    (\xi - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
+    (x - x_{i-r+p-1/2})}{\prod_{m=0, m \neq l}^{k}
     (x_{i-r+l-1/2} - x_{i-r+m-1/2})}
   \ \Delta x_{i-r+j} \overline{v}_{i-r+j}.
 \end{equation*}
@@ -331,31 +307,26 @@ are
 \subsection{Summary}
 
 In summary, given a stencil $S_i^{r,k}$ and the cell averages
-$\overline{v}_j$ of a function $v$, the approximation $\vri$ to the
-function $v$ at the cell boundary $\xri$ is given by
+$\overline{f}_j$ of a function $f$, we can reconstruct $f$ at any
+point $\xi$ in the cell $C_i$ according to
 \begin{equation}
   \label{eq:sumvri}
-  \vri = \sum_{j=0}^{k-1} c^r_{ij}\; \overline{v}_{i-r+j}
+  f(\xi) \approx \sum_{j=0}^{k-1} c_j\; \overline{f}_{i-r+j}
 \end{equation}
 where
 \begin{equation}
-  c^r_{ij} = \sum_{l=j+1}^k \frac{\sum_{m=0, m \neq l}^{k}
-    \prod_{n=0, n \neq l,m}^{k} (\xri - x_{i-r+n-1/2})}{
+  c_j = \sum_{l=j+1}^k \frac{\sum_{m=0, m \neq l}^{k}
+    \prod_{n=0, n \neq l,m}^{k} (\xi - x_{i-r+n-1/2})}{
     \prod_{m=0, m \neq l}^{k} (x_{i-r+l-1/2} - x_{i-r+m-1/2})}
-    \ \Delta x_{i-r+j}.
+  \ \Delta x_{i-r+j}.
 \end{equation}
-Furthermore, the approximation $\vri$ is accurate to order $k$ so that
+Furthermore, the approximation is accurate to order $k$ so that
 \begin{equation*}
-  \vri = v(\xri) + O(\Delta x^k)
+  \sum_{j=0}^{k-1} c_j\; \overline{f}_{i-r+j} = f(\xi) + O(\Delta x^k)
 \end{equation*}
 where
 \begin{equation*}
   \Delta x = \max_{j=i-r,\ldots,i-r+k-1} \Delta x_j.
-\end{equation*}
-Finally, the approximation $\vli$ to the function $v$ at the cell
-boundary $\xli$ is given by
-\begin{equation*}
-  \vli = \sum_{j=0}^{k-1} c^{r-1}_{(i-1)\,j}\; \overline{v}_{i-r+j}.
 \end{equation*}
 The permissable values of left shift parameter $r$ in
 \eqref{eq:sumvri} are $-1,\ldots,k-1$ so that the results of
@@ -366,17 +337,17 @@ Appendix~\ref{app:lagrange} hold.
 
 The solutions of hyperbolic conservation laws may contain
 discontinuities, and therefore we are interested in reconstructing
-piecewise smooth functions.  A piecewise smooth function $v$ is smooth
-except at finitely many isolated points.  At these points, $v$ and its
+piecewise smooth functions.  A piecewise smooth function $f$ is smooth
+except at finitely many isolated points.  At these points, $f$ and its
 derivatives (at least up to the order of the scheme) are assumed to
 have finite left and right limits.
 
 For such piecewise smooth functions, the order of accuracy herein
-referred to is formal- that is, it is defined as the accuracy
+referred to is formal.  That is, it is defined as the accuracy
 determined by the local error in the smooth regions of the function.
 
 The basic idea of WENO is to use a convex combination of several
-stencils to form the reconstruction of $v$ at the cell boundaries,
+stencils to form the reconstruction of $f$ at the cell boundaries,
 and, if a stencil contains a discontinuity, its weight should be close
 to zero.  In smooth regions, using several stencils will also serve to
 increase the order of accuracy.
@@ -385,21 +356,22 @@ Consider the $k$ stencils
 \begin{equation*}
   S_i^{r,k} \for r=0,\ldots,k-1
 \end{equation*}
-that can be used to reconstruct the value of $v$ at the cell
-boundaries $\xli$ and $\xri$.  These stencils span $2k-1$ cells.  We
-denote the $k$ different reconstructions by
+that can be used to reconstruct the value of $f$ at some point $\xi$
+in the cell $C_i$.  These stencils span $2k-1$ cells.  We denote the
+$k$ different reconstructions by
 \begin{equation}
-  \label{eq:vr}
-  \vri^r = \sum_{j=0}^{k-1}\; c_{ij}^r \bar{v}_{i-r+j} \for r=0,\dots,k-1
+  \label{eq:fr}
+  f(\xi) \approx f^r = \sum_{j=0}^{k-1}\; c^r_j \bar{v}_{i-r+j} \for r=0,\dots,k-1
 \end{equation}
-where we have added the superscript $r$ to $\vri$ to make the
-dependance upon the left shift $r$ explicit.
+where we have added the superscript $r$ to the function $f$ and the
+reconstruction coefficients $c_j$ to make their dependance on the left
+shift $r$ explicit.
 
-A WENO reconstruction takes a convex combination of all $\vri^r$
-defined in \eqref{eq:vr} as a new approximation to $\vri$ according to
+A WENO reconstruction takes a convex combination of all $f^r$ defined
+in \eqref{eq:fr} as a new approximation according to
 \begin{equation}
-  \label{eq:vweno}
-  \vri = \sum_{r=0}^{k-1} \omega_i^r \vri^r
+  \label{eq:fweno}
+  f(\xi) \approx \sum_{r=0}^{k-1} \omega_i^r f^r
 \end{equation}
 where we require
 \begin{equation}
@@ -407,60 +379,61 @@ where we require
 \end{equation}
 
 In smooth regions where all $k$ stencils that can be used to
-reconstruct $\vri$ in \eqref{eq:vr} do not contain discontinuities, we
-could reconstruct $\vri$ to order $2k-1$ using the stencil
+reconstruct $f(\xi)$ in \eqref{eq:fr} do not contain discontinuities,
+we could reconstruct $f(\xi)$ to order $2k-1$ using the stencil
 $S_i^{k-1,2k-1}$ to obtain
 \begin{equation}
-  \label{eq:vopt}
-  \vri = \sum_{j=0}^{2k-2} c_{ij}^* \bar{v}_{i-(k-1)+j}.
+  \label{eq:fopt}
+  f(\xi) = \sum_{j=0}^{2k-2} c_j^*\, \bar{f}_{i-(k-1)+j}
 \end{equation}
-Combining \eqref{eq:vr}, \eqref{eq:vweno}, and \eqref{eq:vopt}, we
-obtain
+where we have added the superscript $*$ to the reconstruction
+coefficients $c_j$ to highlight that they are optimal (ie, higher
+order).  Combining \eqref{eq:fr}, \eqref{eq:fweno}, and
+\eqref{eq:fopt}, we obtain
 \begin{equation}
-  \label{eq:vopt2}
-  \sum_{j=0}^{2k-2} c_{ij}^* \bar{v}_{i-(k-1)+j}
-    = \sum_{r=0}^{k-1} \omega_i^r \left( \sum_{l=0}^{k-1} c_{il}^r \bar{v}_{i-r+l} \right).
+  \label{eq:fopt2}
+  \sum_{j=0}^{2k-2} c_j^*\, \bar{f}_{i-(k-1)+j}
+    = \sum_{r=0}^{k-1} \omega_i^r \left( \sum_{l=0}^{k-1} c_l^r\, \bar{f}_{i-r+l} \right).
 \end{equation}
 Rearranging, we obtain
 \begin{equation*}
-  \sum_{j=0}^{2k-2} c_{ij}^* \bar{v}_{i-(k-1)+j}
+  \sum_{j=0}^{2k-2} c_j^*\, \bar{f}_{i-(k-1)+j}
     = \sum_{j=0}^{2k-2} \left(
-      \sum_{l=\max(0,j-k+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_{il}^{k-(j+1)+l}
-    \right) \bar{v}_{i-(k-1)+j}
+      \sum_{l=\max(0,j-k+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_l^{k-(j+1)+l}
+    \right) \bar{f}_{i-(k-1)+j}.
 \end{equation*}
-and hence we obtain systems of the $2k-1$ equations
+\newpage
+Therefore, we have $2k-1$ equations
 \begin{gather}
   \label{eq:omegasys}
-  \sum_{l=\max(0,j-k+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_{il}^{k-(j+1)+l} = c_{ij}^*
+  \sum_{l=\max(0,j-k+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_l^{k-(j+1)+l} = c_j^*
     \for j = 0,\ldots,2k-2
 \end{gather}
-at each $i$ for the weights $\omega_i^r$.  For unstructured grids the
-systems \eqref{eq:omegasys} are over-determined, and thereefore we
-must use some kind of optimisation algorithm in order to find the
-weights $\omega_i^r$.  For structured grids the systems
-\eqref{eq:omegasys} are no longer over-determined, and the weights
-$\omega_i^r$ can be found explicity (and are independent of $i$).
+at each $i$ (and $\xi$) for the weights $\omega_i^r$.  For
+unstructured grids the systems \eqref{eq:omegasys} are
+over-determined, and therefore we must use some kind of optimisation
+algorithm in order to find the weights $\omega_i^r$.  For structured
+grids the systems \eqref{eq:omegasys} are no longer over-determined,
+and the weights $\omega_i^r$ can be found explicity (and are
+independent of $i$).
 
-The weights $\omega_i^r$ defined by \eqref{eq:vopt2} and determined by
+The weights $\omega_i^r$ defined by \eqref{eq:fopt2} and determined by
 \eqref{eq:omegasys} are called \emph{optimal weights} since they can
-be used to reconstruct $\vri$ to order $2k-1$ in regions where $v$ is
-smooth.  We will henceforth denote the optimal weights by
+be used to reconstruct a function to order $2k-1$ in regions where the
+function is smooth.  We will henceforth denote the optimal weights by
 $\varpi_i^r$.
-
-A similar procedure can be used to determine the optimal weights for
-reconstructing $\vli$ on the stencil $S_i^{r,k}$.
 
 We now consider the practical problem of choosing the weights
 $\omega_i^r$.  If we choose the weights $\omega_i^r$ sufficiently
-close to the optimal weights $\varpi_i^r$ in regions where $v$ is
-smooth then we can achieve $2k-1$ order accuracy.  In order to
-determine how close to the optimal weights $\varpi_i^r$ the weights
-$\omega_i^r$ must be choosen we consider the reconstruction
+close to the optimal weights $\varpi_i^r$ in regions where the
+function is smooth, then we can achieve $2k-1$ order accuracy.  In
+order to determine how close to the optimal weights $\varpi_i^r$ the
+weights $\omega_i^r$ must be choosen we consider the reconstruction
 \begin{equation}
   \label{eq:omegacloseeqn}
-  \vri = \sum_{r=0}^{k-1} \omega_i^r \vri^r
-    = \sum_{r=0}^{k-1} \varpi_i^r \vri^r
-    + \sum_{r=0}^{k-1} \bigl( \omega_i^r - \varpi_i^r \bigr) \vri^r.
+  f(\xi) \approx \sum_{r=0}^{k-1} \omega_i^r f^r
+    = \sum_{r=0}^{k-1} \varpi_i^r f^r
+    + \sum_{r=0}^{k-1} \bigl( \omega_i^r - \varpi_i^r \bigr) f^r.
 \end{equation}
 If we choose
 \begin{equation}
@@ -468,8 +441,8 @@ If we choose
   \omega_i^r = \varpi_i^r + O(\Delta x^{k-1})
 \end{equation}
 then each term in the last summation of \eqref{eq:omegaclose} becomes
-$O(\Delta x^{2k-1})$ hence $2k-1$ order accuracy is preserved by the
-reconstruction.
+$O(\Delta x^{2k-1})$ and therefore $2k-1$ order accuracy is preserved
+by the reconstruction.
 
 If we define
 \begin{equation}
@@ -482,22 +455,19 @@ where
   \alpha_i^r = \frac{\varpi_i^r}{(\epsilon + \sigma_i^r)^p} \for r = 0, \ldots, k-1;
 \end{equation}
 and $\epsilon$ is a positive real number used to avoid dividing by
-zero (usually $\epsilon = 10^{-6}$), $p$ is some power, and
-$\sigma_i^r$ is a measure of the smoothness of the function $v$ in the
-stencil $S^{r,k}_i$; with the smoothnesses $\sigma_i^r$ chosen
+zero (usually $\epsilon = 10^{-6}$), $p$ is some power (usually 2),
+and $\sigma_i^r$ is a measure of the smoothness of the function $v$ in
+the stencil $S^{r,k}_i$; with the smoothnesses $\sigma_i^r$ chosen
 appropriately, then \eqref{eq:omegaclose} is satisfied.
 
-% We use the smoothness measurement presented by Jiang and Shu:
-% \begin{equation}
-%   \label{eq:sigma}
-%   \sigma_i^r = \sum_{l=1}^{k-1} \int_{\xlj}^{\xrj} (\Delta x_j)^{2l-1} \left( \frac{d^l}{dx^l} p_i^r  \right)^2 \;dx
-% \end{equation}
-
-% Note that
-% \begin{align*}
-%   \int_{\xlj}^{\xrj} \left( \frac{d^l}{dx^l} p_i^r  \right)^2 \;dx =
-% \end{align*}
-
+Typically, the smoothness measurement presented by Jiang and Shu is
+used.  They define the smoothness according to
+\begin{equation}
+  \label{eq:sigma}
+  \sigma_i^r = \sum_{l=1}^{k-1} \int_{\xlj}^{\xrj} (\Delta x_j)^{2l-1} \left( \frac{d^l}{dx^l} p_i^r(x)  \right)^2 \;dx
+\end{equation}
+which is the sum of the $L^2$ norms of the derivatives of the
+approximating polynomial.
 
 
 %%
