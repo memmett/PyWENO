@@ -1,4 +1,4 @@
-"""Test reconstruction coefficients on an unstructured grid."""
+"""Test stencil reconstruction coefficients on an unstructured grid."""
 
 import math
 
@@ -7,22 +7,21 @@ import numpy as np
 import pyweno.grid
 import pyweno.stencil
 
+# test function and it's derivative
 
 def f(x):
-    """Test function (quadratic)."""
-
     return 1.0 - x + x*x
+uf = np.frompyfunc(f, 1, 1)
 
 def fp(x):
-    """Derivative of test function."""
-
     return -1.0 + 2.0*x
+ufp = np.frompyfunc(fp, 1, 1)
 
+######################################################################
 
 def test_stencils():
 
     K = range(5, 9)
-
     x = np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5,
                   -1.0, -0.8, -0.6, -0.4,
                   -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3,
@@ -31,11 +30,8 @@ def test_stencils():
     grid = pyweno.grid.Grid(boundaries=x)
 
     # f and f' evaluated at boundaries
-    fbndry = np.zeros(x.size)
-    fpbndry = np.zeros(x.size)
-    for i in range(x.size):
-        fbndry[i]  = f(x[i])
-        fpbndry[i] = fp(x[i])
+    fbndry = uf(x)
+    fpbndry = ufp(x)
 
     # average of f
     fbar = grid.average(f)
@@ -53,12 +49,6 @@ def test_stencils():
             for i in range(k, x.size-k):
                 frcnst[i] = np.dot(stencil.c['left'][i,:], fbar[i-r:i-r+k])
                 fprcnst[i] = np.dot(stencil.c['d|left'][i,:], fbar[i-r:i-r+k])
-
-            print fbndry
-            print frcnst
-
-            print fpbndry
-            print fprcnst
 
             # assert
             d  = fbndry[k:-k] - frcnst[k:-k]

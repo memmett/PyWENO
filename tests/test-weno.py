@@ -8,21 +8,22 @@ import pyweno.grid
 import pyweno.weno
 
 
-def f(x):
-    """Test function (quadratic)."""
+# test function and it's derivative
 
+def f(x):
     return 1.0 - x + x*x
+uf = np.frompyfunc(f, 1, 1)
 
 def fp(x):
-    """Derivative of test function."""
-
     return -1.0 + 2.0*x
+ufp = np.frompyfunc(fp, 1, 1)
 
+
+######################################################################
 
 def test_weno():
 
     K = range(3, 5)
-
     x = np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5,
                   -1.0, -0.8, -0.6, -0.4,
                   -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3,
@@ -31,35 +32,26 @@ def test_weno():
     grid = pyweno.grid.Grid(boundaries=x)
 
     # f and f' evaluated at boundaries
-    fbndry = np.zeros(x.size)
-    fpbndry = np.zeros(x.size)
-    for i in range(x.size):
-        fbndry[i]  = f(x[i])
-        fpbndry[i] = fp(x[i])
+    fbndry = uf(x)
+    fpbndry = ufp(x)
 
-    # average of f
+    # average of f (we're testing striding too, hence the extra component)
     fbar = np.zeros((3,grid.N))
     fbar[0,:] = grid.average(f)
 
     for k in K:
         sigma = np.zeros((grid.N+1,k))
         weno = pyweno.weno.WENO(grid=grid, order=k)
-        weno.reconstruction('left')
-        weno.reconstruction('d|left')
+        weno.precompute_reconstruction('left')
+        weno.precompute_reconstruction('d|left')
 
         # f reconstructed at boundaries
         frcnst = np.zeros((x.size,3))
         fprcnst = np.zeros((x.size,3))
 
-        weno.smoothness(fbar[0,:], sigma)
-        weno.reconstruct(fbar[0,:], 'left', sigma, frcnst[:,0])
-        weno.reconstruct(fbar[0,:], 'd|left', sigma, fprcnst[:,0])
-
-        print fbndry
-        print frcnst
-
-#        print fpbndry
-#        print fprcnst
+        weno.smoothness(fbar[0,:])
+        weno.reconstruct(fbar[0,:], 'left', frcnst[:,0])
+        weno.reconstruct(fbar[0,:], 'd|left', fprcnst[:,0])
 
         # assert
         d  = fbndry[k+1:-k-1] - frcnst[k+1:-k-1,0]
@@ -69,7 +61,3 @@ def test_weno():
         d  = fpbndry[k+1:-k-1] - fprcnst[k+1:-k-1,0]
         l2 = math.sqrt(np.dot(d, d))
         assert l2 < 1e-10, "WENO (k=%d, d|left) is broken" % (k)
-
-
-if __name__ == '__main__':
-    test_weno()
