@@ -7,16 +7,10 @@ import pyweno.weno
 
 # explicitly define the function f that we will reconstruct ...
 def f(x):
-    """Test function (quadratic)."""
-
     return 1.0 - x + x*x
-
-uf = numpy.frompyfunc(f, 1, 1)
 
 # ... and it's derivative
 def fp(x):
-    """Derivative of test function."""
-
     return -1.0 + 2.0*x
 
 # load the weno reconstructor from the cache
@@ -52,6 +46,7 @@ import matplotlib.pyplot as plt
 
 plt.subplot(2,1,1)
 
+uf = numpy.frompyfunc(f, 1, 1)
 plt.plot(grid.x, uf(grid.x), '-k')
 plt.plot(grid.x[:-1], f_left, 'or')
 plt.plot(grid.x[1:], f_right, 'ob')

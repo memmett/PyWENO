@@ -7,14 +7,10 @@ import pyweno.weno
 
 # explicitly define the function f that we will reconstruct ...
 def f(x):
-    """Test function."""
-
     if x < 0.0:
         return math.sin(x)
 
     return math.cos(x)
-
-uf = numpy.frompyfunc(f, 1, 1)
 
 # load the weno reconstructor from the cache
 k = 3
@@ -50,6 +46,7 @@ import matplotlib.pyplot as plt
 plt.subplot(2,1,1)
 
 x = numpy.linspace(-4.0, 4.0, 1001);
+uf = numpy.frompyfunc(f, 1, 1)
 plt.plot(x, uf(x), '-k')
 
 plt.plot(grid.x[:-1], f_left, 'or')
