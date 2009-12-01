@@ -5,6 +5,19 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
+/*
+ * cweno - python extension module for (faster) weno reconstructions.
+ *         see 'reconstruct' for the good stuff.
+ */
+
+
+/*
+ * dot - compute dot product of vectors u and v
+ *
+ *   * each vector has length n
+ *   * u is contiguous
+ *   * v has stride s
+ */
 double
 dot(double *u, double *v, int n, int s)
 {
@@ -21,12 +34,19 @@ dot(double *u, double *v, int n, int s)
    return d;
 }
 
+/*
+ * alpha - compute alpha given optimal weight w and smoothness
+ *         indicator s
+ */
 double
 alpha(double *w, double *s)
 {
   return *w / ( (10e-6 + *s) * (10e-6 + *s) );
 }
 
+/*
+ * reconstruct - reconstruct a function given its cell averages q
+ */
 PyObject *
 reconstruct(PyObject *self, PyObject *args)
 {
@@ -72,10 +92,9 @@ reconstruct(PyObject *self, PyObject *args)
   }
 
   /*
-   * giv'r
+   * giv'r!
    *
    * indexing:
-   *
    *   - c: cell, shift, point, cell: i, r, l, j
    *   - qr: cell, shift, point: i, r, l
    *   - w: cell, shift: i, r
@@ -90,7 +109,8 @@ reconstruct(PyObject *self, PyObject *args)
   n = PyArray_DIM(c_py, 2);
 
   /*
-   * k order reconstructions
+   * k-order - compute k-order reconstructions qr given q and
+   *           reconstruction coefficients c
    */
 
   q_stride = ((double *) PyArray_GETPTR1(q_py, 1)) - ((double *) PyArray_GETPTR1(q_py, 0));
@@ -112,8 +132,10 @@ reconstruct(PyObject *self, PyObject *args)
   }
 
   /*
-   * weights
+   * weights - compute weights wr given optimal weights w and smoothness
+   *           indicators s
    */
+
   w  = (double *) PyArray_GETPTR2(w_py, k, 0);
   s  = (double *) PyArray_GETPTR2(s_py, k, 0);
 
@@ -139,7 +161,8 @@ reconstruct(PyObject *self, PyObject *args)
   }
 
   /*
-   * 2k-1 order reconstructions
+   * 2k-1 order - build 2k-1 order reconstructions qs given k-order
+   *              recontructions qr and weights wr
    */
 
   q_stride = ((double *) PyArray_GETPTR2(qs_py, k, 1)) - ((double *) PyArray_GETPTR2(qs_py, k, 0));
@@ -163,11 +186,17 @@ reconstruct(PyObject *self, PyObject *args)
   /*
    * done
    */
+
   Py_INCREF(Py_None);
   return Py_None;
 }
 
-static PyMethodDef CWENOMethods[] = {
+
+/*
+ * init this extension module...
+ */
+
+static PyMethodDef cwenomethods[] = {
   {"reconstruct", reconstruct, METH_VARARGS, "XXX"},
   {NULL, NULL, 0, NULL}
 };
@@ -175,6 +204,6 @@ static PyMethodDef CWENOMethods[] = {
 PyMODINIT_FUNC
 initcweno(void)
 {
-  (void) Py_InitModule("cweno", CWENOMethods);
+  (void) Py_InitModule("cweno", cwenomethods);
   import_array();
 }

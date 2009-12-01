@@ -5,8 +5,15 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
-/************************************************************************/
+/*
+ * csmoothness - python extension module for (faster) smoothness
+ *               indicators.
+ */
 
+
+/*
+ * sigma - compute smoothness indicators s given cell averages f
+ */
 PyObject *
 sigma(PyObject *self, PyObject *args)
 {
@@ -35,17 +42,20 @@ sigma(PyObject *self, PyObject *args)
   }
 
   /*
-   * giv'r
+   * giv'r!
+   *
+   * indexing:
+   *   - beta: cell, shift, cell, cell: i, r, m, n
+   *   - sigma: cell, shift: i, r
    */
 
   N = PyArray_DIM(beta_py, 0);
   k = PyArray_DIM(beta_py, 1);
 
   /*
-   * compute sigma (smoothness indicators)
+   * compute smoothness indicators sigma given smoothness indicator
+   * coefficients beta
    *
-   *   - beta is indexed as: beta[i,r,m,n]
-   *   - sigma is indexed as: sigma[i,r]
    */
 
   for (i=k; i<N-k; i++) {
@@ -72,13 +82,17 @@ sigma(PyObject *self, PyObject *args)
   /*
    * done
    */
+
   Py_INCREF(Py_None);
   return Py_None;
 }
 
-/************************************************************************/
 
-static PyMethodDef CSmoothnessMethods[] = {
+/*
+ * init this extension module...
+ */
+
+static PyMethodDef csmoothnessmethods[] = {
   {"sigma", sigma, METH_VARARGS, "XXX"},
   {NULL, NULL, 0, NULL}
 };
@@ -86,6 +100,6 @@ static PyMethodDef CSmoothnessMethods[] = {
 PyMODINIT_FUNC
 initcsmoothness(void)
 {
-  (void) Py_InitModule("csmoothness", CSmoothnessMethods);
+  (void) Py_InitModule("csmoothness", csmoothnessmethods);
   import_array();
 }
