@@ -414,14 +414,20 @@ class WENO(object):
         pyweno.cweno.weights(self.sigma, self.w[key], self.wr[key])
 
 
-    def reconstruct(self, q, key, qs, weights=key):
+    def reconstruct(self, q, key, qs, weights=None):
         """Reconstruct *q* at the points specified by *key* and store
-           result in *qs*.  Use the weights corresponding to the key
-           *weights*.
+           result in *qs*.
+
+           Use the weights corresponding to the key *weights*.  If
+           *weights* is none, compute the weights associated with they
+           key *key* and use them.
         """
 
+        if weights is None:
+            self.weights(key)
+            weights = key
+
         pyweno.cweno.reconstruct(q,
-                                 self.sigma,
                                  self.c[key],
                                  self.wr[weights],
                                  self.qr[key],
