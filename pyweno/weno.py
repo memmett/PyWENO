@@ -88,9 +88,8 @@ class WENO(object):
 
     c = {}                              # reconstruction coeffs
     w = {}                              # optimal weights
-
-    _q = {}                             # pre-allocated storage
-    _w = {}                             # pre-allocated storage
+    wr = {}                             # weights
+    qr = {}                             # working space
 
     _omega_error = {}                   # maximum error produced by optimal weights
 
@@ -205,8 +204,8 @@ class WENO(object):
         k = shape[1]
         n = shape[2]
 
-        self._q[key] = np.zeros((N,k,n))
-        self._w[key] = np.zeros((N,k))
+        self.qr[key] = np.zeros((N,k,n))
+        self.wr[key] = np.zeros((N,k))
 
 
     ##################################################################
@@ -408,21 +407,22 @@ class WENO(object):
         pyweno.csmoothness.sigma(q, self.beta, self.sigma)
 
 
-    def reconstruct(self, q, key, qs):
+    def weights(self, key):
+        """Compute weights associated with last set of smoothness
+           indicators computed."""
+
+        pyweno.cweno.weights(self.sigma, self.w[key], self.wr[key])
+
+
+    def reconstruct(self, q, key, qs, weights=key):
         """Reconstruct *q* at the points specified by *key* and store
-           result in *qs*.
+           result in *qs*.  Use the weights corresponding to the key
+           *weights*.
         """
-
-        c = self.c[key]
-        w = self.w[key]
-
-        _q = self._q[key]
-        _w = self._w[key]
 
         pyweno.cweno.reconstruct(q,
                                  self.sigma,
                                  self.c[key],
-                                 self.w[key],
-                                 self._q[key],
-                                 self._w[key],
+                                 self.wr[weights],
+                                 self.qr[key],
                                  qs)
