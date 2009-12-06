@@ -50,7 +50,7 @@ alpha(double *w, double *s)
  * weights - compute weights wr given optimal weights w and smoothness
  *           indicators s
  */
-void
+PyObject *
 weights(PyObject *self, PyObject *args)
 {
   double *s, *w, *wr;
@@ -117,6 +117,13 @@ weights(PyObject *self, PyObject *args)
       wr++;
     }
   }
+
+  /*
+   * done
+   */
+
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 
@@ -126,8 +133,8 @@ weights(PyObject *self, PyObject *args)
 PyObject *
 reconstruct(PyObject *self, PyObject *args)
 {
-  double *q, *s, *c, *qr, *wr, *qs;
-  PyObject *q_py, *s_py, *c_py, *qr_py, *wr_py, *qs_py;
+  double *q, *c, *qr, *wr, *qs;
+  PyObject *q_py, *c_py, *qr_py, *wr_py, *qs_py;
 
   long int N, i;
   int k, r, n, l;
@@ -138,13 +145,8 @@ reconstruct(PyObject *self, PyObject *args)
    * parse options
    */
 
-  if (! PyArg_ParseTuple(args, "OOOOOO", &q_py, &s_py, &c_py, &wr_py, &qr_py, &qs_py))
+  if (! PyArg_ParseTuple(args, "OOOOO", &q_py, &c_py, &wr_py, &qr_py, &qs_py))
     return NULL;
-
-  if ((PyArray_FLAGS(s_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-    PyErr_SetString(PyExc_TypeError, "s is not contiguous and/or aligned");
-    return NULL;
-  }
 
   if ((PyArray_FLAGS(c_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
     PyErr_SetString(PyExc_TypeError, "c is not contiguous and/or aligned");
