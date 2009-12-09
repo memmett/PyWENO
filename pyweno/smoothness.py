@@ -14,7 +14,7 @@ def _poly_approximator(k, r, x):
     # define xi
     xi = sympy.var('xi')
 
-    # define x_j and V_j
+    # define f_j
     f = []
     for j in range(-r, -r+k+1):
         f.append(sympy.var('f_%d' % (j)))
