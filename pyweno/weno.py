@@ -86,10 +86,10 @@ class WENO(object):
 
     """
 
-    c = {}                              # reconstruction coeffs
-    w = {}                              # optimal weights
-    wr = {}                             # weights
-    qr = {}                             # working space
+    c = {}                              # dictionary of reconstruction coeffs
+    w = {}                              # dictionary of optimal weights
+    wr = None                           # current weights
+    qr = {}                             # dictionary of working space
 
     _omega_error = {}                   # maximum error produced by optimal weights
 
@@ -113,6 +113,13 @@ class WENO(object):
             self._init_with_grid(grid, order, smoothness)
         else:
             self._init_with_cache(cache, order, format)
+
+        # allocate remaining buffers
+        N = self.grid.size
+        k = self.order
+
+        self.wr = np.zeros((N,k))
+        self.sigma = np.zeros((N,k))
 
 
     def _init_with_cache(self, cache, order, format):
@@ -174,11 +181,6 @@ class WENO(object):
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
 
-        # allocate sigma
-        N = self.grid.size
-        k = self.order
-
-        self.sigma = np.zeros((N,k))
 
     def _init_with_grid(self, grid, order, smoothness):
 
@@ -188,11 +190,8 @@ class WENO(object):
         N = self.grid.size
         k = self.order
 
-        # allocate beta, sigma
-        self.sigma = np.zeros((N,k))
+        # allocate beta and precompute
         self.beta = np.zeros((N,k,2*k-1,2*k-1))
-
-        # pre-compute beta
         pyweno.smoothness.beta(smoothness, self.grid, self.order, self.beta)
 
 
@@ -205,7 +204,6 @@ class WENO(object):
         n = shape[2]
 
         self.qr[key] = np.zeros((N,k,n))
-        self.wr[key] = np.zeros((N,k))
 
 
     ##################################################################
@@ -411,10 +409,10 @@ class WENO(object):
         """Compute weights associated with last set of smoothness
            indicators computed."""
 
-        pyweno.cweno.weights(self.sigma, self.w[key], self.wr[key])
+        pyweno.cweno.weights(self.sigma, self.w[key], self.wr)
 
 
-    def reconstruct(self, q, key, qs, weights=None):
+    def reconstruct(self, q, key, qs, compute_weights=True):
         """Reconstruct *q* at the points specified by *key* and store
            result in *qs*.
 
@@ -423,12 +421,11 @@ class WENO(object):
            key *key* and use them.
         """
 
-        if weights is None:
+        if compute_weights:
             self.weights(key)
-            weights = key
 
         pyweno.cweno.reconstruct(q,
                                  self.c[key],
-                                 self.wr[weights],
+                                 self.wr,
                                  self.qr[key],
                                  qs)
