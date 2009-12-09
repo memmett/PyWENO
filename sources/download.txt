@@ -1,10 +1,10 @@
 Downloading and installing
 ==========================
 
-To install PyWENO, please download, build, and install from source
-(there aren't any prebuilt packages).
+To install PyWENO, please download, build, and install from source or
+install a pre-built package.
 
-Packaged source distributions are available on the
+Packaged source and binary distributions are available on the
 `PyWENO download page`_.
 
 The latest source distribution is available in either zip_ or tar_
@@ -29,4 +29,3 @@ Python Modules`_ document and the setuptools_ documentation.
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
 .. _`PyWENO download page`: http://github.com/memmett/PyWENO/downloads
-.. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/

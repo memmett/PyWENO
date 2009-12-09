@@ -20,3 +20,4 @@ pyweno.grid.Grid.average method reference.html
 pyweno.weno.WENO.smoothness method reference.html
 pyweno.weno.WENO.reconstruct method reference.html
 pyweno.smoothness.beta function reference.html
+pyweno.weno.WENO.weights method reference.html

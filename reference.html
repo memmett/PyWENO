@@ -109,14 +109,24 @@ for reconstructing at the points specified by <em>key</em>.</p>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.reconstruct">
-<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
-<dd>Reconstruct <em>q</em> at the points specified by <em>key</em> and store
-result in <em>qs</em>.</dd></dl>
+<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em>, <em>compute_weights=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstruct <em>q</em> at the points specified by <em>key</em> and store
+result in <em>qs</em>.</p>
+<p>Use the weights corresponding to the key <em>weights</em>.  If
+<em>weights</em> is none, compute the weights associated with they
+key <em>key</em> and use them.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.smoothness">
 <tt class="descname">smoothness</tt><big>(</big><em>q</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.smoothness" title="Permalink to this definition">¶</a></dt>
 <dd>Compute smoothness indicators of <em>q</em>.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.weno.WENO.weights">
+<tt class="descname">weights</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.weights" title="Permalink to this definition">¶</a></dt>
+<dd>Compute weights associated with last set of smoothness
+indicators computed.</dd></dl>
 
 </dd></dl>
 

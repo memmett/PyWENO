@@ -8,7 +8,8 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 **News**
 
 * November 26 2009: `PyWENO 0.3.a1`_ released.
-* Fall 2009: PyWENO is in early development, and is a bit rough around the edges.
+* Fall 2009: PyWENO is in early development, and is a bit rough around
+  the edges.
 
 
 Documentation
@@ -18,7 +19,7 @@ Documentation
 
 * :doc:`Tutorial <tutorial>` - basic usage.
 * :doc:`Examples <examples>` - more detailed examples.
-* :doc:`Reference <reference>` - API documentation.
+* :doc:`Reference <reference>` - reference documentation.
 
 .. * :download:`Maths <weno.pdf>` - the maths behind WENO
 
@@ -41,7 +42,7 @@ PyWENO is designed to:
   runs).
 
 * Be fast (except for pre-computing).  The time sensitive routines
-  that would appear in loops are implemented in C.
+  (eg, that might appear in loops) are implemented in C.
 
 * Be easy to use.
 
