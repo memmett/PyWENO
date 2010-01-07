@@ -134,7 +134,14 @@ class WENO(object):
             try:
                 k_sgrp = hdf['weno/k%d' % (self.order)]
 
+                dst = k_sgrp['beta']
+                self.beta = np.zeros(dst.shape)
+                self.beta[:,:,:,:] = dst[:,:,:,:]
+
                 for key in k_sgrp:
+
+                    if key == 'beta':
+                        continue
 
                     dst = k_sgrp[key + '/c']
                     self.c[key] = np.zeros(dst.shape)
@@ -145,10 +152,6 @@ class WENO(object):
                     self.w[key][:,:] = dst[:,:]
 
                     self._pre_allocate_key(key)
-
-                dst = k_sgrp['beta']
-                self.beta = np.zeros(dst.shape)
-                self.beta[:,:,:,:] = dst[:,:,:,:]
 
             finally:
                 hdf.close()
