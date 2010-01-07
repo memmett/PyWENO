@@ -347,10 +347,10 @@ referred to is formal.  That is, it is defined as the accuracy
 determined by the local error in the smooth regions of the function.
 
 The basic idea of WENO is to use a convex combination of several
-stencils to form the reconstruction of $f$ at the cell boundaries,
-and, if a stencil contains a discontinuity, its weight should be close
-to zero.  In smooth regions, using several stencils will also serve to
-increase the order of accuracy.
+stencils to form the reconstruction of $f$, and, if a stencil contains
+a discontinuity, its weight should be close to zero.  In smooth
+regions, using several stencils will also serve to increase the order
+of accuracy.
 
 Consider the $k$ stencils
 \begin{equation*}

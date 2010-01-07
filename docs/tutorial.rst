@@ -29,7 +29,7 @@ we can reconstruct *f* at the left side of each cell::
   >>> weno5.reconstruct(f_avg, 'left', f_left)
 
 The reconstructed values are stored in ``f_left``, which should be a
-NumPy array.  **Pleate note** that the reconstructed values are not
+NumPy array.  **Please note** that the reconstructed values are not
 returned in a new NumPy array, but are destructively stored in
 ``f_left``.
 
