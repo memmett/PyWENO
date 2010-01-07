@@ -20,8 +20,7 @@ Documentation
 * :doc:`Tutorial <tutorial>` - basic usage.
 * :doc:`Examples <examples>` - more detailed examples.
 * :doc:`Reference <reference>` - reference documentation.
-
-.. * :download:`Maths <weno.pdf>` - the maths behind WENO
+* :download:`Maths <weno.pdf>` - the maths behind WENO
 
 
 **Features**

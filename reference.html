@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>PyWENO Reference &mdash; PyWENO v0.3.a2.dev documentation</title>
-    <link rel="stylesheet" href="static/default.css" type="text/css" />
-    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
@@ -17,8 +17,8 @@
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="static/jquery.js"></script>
-    <script type="text/javascript" src="static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="PyWENO v0.3.a2.dev documentation" href="index.html" />
     <link rel="next" title="PyWENO Examples" href="examples.html" />
     <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
@@ -235,7 +235,7 @@ by itself too.</p>
 <p>The cell averages <em>f_j</em> of a function <em>f</em> can be used to
 approximate the value of <em>f</em> (and its derivatives) according to</p>
 <div class="math">
-<p><img src="images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
+<p><img src="_images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
 </div></p><p>where the coefficients <em>c_j</em> are the <em>reconstruction
 coefficients</em>.  The Stencil class is used to precompute various
 sets of reconstruction coefficients and cache them.</p>
@@ -357,7 +357,7 @@ results in <em>c</em> (indexed as <tt class="docutils literal"><span class="pre"
 <em>d</em>&#8216;th derivative of a function <em>f</em> given its cell averages <em>f_j</em>
 according to</p>
 <div class="math">
-<p><img src="images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
+<p><img src="_images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
 </div></p><p>This function wraps a fast C implementation.</p>
 <p>Arguments:</p>
 <ul class="simple">
@@ -387,7 +387,7 @@ in <em>c</em>.</p>
 <p>In general, the smoothness indicator <em>sigma</em> for the cell <em>i</em>
 and stencil with left shift <em>r</em> is of the form</p>
 <div class="math">
-<p><img src="images/math/a61c300ca3b4bdba287e83cf781c8271ddcc548b.png" alt="\sigma_r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}." />
+<p><img src="_images/math/a61c300ca3b4bdba287e83cf781c8271ddcc548b.png" alt="\sigma_r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}." />
 </div></p><p>There is currently only one smoothness indicator type
 implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></tt>).</p>
 <p><strong>Arguments</strong></p>
@@ -440,7 +440,7 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
                                   title="next chapter">PyWENO Examples</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
-              <li><a href="sources/reference.txt"
+              <li><a href="_sources/reference.txt"
                      rel="nofollow">Show Source</a></li>
             </ul>
           <div id="searchbox" style="display: none">
