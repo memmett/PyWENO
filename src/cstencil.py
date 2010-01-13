@@ -16,7 +16,7 @@
 from textwrap import dedent
 
 # set of k values to generate reconstruction functions for
-K = range(3, 10)
+K = range(3, 9)
 
 
 ######################################################################
@@ -230,6 +230,8 @@ for k in K:
              ''' % {'k': k}))
 
 f.write(dedent('''\
+             default:
+               return NULL;
            }
 
            /*

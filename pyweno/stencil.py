@@ -49,7 +49,10 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
 
     """
 
-    pyweno.cstencil.reconstruction_coeffs(xi, i, r, k, d, x, c)
+    try:
+        pyweno.cstencil.reconstruction_coeffs(xi, i, r, k, d, x, c)
+    except:
+        raise NotImplementedError, "reconstruction coeffs for k = %d not implemented yet" % (k)
 
 
 ######################################################################
