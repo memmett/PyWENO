@@ -40,7 +40,6 @@ def test_weno():
     fbar[0,:] = grid.average(f)
 
     for k in K:
-        sigma = np.zeros((grid.N+1,k))
         weno = pyweno.weno.WENO(grid=grid, order=k)
         weno.precompute_reconstruction('left')
         weno.precompute_reconstruction('d|left')
@@ -61,3 +60,15 @@ def test_weno():
         d  = fpbndry[k+1:-k-1] - fprcnst[k+1:-k-1,0]
         l2 = math.sqrt(np.dot(d, d))
         assert l2 < 1e-10, "WENO (k=%d, d|left) is broken" % (k)
+
+
+######################################################################
+
+
+if __name__ == '__main__':
+    import cProfile as profile
+    import pstats
+
+    profile.run("test_weno()", 'weno.prof')
+    p = pstats.Stats('weno.prof')
+    p.strip_dirs().sort_stats('time', 'cum').print_stats(10)
