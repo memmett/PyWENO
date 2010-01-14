@@ -469,6 +469,58 @@ used.  They define the smoothness according to
 which is the sum of the $L^2$ norms of the derivatives of the
 approximating polynomial.
 
+\newpage
+\subsection{One-sided (up/down wind) reconstructions}
+
+In some situations we may need to impose that some cells be excluded
+from the reconstruction process.  For example, at the front of a
+dam-break flow with a positive front velocity there is a wet-dry
+interface and the dry cells to the right of the front should be
+avoided.
+
+A \emph{left-biased} WENO reconstruction is one in which the weights
+\begin{equation*}
+  \omega_i^r=0 \quad \text{ for } \quad r < s
+\end{equation*}
+where $s>0$ is some parameter that controls how many cells are
+excluded from the reconstruction \eqref{eq:fweno}.  Intuitively, $s$
+is also the number of cells to exlude from the right.
+
+A \emph{right-biased} WENO reconstruction is one in which the weights
+\begin{equation*}
+  \omega_i^r=0 \quad \text{ for } \quad r > k - |s| - 1
+\end{equation*}
+where $s<0$ is some parameter that controls how many cells are
+excluded from the reconstruction \eqref{eq:fweno}.  Intuitively, $|s|$
+is also the number of cell to exclude from the left.
+
+That is, if $s > 0$ the WENO reconstruction will be left-biased and
+reconstructions with $r < s$ will be ignored; if $s<0$ the WENO
+reconstruction will be right-biased and reconstructions with $r > k -
+|s| - 1$ will be ignored.  Once again, we need to determine optimal
+weights for both left- and right-biased reconstructions.
+
+For left-biased reconstructions ($s > 0$), we reconstruct $f(\xi)$ to
+order $2k - s - 1$ using the stencil $S_i^{k-1,\; 2k-s-1}$ to obtain the
+optimal reconstruction coefficients $c^*_j$ (similar to
+\eqref{eq:fopt}).  Therefore, similar to \eqref{eq:omegasys}, we have
+$2k-s-1$ equations
+\begin{equation}
+  \label{eq:left_omegasys}
+  \sum_{l=\max(0,j-k+s+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_l^{k-(j+1)+l} = c_j^*
+    \for j = 0,\ldots,2k-s-2.
+\end{equation}
+
+For right-biased reconstructions ($s < 0$), we reconstruct $f(\xi)$ to
+order $2k - |s| - 1$ using the stencil $S_i^{k-|s|-1,\; 2k-|s|-1}$ to obtain the
+optimal reconstruction coefficients $c^*_j$ (similar to
+\eqref{eq:fopt}).  Therefore, similar to \eqref{eq:omegasys}, we have
+$2k-|s|-1$ equations
+\begin{equation}
+  \label{eq:right_omegasys}
+  \sum_{l=\max(0,j-k+|s|+1)}^{\min(k-1,j)} \omega_i^{k-(j+1)+l} c_l^{k+s-(j+1)+l} = c_j^*
+    \for j = 0,\ldots,2k-|s|-2.
+\end{equation}
 
 %%
 %% appendix

@@ -17,6 +17,7 @@ def fp(x):
     return -1.0 + 2.0*x
 ufp = np.frompyfunc(fp, 1, 1)
 
+
 ######################################################################
 
 def test_stencils():
@@ -58,3 +59,10 @@ def test_stencils():
             d  = fpbndry[k+1:-k] - fprcnst[k+1:-k]
             l2 = math.sqrt(np.dot(d, d))
             assert l2 < 1e-10, "stencil coeffs (k=%d, r=%d, prime) are broken" % (k, r)
+
+
+######################################################################
+
+
+if __name__ == '__main__':
+    test_stencils()

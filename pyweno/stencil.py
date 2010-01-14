@@ -221,7 +221,7 @@ class Stencil(object):
            The reconstruction coeffs *c_j* are computed and stored in
            the instance dictionary *c*.
 
-           Arguments:
+           **Arguments:**
 
            * *key* - key used to store this set of reconstruction coeffs
            * *xi* - callable which returns an array of points within

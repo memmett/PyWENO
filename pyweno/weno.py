@@ -1,13 +1,8 @@
 """PyWENO WENO class.
 
-   Indexing conventions:
+   In the PyWENO documentation, the first cell has an index of 1.
 
-     * There are N cells C_i, where i=1,...,N.
-
-     * A quantity X that depends on the cell C_i is indexed as X[i-1].
-
-     * A quantity X that depends on the cell boundary at x_{i-1/2} is
-       indexed as X[i-1].
+   In the PyWENO code, the first cell has an index of 0.
 
 """
 
@@ -27,27 +22,37 @@ import pyweno.cweno
 # private helpers
 #
 
-def _omegaerr(omega, cs, c):
-    """Helper function for computing the sum of squared errors."""
+def _omegaerr(omega, s, cs, c):
+    """Helper function for computing the sum of squared errors.
 
-    n   = cs.shape[0]
-    k   = omega.size
-    err = np.zeros(n*(2*k-1))
+       **Arguments:**
+
+       * *omega* - guess for optimal weights, indexed as omega[r],
+          where r is modified by the biasing
+       * *cs* - order 2k-|s|-1 reconstruction coeffs (c^*), indexed as cs[n,j]
+       * *c* - order k reconstruction coeffs (c^r), indexed as
+          c[r,n,j], where r in unmodified
+
+    """
+
+    err = cs.flatten()
+
+    k = c.shape[2]
+    n = c.shape[1]
 
     for l in xrange(n):
-        for j in xrange(2*k-1):
-            err[l*n+j] = cs[l,j]
+        for j in xrange(2*k-abs(s)-1):
 
-            rl = max(0,j-k+1)
-            ru = min(k-1,j)
+            rl = max(0, j-k+abs(s)+1)
+            ru = min(k-1, j)
+
             for r in xrange(rl,ru+1):
-                err[l*n+j] = err[l*n+j] - omega[k-(j+1)+r] * c[k-(j+1)+r,l,r]
+                err[l*n+j] = err[l*n+j] - omega[k-abs(s)-(j+1)+r] * c[k+min(0,s)-(j+1)+r,l,r]
 
     return np.linalg.norm(err)
 
 def _makecons(j):
     """Helper function for creating optimisation constraints."""
-
     return lambda x: x[j]
 
 
@@ -60,7 +65,34 @@ class WENO(object):
 
     **Basic usage**
 
-    XXX
+    From scratch::
+
+    >>> weno = pyweno.weno.WENO(grid=grid, order=k, shift=r)
+
+    From a cache::
+
+    >>> weno = pyweno.weno.WENO(order=k, cache='mycache.mat')
+
+    Pre-compute reconstruction coefficients and optimal weights at the
+    left and right boundaries::
+
+    >>> weno.precompute_reconstruction('left')
+    >>> weno.precompute_reconstruction('right')
+
+    Given the cell averages ``f_avg`` of an unkown function *f*,
+    reconstruct *f* at the left side of each cell::
+
+    >>> f_left = np.zeros(grid.size)
+    >>> weno.smoothness(f_avg)
+    >>> weno.reconstruct(f_avg, 'left', f_left)
+
+    Cache to a MATLAB file (through SciPy)::
+
+    >>> weno.cache('mycache.mat')
+
+    Cache to an HDF5 file (through H5PY)::
+
+    >>> weno.cache('mycache.h5', format='h5py')
 
     **Instance variables**
 
@@ -213,13 +245,23 @@ class WENO(object):
     # reconstruction
     #
 
-    def precompute_reconstruction(self, key, xi=None):
-        """Precompute reconstruction coefficients and optimal weights
-           for reconstructing at the points specified by *key*.
+    def precompute_reconstruction(self, key, xi=None, s=0):
+        """Precompute reconstruction coefficients and optimal weights.
 
-           If *xi* is None, XXX
+           **Arguments:**
 
-           If *xi* isn't None, XXX
+           * *key* - see pyweno.stencil.reconstruction_coeffs
+           * *xi* - see pyweno.stencil.reconstruction_coeffs
+           * *s* - biasing parameter
+
+           If s > 0 the reconstruction will be left-biased and cells
+           with r < s will be ignored.  If s < 0 the reconstruction
+           will be right-biased and cells with r > k - |s| - 1 will be
+           ignored.
+
+           Intuitively: if s > 0, then s is also the number of cells
+           to exlude from the right; if s < 0, then |s| is also the
+           number of cells to exlude from the left.
 
         """
 
@@ -227,17 +269,18 @@ class WENO(object):
         N = self.grid.size
         k = self.order
 
-        # order 2k-1 coeffs (c^*)
-        stncl = pyweno.stencil.Stencil(grid=grid, order=2*k-1, shift=k-1)
+        # order 2k-abs(s)-1 coeffs (c^*)
+        stncl = pyweno.stencil.Stencil(grid=grid, order=2*k-abs(s)-1, shift=k+min(0,s)-1)
         stncl.reconstruction_coeffs(key, xi)
 
-        shape = stncl.c[key].shape      # (N, 2k-1) or (N, n, 2k-1)
+        # XXX: this is annoying.  impose n=1 on stencils?
+        shape = stncl.c[key].shape      # (N, 2k-abs(s)-1) or (N, n, 2k-abs(s)-1)
         if (len(shape)) > 2:
             n = shape[1]
             cstar = stncl.c[key]
         else:
             n = 1
-            cstar = np.empty((N,1,2*k-1))
+            cstar = np.zeros((shape[0],n,shape[1]))
             cstar[:,0,:] = stncl.c[key][:,:]
 
         # order k coeffs: c[i,r,l,j]
@@ -257,15 +300,15 @@ class WENO(object):
 
             #### structured grid, only do one cell
 
-            wc = np.zeros(k)
+            wc = np.zeros(k-abs(s))
             merr = 0.0
 
-            f = lambda x: _omegaerr(x, cstar[N/2,:,:], c[N/2,:,:,:])
-            x0 = 0.5 * np.ones(k)
+            f = lambda x: _omegaerr(x, s, cstar[N/2,:,:], c[N/2,:,:,:])
+            x0 = 0.5 * np.ones(k-abs(s))
 
             # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
-            cons = list(range(k))
-            for j in xrange(k):
+            cons = list(range(k-abs(s)))
+            for j in xrange(k-abs(s)):
                 cons[j] = _makecons(j)
             cons.append(lambda x: 1.0 - sum(x))
             cons.append(lambda x: sum(x) - 1.0)
@@ -273,7 +316,7 @@ class WENO(object):
             wc[:] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
 
             # reset w^r_i to 0.0 if w^r_i <= 1e-12
-            for j in xrange(k):
+            for j in xrange(k-abs(s)):
                 if wc[j] <= 1e-12:
                     wc[j] = 0.0
 
@@ -284,7 +327,7 @@ class WENO(object):
 
             # copy weights to other cells
             for i in xrange(k,N-k):
-                w[i,:] = wc[:]
+                w[i,0-min(0,s):k-abs(s)-min(0,s)] = wc[:]
 
         else:
 
@@ -295,17 +338,17 @@ class WENO(object):
             for i in xrange(k,N-k):
 
                 # function to minimise and initial guess
-                f = lambda x: _omegaerr(x, cstar[i,:,:], c[i,:,:,:])
-                x0 = 0.5 * np.ones(k)
+                f = lambda x: _omegaerr(x, s, cstar[i,:,:], c[i,:,:,:])
+                x0 = 0.5 * np.ones(k - abs(s))
 
                 # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
-                cons = list(range(k))
-                for j in xrange(k):
+                cons = list(range(k-abs(s)))
+                for j in xrange(k-abs(s)):
                     cons[j] = _makecons(j)
                 cons.append(lambda x: 1.0 - sum(x))
                 cons.append(lambda x: sum(x) - 1.0)
 
-                w[i,:] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
+                w[i,0-min(0,s):k-abs(s)-min(0,s)] = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
 
                 # reset w^r_i to 0.0 if w^r_i <= 1e-12
                 for j in xrange(k):
