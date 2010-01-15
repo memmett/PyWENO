@@ -158,8 +158,12 @@ class WENO(object):
 
         self.order = order
 
+        self.c = {}
+        self.w = {}
+
         if format is 'h5py':
             import h5py as h5
+            import re
 
             hdf = h5.File(cache, 'r')
 
@@ -175,13 +179,22 @@ class WENO(object):
                     if key == 'beta':
                         continue
 
-                    dst = k_sgrp[key + '/c']
+                    if key not in self.w:
+                        self.w[key] = {}
+
+                    key_sgrp = k_sgrp[key]
+
+                    dst = key_sgrp['c']
                     self.c[key] = np.zeros(dst.shape)
                     self.c[key][:,:,:,:] = dst[:,:,:,:]
 
-                    dst = k_sgrp[key + '/w']
-                    self.w[key] = np.zeros(dst.shape)
-                    self.w[key][:,:] = dst[:,:]
+                    for e in key_sgrp:
+                        m = re.match(r's(.+)', e)
+                        if m is not None:
+                            s = int(m.group(1))
+                            dst = key_sgrp['s%d/w' % (s)]
+                            self.w[key][s] = np.zeros(dst.shape)
+                            self.w[key][s][:,:] = dst[:,:]
 
                     self._pre_allocate_key(key)
 
@@ -196,16 +209,17 @@ class WENO(object):
 
             mat = sio.loadmat(cache, struct_as_record=True)
 
-            self.c = {}
-            self.w = {}
             for key in mat:
                 m = re.match(r'weno.k(\d+).c.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
                     self.c[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
 
-                m = re.match(r'weno.k(\d+).w.(.+)', key)
+                m = re.match(r'weno.k(\d+).w.(.+).s(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    self.w[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
+                    if m.group(2) not in self.w:
+                        self.w[m.group(2)] = {}
+
+                    self.w[m.group(2)][int(m.group(3))] = np.ascontiguousarray(mat[m.group(0)])
 
             for key in self.c:
                 self._pre_allocate_key(key)
@@ -362,8 +376,11 @@ class WENO(object):
 
 
         # store and pre-allocate
+        if key not in self.w:
+            self.w[key] = {}
+
         self.c[key] = c
-        self.w[key] = w
+        self.w[key][s] = w
         self._omega_error[key] = merr
 
         self._pre_allocate_key(key)
@@ -414,7 +431,10 @@ class WENO(object):
                 for key in self.c:
                     key_sgrp = k_sgrp.create_group(key)
                     key_sgrp.create_dataset('c', data=self.c[key])
-                    key_sgrp.create_dataset('w', data=self.w[key])
+
+                    for s in self.w[key]:
+                        s_sgrp = key_sgrp.create_group('s%d' % (s))
+                        s_sgrp.create_dataset('w', data=self.w[key][s])
 
                 k_sgrp.create_dataset('beta', data=self.beta)
 
@@ -431,7 +451,9 @@ class WENO(object):
 
             for key in self.c:
                 mat['weno.k%d.c.%s' % (k, key)] = self.c[key]
-                mat['weno.k%d.w.%s' % (k, key)] = self.w[key]
+
+                for s in self.w[key]:
+                    mat['weno.k%d.w.%s.s%d' % (k, key, s)] = self.w[key][s]
 
             mat['weno.beta'] = self.beta
 
@@ -451,14 +473,14 @@ class WENO(object):
         pyweno.csmoothness.sigma(q, self.beta, self.sigma)
 
 
-    def weights(self, key):
+    def weights(self, key, s=0):
         """Compute weights associated with last set of smoothness
            indicators computed."""
 
-        pyweno.cweno.weights(self.sigma, self.w[key], self.wr)
+        pyweno.cweno.weights(self.sigma, self.w[key][s], self.wr)
 
 
-    def reconstruct(self, q, key, qs, compute_weights=True):
+    def reconstruct(self, q, key, qs, s=0, compute_weights=True):
         """Reconstruct *q* at the points specified by *key* and store
            result in *qs*.
 
@@ -468,7 +490,7 @@ class WENO(object):
         """
 
         if compute_weights:
-            self.weights(key)
+            self.weights(key, s)
 
         pyweno.cweno.reconstruct(q,
                                  self.c[key],
