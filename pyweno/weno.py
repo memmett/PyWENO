@@ -210,11 +210,11 @@ class WENO(object):
             mat = sio.loadmat(cache, struct_as_record=True)
 
             for key in mat:
-                m = re.match(r'weno.k(\d+).c.(.+)', key)
+                m = re.match(r'weno.k(\d+)\.c\.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
                     self.c[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
 
-                m = re.match(r'weno.k(\d+).w.(.+).s(.+)', key)
+                m = re.match(r'weno.k(\d+)\.w\.(.+)\.s(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
                     if m.group(2) not in self.w:
                         self.w[m.group(2)] = {}
