@@ -56,6 +56,7 @@ setuptools.setup(
     name = "PyWENO",
     version = version,
     packages = ['pyweno'],
+    zip_safe = False,
 
     test_suite = 'nose.collector',
 
