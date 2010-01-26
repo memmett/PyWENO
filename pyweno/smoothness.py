@@ -6,7 +6,7 @@ import numpy as np
 import sympy
 
 
-def _poly_approximator(k, r, x):
+def _poly_approximator(i, r, k, x):
     """Compute symbolic polynomial approximator of order *k* and left
        shift *r* with stencil cell boundaries *x*.
     """
@@ -16,7 +16,7 @@ def _poly_approximator(k, r, x):
 
     # define f_j
     f = []
-    for j in range(-r, -r+k+1):
+    for j in range(-r, -r+k):
         f.append(sympy.var('f_%d' % (j)))
 
     # build polynomial approximator (see weno.pdf)
@@ -38,54 +38,44 @@ def _poly_approximator(k, r, x):
 
                 prod_n = 1
                 for n in ns:
-                    prod_n = prod_n * (xi - x[n])
+                    prod_n = prod_n * (xi - x[i-r+n])
 
                 sum_m = sum_m + prod_n
 
             prod_m = 1
             for m in ms:
-                prod_m = prod_m * (x[l] - x[m])
+                prod_m = prod_m * (x[i-r+l] - x[i-r+m])
 
-            sum_l = sum_l + sum_m / prod_m * (x[j+1] - x[j]) * f[j]
+            sum_l = sum_l + sum_m / prod_m * (x[i-r+j+1] - x[i-r+j]) * f[j]
 
         sum_j = sum_j + sum_l
 
     return sum_j
 
 
-def _jiang_shu(k, x):
+def _jiang_shu(i, r, k, x):
     """Compute symbolic Jiang-Shu smoothness indicators of order *k*
        given the local cell boundaries in *x*.
 
        Arguments:
 
          * *k* - order
-         * *x* - local cell boundaries
-
-       The local cell boundaries around the cell *i* are
-       ``x[i-(k-1):i+k+1]`` where ``x`` contains the global cell
-       boundaries.
+         * *x* - cell boundaries
 
     """
 
     xi = sympy.var('xi')
 
-    # compute symbolic smoothness indicators for each left shift
-    beta = []
-    for r in range(k):
+    # compute symbolic polynomial approximator
+    p = _poly_approximator(i, r, k, x)
 
-        # compute symbolic polynomial approximator
-        p = _poly_approximator(k, r, x[-r+k-1:-r+2*k])
+    # sum L^2 norms of derivatives
+    s = 0
+    for j in range(1, k):
+        pp = (x[i+1] - x[i])**(2*j-1) * sympy.integrate((sympy.diff(p, xi, j))**2, (xi, x[i], x[i+1]))
+        s = s + pp
 
-        # sum L^2 norms of derivatives
-        s = 0
-        for j in range(1, k):
-            pp = (x[k] - x[k-1])**(2*j-1) * sympy.integrate((sympy.diff(p, xi, j))**2, (xi, x[k-1], x[k]))
-            s = s + pp
-
-        beta.append(s)
-
-    return beta
+    return s
 
 
 def beta(smoothness, grid, k, beta):
@@ -120,31 +110,33 @@ def beta(smoothness, grid, k, beta):
         raise NotImplemented, "smoothness indicator '%s' not implemented yet" % (smoothness)
 
     f = []
-    for j in range(-(k-1), k+1):
+    for j in range(-(k-1), k):
         f.append(sympy.var('f_%d' % (j)))
 
     if grid.structured:
 
-        sigma = _sigma(k, grid.x[0:2*k+1])
+        for r in range(k):
 
-        for r, s in enumerate(sigma):
-            for m in range(2*k):
-                for n in range(m, 2*k):
+            s = _sigma(k, r, k, grid.x)
+
+            for m in range(2*k-1):
+                for n in range(m, 2*k-1):
                     c = s.coeff(f[m]*f[n])
                     if c is not None:
                         beta[k,r,m,n] = c
 
-        for i in range(k+1, N-k-1):
+        for i in range(0, N):
             beta[i,:,:,:] = beta[k,:,:,:]
 
     else:
 
-        for i in range(k, N-k-1):
-            sigma = _sigma(k, grid.x[i-(k-1):i+k+1])
+        for i in range(0, N):
+            for r in range(max(0,i-(N-k)), min(i,k-1)+1):
 
-            for r, s in enumerate(sigma):
-                for m in range(2*k):
-                    for n in range(m, 2*k):
+                s = _sigma(i, r, k, grid.x)
+
+                for m in range(2*k-1):
+                    for n in range(m, 2*k-1):
                         c = s.coeff(f[m]*f[n])
                         if c is not None:
                             beta[i,r,m,n] = c

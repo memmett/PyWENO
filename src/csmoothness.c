@@ -55,15 +55,59 @@ sigma(PyObject *self, PyObject *args)
   /*
    * compute smoothness indicators sigma given smoothness indicator
    * coefficients beta
-   *
    */
 
+  /* cells at the left edge of the domain */
+  for (i=0; i<k; i++) {
+    for (r=0; r<=i; r++) {
+
+      sum = 0.0;
+      for (m=k-r-1; m<2*k-r-1; m++) {
+        for (n=m; n<2*k-r-1; n++) {
+
+          beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
+          fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
+          fn = (double *) PyArray_GETPTR1(f_py, i-(k-1)+n);
+
+          sum += (*beta) * (*fm) * (*fn);
+        }
+      }
+
+      sigma = (double *) PyArray_GETPTR2(sigma_py, i, r);
+      *sigma = sum;
+
+    }
+  }
+
+  /* interior cells */
   for (i=k; i<N-k; i++) {
     for (r=0; r<k; r++) {
 
       sum = 0.0;
-      for (m=0; m<2*k-1; m++) {   /* XXX: this can be faster */
-        for (n=m; n<2*k-1; n++) { /* XXX: this can be faster */
+      for (m=k-r-1; m<2*k-r-1; m++) {
+        for (n=m; n<2*k-r-1; n++) {
+
+          beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
+          fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
+          fn = (double *) PyArray_GETPTR1(f_py, i-(k-1)+n);
+
+          sum += (*beta) * (*fm) * (*fn);
+        }
+      }
+
+      sigma = (double *) PyArray_GETPTR2(sigma_py, i, r);
+      *sigma = sum;
+
+    }
+  }
+
+  /* cells at the right edge of the domain */
+  for (i=N-k; i<N; i++) {
+    for (r=i-(N-k); r<k; r++) {
+
+      sum = 0.0;
+      for (m=k-r-1; m<2*k-r-1; m++) {
+        for (n=m; n<2*k-r-1; n++) {
 
           beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
           fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
