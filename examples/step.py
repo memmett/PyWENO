@@ -16,7 +16,7 @@ def f(x):
 x = numpy.linspace(-1.0, 1.0, 21)
 grid = pyweno.grid.Grid(x)
 
-weno = pyweno.weno.WENO(order=5, grid=grid)
+weno = pyweno.weno.WENO(order=4, grid=grid)
 weno.precompute_reconstruction('left')
 weno.precompute_reconstruction('right')
 
@@ -60,11 +60,10 @@ plt.plot(grid.centres(), weno.sigma[:,0], 'o')
 plt.plot(grid.centres(), weno.sigma[:,1], 'o')
 plt.plot(grid.centres(), weno.sigma[:,2], 'o')
 plt.plot(grid.centres(), weno.sigma[:,3], 'o')
-plt.plot(grid.centres(), weno.sigma[:,4], 'o')
 
 plt.ylabel('sigma')
 plt.xlabel('x')
-plt.legend(['r=0', 'r=1', 'r=2', 'r=3', 'r=4'])
+plt.legend(['r=0', 'r=1', 'r=2', 'r=3'])
 
 plt.savefig('step.png', format='png')
 
