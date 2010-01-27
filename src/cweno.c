@@ -5,6 +5,9 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 /*
  * cweno - python extension module for (faster) weno reconstructions.
  *         see 'reconstruct' for the good stuff.
@@ -48,27 +51,29 @@ alpha(double *w, double *s)
 
 /*
  * weights - compute weights wr given optimal weights w and smoothness
- *           indicators s
+ *           indicators sigma
+ *
+ * NOTE: the optimal weights have to be compatible with imin and imax
  */
 PyObject *
 weights(PyObject *self, PyObject *args)
 {
-  double *s, *w, *wr;
-  PyObject *s_py, *w_py, *wr_py;
+  double *sigma, *w, *wr;
+  PyObject *sigma_py, *w_py, *wr_py;
 
-  long int N, i;
-  int k, r;
+  long int N, i, imin, imax;
+  int k, r, rmin, rmax;
   double sum_alpha;
 
   /*
    * parse options
    */
 
-  if (! PyArg_ParseTuple(args, "OOO", &s_py, &w_py, &wr_py))
+  if (! PyArg_ParseTuple(args, "llOOO", &imin, &imax, &sigma_py, &w_py, &wr_py))
     return NULL;
 
-  if ((PyArray_FLAGS(s_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
-    PyErr_SetString(PyExc_TypeError, "s is not contiguous and/or aligned");
+  if ((PyArray_FLAGS(sigma_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+    PyErr_SetString(PyExc_TypeError, "sigma is not contiguous and/or aligned");
     return NULL;
   }
 
@@ -86,7 +91,7 @@ weights(PyObject *self, PyObject *args)
    * giv'r!
    *
    * indexing:
-   *   - s: cell, shift: i, r
+   *   - sigma: cell, shift: i, r
    *   - w: cell, shift: i, r
    *   - wr: cell, shift: i, r
    */
@@ -94,25 +99,28 @@ weights(PyObject *self, PyObject *args)
   N = PyArray_DIM(w_py, 0);
   k = PyArray_DIM(w_py, 1);
 
-  w  = (double *) PyArray_GETPTR2(w_py, k, 0);
-  s  = (double *) PyArray_GETPTR2(s_py, k, 0);
-
-  for (i=k; i<N-k; i++) {
+  for (i=imin; i<=imax; i++) {
     sum_alpha = 0.0;
 
-    wr = (double *) PyArray_GETPTR2(wr_py, i, 0);
-    for (r=0; r<k; r++) {
-      *wr = alpha(w, s);
+    rmin = max(0, i-(N-k)-1);
+    rmax = min(k-1, i);
+
+    w = (double *) PyArray_GETPTR2(w_py, i, rmin);
+    wr = (double *) PyArray_GETPTR2(wr_py, i, rmin);
+    sigma = (double *) PyArray_GETPTR2(sigma_py, i, rmin);
+
+    for (r=rmin; r<=rmax; r++) {
+      *wr = alpha(w, sigma);
 
       sum_alpha += *wr;
 
       wr++;
       w++;
-      s++;
+      sigma++;
     }
 
-    wr = (double *) PyArray_GETPTR2(wr_py, i, 0);
-    for (r=0; r<k; r++) {
+    wr = (double *) PyArray_GETPTR2(wr_py, i, rmin);
+    for (r=rmin; r<=rmax; r++) {
       *wr /= sum_alpha;
       wr++;
     }
@@ -129,6 +137,8 @@ weights(PyObject *self, PyObject *args)
 
 /*
  * reconstruct - reconstruct a function given its cell averages q
+ *
+ * NOTE: imin and imax have to be compatible with s
  */
 PyObject *
 reconstruct(PyObject *self, PyObject *args)
@@ -136,8 +146,9 @@ reconstruct(PyObject *self, PyObject *args)
   double *q, *c, *qr, *wr, *qs;
   PyObject *q_py, *c_py, *qr_py, *wr_py, *qs_py;
 
-  long int N, i;
-  int k, r, n, l;
+  long int N, i, imin, imax;
+  int k, r, s, n, l;
+  int rmin, rmax;
 
   int q_stride;
 
@@ -145,7 +156,7 @@ reconstruct(PyObject *self, PyObject *args)
    * parse options
    */
 
-  if (! PyArg_ParseTuple(args, "OOOOO", &q_py, &c_py, &wr_py, &qr_py, &qs_py))
+  if (! PyArg_ParseTuple(args, "OillOOOO", &q_py, &s, &imin, &imax, &c_py, &wr_py, &qr_py, &qs_py))
     return NULL;
 
   if ((PyArray_FLAGS(c_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
@@ -185,12 +196,15 @@ reconstruct(PyObject *self, PyObject *args)
 
   q_stride = ((double *) PyArray_GETPTR1(q_py, 1)) - ((double *) PyArray_GETPTR1(q_py, 0));
 
-  c  = (double *) PyArray_GETPTR4(c_py,  k, 0, 0, 0);
-  qr = (double *) PyArray_GETPTR3(qr_py, k, 0, 0);
+  for (i=imin; i<=imax; i++) {
+    rmin = max(0, s);
+    rmax = min(k-1+s, k-1);
 
-  for (i=k; i<N-k; i++) {
-    for (r=0; r<k; r++) {
+    for (r=rmin; r<rmax+1; r++) {
       q = (double *) PyArray_GETPTR1(q_py, i-r);
+
+      c = (double *) PyArray_GETPTR4(c_py,  i, r, 0, 0);
+      qr = (double *) PyArray_GETPTR3(qr_py, i, r, 0);
 
       for (l=0; l<n; l++) {
         *qr = dot(c, q, k, q_stride);
@@ -204,13 +218,18 @@ reconstruct(PyObject *self, PyObject *args)
   /*
    * 2k-1 order - build 2k-1 order reconstructions qs given k-order
    *              recontructions qr and weights wr
+   *
+   * NOTE: we assume all k-order reconstructions (ie, r=0,...,k-1) are
+   *       present regardless of the biasing parameter s.  instead, if
+   *       biasing is being used, the appropriate weights are zero
+   *       (see weno.py).
    */
 
-  q_stride = ((double *) PyArray_GETPTR2(qs_py, k, 1)) - ((double *) PyArray_GETPTR2(qs_py, k, 0));
+  q_stride = ((double *) PyArray_GETPTR2(qs_py, imin, 1)) - ((double *) PyArray_GETPTR2(qs_py, imin, 0));
 
-  wr = (double *) PyArray_GETPTR2(wr_py, k, 0);
+  wr = (double *) PyArray_GETPTR2(wr_py, imin, 0);
 
-  for (i=k; i<N-k; i++) {
+  for (i=imin; i<=imax; i++) {
     qs = (double *) PyArray_GETPTR2(qs_py, i, 0);
     qr = (double *) PyArray_GETPTR3(qr_py, i, 0, 0);
 
