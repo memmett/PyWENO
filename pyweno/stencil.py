@@ -94,7 +94,7 @@ class Stencil(object):
 
     From a cache::
 
-    >>> stencil = pyweno.stencil.Stencil(orker=k, shift=r, cache='mycache.mat')
+    >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, cache='mycache.mat')
 
     Pre-compute reconstruction coefficients at the left and right boundaries::
 
@@ -103,7 +103,7 @@ class Stencil(object):
 
     Reconstruct a function at the left boundaries::
 
-    >>> c = stencil.c['left'][i,:]
+    >>> c = stencil.c['left'][i,0,:]
     >>> v_left = numpy.dot(c, v_avg[i-r:i-r+k])
 
     Cache to a MATLAB file (through SciPy)::
@@ -162,6 +162,9 @@ class Stencil(object):
         self.shift = shift
         self.r     = shift
 
+        if (shift > self.k - 1) or (shift < 0):
+            raise ValueError, 'invalid shift'
+
         # initialise
         self.c = {}
 
@@ -192,10 +195,7 @@ class Stencil(object):
             for key in r_sgrp:
                 dst = r_sgrp[key + '/c']
                 self.c[key] = np.zeros(dst.shape)
-                if len(dst.shape) > 2:
-                    self.c[key][:,:,:] = dst[:,:,:]
-                else:
-                    self.c[key][:,:] = dst[:,:]
+                self.c[key][:,:,:] = dst[:,:,:]
 
             hdf.close()
 
@@ -209,7 +209,7 @@ class Stencil(object):
             for key in mat:
                 m = re.match(r'stencil.k(\d+).r(\d+).(.+)', key)
                 if (m is not None) and (int(m.group(1)) == k) and (int(m.group(2)) == r):
-                    self.c[m.group(3)] = mat[m.group(0)]
+                    self.c[m.group(3)] = np.ascontiguousarray(mat[m.group(0)])
 
         else:
             raise ValueError, "cache format '%s' not supported" % (format)
@@ -294,12 +294,12 @@ class Stencil(object):
         # compute reconstruction coeffs
         # XXX: structred grid
         if n == 1:
-            c = np.zeros((N,k))
-            for i in xrange(k,N-k+1):
-                reconstruction_coeffs(xi(i), i, r, k, x, c[i,:], d)
+            c = np.zeros((N,n,k))
+            for i in xrange(r,N-k+r+1):
+                reconstruction_coeffs(xi(i), i, r, k, x, c[i,0,:], d)
         else:
             c = np.zeros((N,n,k))
-            for i in xrange(k,N-k+1):
+            for i in xrange(r,N-k+r+1):
                 for l, z in enumerate(xi(i)):
                     reconstruction_coeffs(z, i, r, k, x, c[i,l,:], d)
 
