@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Reference &mdash; PyWENO v0.3.a2.dev documentation</title>
+    <title>PyWENO Reference &mdash; PyWENO v0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.3.a2.dev',
+        VERSION:     '0.4.0',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.3.a2.dev documentation" href="index.html" />
+    <link rel="top" title="PyWENO v0.4.0 documentation" href="index.html" />
     <link rel="next" title="PyWENO Examples" href="examples.html" />
     <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.3.a2.dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -58,7 +58,35 @@
 class </em><tt class="descclassname">pyweno.weno.</tt><tt class="descname">WENO</tt><big>(</big><em>order=3</em>, <em>cache=None</em>, <em>format='mat'</em>, <em>smoothness='jiang_shu'</em>, <em>grid=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO" title="Permalink to this definition">¶</a></dt>
 <dd><p>Weighted Essentially Non-Oscillatory reconstruction class.</p>
 <p><strong>Basic usage</strong></p>
-<p>XXX</p>
+<p>From scratch:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>From a cache:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Pre-compute reconstruction coefficients and optimal weights at the
+left and right boundaries:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Given the cell averages <tt class="docutils literal"><span class="pre">f_avg</span></tt> of an unkown function <em>f</em>,
+reconstruct <em>f</em> at the left side of each cell:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cache to a MATLAB file (through SciPy):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Cache to an HDF5 file (through H5PY):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;h5py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><strong>Instance variables</strong></p>
 <ul class="simple">
 <li><em>grid</em>  - spatial grid</li>
@@ -101,20 +129,49 @@ preserved.</p>
 <dl class="method">
 <dt id="pyweno.weno.WENO.precompute_reconstruction">
 <tt class="descname">precompute_reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.precompute_reconstruction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Precompute reconstruction coefficients and optimal weights
-for reconstructing at the points specified by <em>key</em>.</p>
-<p>If <em>xi</em> is None, XXX</p>
-<p>If <em>xi</em> isn&#8217;t None, XXX</p>
+<dd><p>Precompute reconstruction coefficients and optimal weights.</p>
+<p><strong>Arguments:</strong></p>
+<ul class="simple">
+<li><em>key</em> - see pyweno.stencil.reconstruction_coeffs</li>
+<li><em>xi</em> - see pyweno.stencil.reconstruction_coeffs</li>
+</ul>
+<p>In this function, s is the biasing parameter.  If s &gt; 0 the
+reconstruction will be left-biased and cells with r &lt; s
+will be ignored.  If s &lt; 0 the reconstruction will be
+right-biased and cells with r &gt; k - <a href="#id1"><span class="problematic" id="id2">|s|</span></a> - 1 will be
+ignored.</p>
+<p>Intuitively: if s &gt; 0, then s is also the number of cells
+to exlude from the right; if s &lt; 0, then <a href="#id3"><span class="problematic" id="id4">|s|</span></a> is also the
+number of cells to exlude from the left.</p>
+<p>The biasing parameter s takes values from -(k-1) to (k-1).
+There are 2k-1 possible values of s.  An index of 0 for s
+corresponds to a values of -(k-1) for s (ie, s_value =
+s_index - (k-1)).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.reconstruct">
-<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em>, <em>compute_weights=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em>, <em>s=0</em>, <em>imin=0</em>, <em>imax=-1</em>, <em>compute_weights=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reconstruct <em>q</em> at the points specified by <em>key</em> and store
 result in <em>qs</em>.</p>
+<p><strong>Arguments:</strong></p>
+<ul class="simple">
+<li><em>q</em> - cell averages of function to reconstruct</li>
+<li><em>key</em> -</li>
+<li><em>qs</em> - store results here</li>
+<li><em>s</em> - biasing (defaults to no biasing)</li>
+<li><em>imin</em> - left-most cell to reconstruct within</li>
+<li><em>imax</em> - right-most cell to reconstruct within</li>
+<li><em>compute_weights</em> -</li>
+</ul>
 <p>Use the weights corresponding to the key <em>weights</em>.  If
-<em>weights</em> is none, compute the weights associated with they
-key <em>key</em> and use them.</p>
+<em>compute_weights</em> is True, compute the weights associated
+with they key <em>key</em> and use them.  Otherwise, we assume
+that the weights have been computed explicity already.</p>
+<p>NOTE: if you are reconstructing near a domain boundary, and
+you have constructed your own weights (ie,
+compute_weights=False), then the weights that you have
+computed should be appropriately biased near the boundary.</p>
 </dd></dl>
 
 <dl class="method">
@@ -124,9 +181,19 @@ key <em>key</em> and use them.</p>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.weights">
-<tt class="descname">weights</tt><big>(</big><em>key</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.weights" title="Permalink to this definition">¶</a></dt>
-<dd>Compute weights associated with last set of smoothness
-indicators computed.</dd></dl>
+<tt class="descname">weights</tt><big>(</big><em>key</em>, <em>imin=0</em>, <em>imax=-1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute weights associated with <em>key</em> using the last set of
+smoothness indicators computed.</p>
+<p><strong>Arguments</strong></p>
+<ul class="simple">
+<li><em>key</em> -</li>
+<li><em>imin</em> - minimum cell index</li>
+<li><em>imax</em> - maximum cell index</li>
+<li><em>s</em> - biasing</li>
+</ul>
+<p>The default values of <em>imin</em> and <em>imax</em> are taken to be the
+full domain excluding cells near the edges.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -245,7 +312,7 @@ sets of reconstruction coefficients and cache them.</p>
 </pre></div>
 </div>
 <p>From a cache:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">stencil</span><span class="o">.</span><span class="n">Stencil</span><span class="p">(</span><span class="n">orker</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">stencil</span><span class="o">.</span><span class="n">Stencil</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Pre-compute reconstruction coefficients at the left and right boundaries:</p>
@@ -254,7 +321,7 @@ sets of reconstruction coefficients and cache them.</p>
 </pre></div>
 </div>
 <p>Reconstruct a function at the left boundaries:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">,:]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="mf">0</span><span class="p">,:]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">v_left</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v_avg</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">r</span><span class="p">:</span><span class="n">i</span><span class="o">-</span><span class="n">r</span><span class="o">+</span><span class="n">k</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -311,7 +378,7 @@ preserved.</p>
 <dd><p>Pre-compute reconstruction coefficients.</p>
 <p>The reconstruction coeffs <em>c_j</em> are computed and stored in
 the instance dictionary <em>c</em>.</p>
-<p>Arguments:</p>
+<p><strong>Arguments:</strong></p>
 <ul class="simple">
 <li><em>key</em> - key used to store this set of reconstruction coeffs</li>
 <li><em>xi</em> - callable which returns an array of points within
@@ -475,7 +542,7 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.3.a2.dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

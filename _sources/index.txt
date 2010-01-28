@@ -7,9 +7,17 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 
 **News**
 
+* January 29 2009: `PyWENO 0.4.0`_ released (see :doc:`what's new <whatsnew>`).
+* January 29 2009: PyWENO now uses `semantic versioning`_.
 * November 26 2009: `PyWENO 0.3.a1`_ released.
 * Fall 2009: PyWENO is in early development, and is a bit rough around
   the edges.
+
+Please check out the documentation (below) or the `PyWENO project
+page`_ for more infomation about using and contributing to PyWENO.
+
+**Using PyWENO to solve PDEs**: if you are interested in using PyWENO
+to solve PDEs, check out the `Python Balance LAW`_ package `PyBLAW`_.
 
 
 Documentation
@@ -20,7 +28,7 @@ Documentation
 * :doc:`Tutorial <tutorial>` - basic usage.
 * :doc:`Examples <examples>` - more detailed examples.
 * :doc:`Reference <reference>` - reference documentation.
-* :download:`Maths <weno.pdf>` - the maths behind WENO
+* :download:`Maths <weno.pdf>` (PDF) - the maths behind WENO approximations.
 
 
 **Features**
@@ -50,7 +58,6 @@ PyWENO is designed to:
 
 PyWENO has a few known issues:
 
-* Domain boundaries are avoided.
 * Pre-computing the optimal weights is slow.
 * Pre-computing the smoothness indicator coefficients is slow.
 
@@ -86,8 +93,13 @@ please see the `PyWENO project page`_.
    tutorial
    reference
    examples
+   whatsnew
    download
 
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
 .. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/
+.. _`semantic versioning`: http://semver.org/
+.. _`PyBLAW`: http://memmett.github.com/PyBLAW
+.. _`Python Balance LAW`: http://memmett.github.com/PyBLAW
 .. _`PyWENO 0.3.a1`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.3.a1.tar.gz
+.. _`PyWENO 0.4.0`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.4.0.tar.gz
