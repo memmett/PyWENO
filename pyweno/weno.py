@@ -483,13 +483,24 @@ class WENO(object):
         if imax == -1:
             imax = N - 1
 
-        if imin - min(0,s) < k - 1:
-            raise ValueError, 'values of imin (%d) and s (%d) are incompatible' % (imin, s)
+        if (imin > k-1) and (imax < N-k):
 
-        if N - (k-1) - 1 < imax - max(0,s):
-            raise ValueError, 'values of imax (%d) and s (%d) are incompatible' % (imax, s)
+            pyweno.cweno.weights(imin, imax, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
 
-        pyweno.cweno.weights(imin, imax, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
+        else:
+
+            # interior cells
+            pyweno.cweno.weights(k-1, N-k, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
+
+            # left edge cells
+            for i in xrange(imin, k-1):
+                s = i - k + 1
+                pyweno.cweno.weights(i, i, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
+
+            # right edge cells
+            for i in xrange(N-k+1, N):
+                s = i - (N - k + 1) + 1
+                pyweno.cweno.weights(i, i, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
 
 
     def reconstruct(self, q, key, qs, s=0, imin=0, imax=-1, compute_weights=True):
@@ -524,10 +535,10 @@ class WENO(object):
         if imax == -1:
             imax = N - 1
 
-        if (imin > k-1) and (imax < N-k):
+        if compute_weights:
+            self.weights(key, imin, imax, s)
 
-            if compute_weights:
-                self.weights(key, imin, imax, s)
+        if (imin > k-1) and (imax < N-k):
 
             pyweno.cweno.reconstruct(q,
                                      s, imin, imax,
@@ -537,16 +548,7 @@ class WENO(object):
                                      qs)
         else:
 
-            # this is a bit hairy as we have to call ``weights`` with
-            # different biasing several times near each boundary, and
-            # subsequently call ``reconstruct`` several times too.
-            # maybe ``weights`` and ``reconstruct`` could be modified
-            # to do this for us.
-
-            # interior
-            if compute_weights:
-                self.weights(key, k-1, N-k, s)
-
+            # interior cells
             pyweno.cweno.reconstruct(q,
                                      s, k-1, N-k,
                                      self.c[key],
@@ -554,12 +556,9 @@ class WENO(object):
                                      self.qr[key],
                                      qs)
 
-            # left edge
+            # left edge cells
             for i in xrange(imin, k-1):
                 s = i - k + 1
-
-                if compute_weights:
-                    self.weights(key, i, i, s)
 
                 pyweno.cweno.reconstruct(q,
                                          s, i, i,
@@ -568,12 +567,9 @@ class WENO(object):
                                          self.qr[key],
                                          qs)
 
-            # right edge
+            # right edge cells
             for i in xrange(N-k+1, N):
                 s = i - (N - k + 1) + 1
-
-                if compute_weights:
-                    self.weights(key, i, i, s)
 
                 pyweno.cweno.reconstruct(q,
                                          s, i, i,
