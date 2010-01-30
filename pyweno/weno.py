@@ -503,7 +503,7 @@ class WENO(object):
                 pyweno.cweno.weights(i, i, self.sigma, self.w[key][s+(k-1),:,:], self.wr)
 
 
-    def reconstruct(self, q, key, qs, s=0, imin=0, imax=-1, compute_weights=True):
+    def reconstruct(self, q, key, qs, imin=0, imax=-1, s=0, compute_weights=True):
         """Reconstruct *q* at the points specified by *key* and store
            result in *qs*.
 
