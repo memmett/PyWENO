@@ -117,7 +117,8 @@ def beta(smoothness, grid, k, beta):
 
         for r in range(k):
 
-            s = _sigma(k, r, k, grid.x)
+            # XXX: there is something funny going on here
+            s = _sigma(N/2, r, k, grid.x)
 
             for m in range(2*k-1):
                 for n in range(m, 2*k-1):
