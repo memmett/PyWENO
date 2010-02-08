@@ -1,3 +1,8 @@
+/*
+ * csmoothness - python extension module for (faster) smoothness
+ *               indicators.
+ */
+
 #define PY_ARRAY_UNIQUE_SYMBOL PYWENO_ARRAY_API
 
 #include <stdio.h>
@@ -5,14 +10,14 @@
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
 
-/*
- * csmoothness - python extension module for (faster) smoothness
- *               indicators.
- */
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 
 
 /*
  * sigma - compute smoothness indicators s given cell averages f
+ *
+ * XXX: this should accept end points (imin, imax)
  */
 PyObject *
 sigma(PyObject *self, PyObject *args)
@@ -21,14 +26,14 @@ sigma(PyObject *self, PyObject *args)
   PyObject *f_py, *beta_py, *sigma_py;
 
   double sum;
-  long int N, i;
+  long int N, i, imin, imax;
   int k, r, m, n;
 
   /*
    * parse options
    */
 
-  if (! PyArg_ParseTuple(args, "OOO", &f_py, &beta_py, &sigma_py))
+  if (! PyArg_ParseTuple(args, "OllOO", &f_py, &imin, &imax, &beta_py, &sigma_py))
     return NULL;
 
   if ((PyArray_FLAGS(beta_py) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
@@ -58,7 +63,7 @@ sigma(PyObject *self, PyObject *args)
    */
 
   /* cells at the left edge of the domain */
-  for (i=0; i<k; i++) {
+  for (i=imin; i<k; i++) {
     for (r=0; r<=i; r++) {
 
       sum = 0.0;
@@ -80,7 +85,7 @@ sigma(PyObject *self, PyObject *args)
   }
 
   /* interior cells */
-  for (i=k; i<N-k; i++) {
+  for (i=max(k,imin); i<min(N-k,imax); i++) {
     for (r=0; r<k; r++) {
 
       sum = 0.0;
@@ -102,7 +107,7 @@ sigma(PyObject *self, PyObject *args)
   }
 
   /* cells at the right edge of the domain */
-  for (i=N-k; i<N; i++) {
+  for (i=N-k; i<imax; i++) {
     for (r=i-(N-k); r<k; r++) {
 
       sum = 0.0;

@@ -455,10 +455,13 @@ class WENO(object):
     # smoothness and reconstruct wrappers
     #
 
-    def smoothness(self, q):
+    def smoothness(self, q, imin=0, imax=-1):
         """Compute smoothness indicators of *q*."""
 
-        pyweno.csmoothness.sigma(q, self.beta, self.sigma)
+        if imax == -1:
+            imax = self.grid.size - 1
+
+        pyweno.csmoothness.sigma(q, imin, imax, self.beta, self.sigma)
 
 
     def weights(self, key, imin=0, imax=-1, s=0):
