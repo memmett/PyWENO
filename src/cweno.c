@@ -1,3 +1,8 @@
+/*
+ * cweno - python extension module for (faster) weno reconstructions.
+ *         see 'reconstruct' for the good stuff.
+ */
+
 #define PY_ARRAY_UNIQUE_SYMBOL PYWENO_ARRAY_API
 
 #include <stdio.h>
@@ -7,11 +12,6 @@
 
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
-
-/*
- * cweno - python extension module for (faster) weno reconstructions.
- *         see 'reconstruct' for the good stuff.
- */
 
 
 /*
