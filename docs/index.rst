@@ -7,9 +7,10 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 
 **News**
 
-* January 29 2009: `PyWENO 0.4.0`_ released (see :doc:`what's new <whatsnew>`).
-* January 29 2009: PyWENO now uses `semantic versioning`_.
-* November 26 2009: `PyWENO 0.3.a1`_ released.
+* February 22 2010: `PyWENO 0.5.0`_ released (see :doc:`what's new <whatsnew>`).
+* January 29 2010: `PyWENO 0.4.0`_ released (see :doc:`what's new <whatsnew>`).
+* January 29 2010: PyWENO now uses `semantic versioning`_.
+* November 26 2009: PyWENO 0.3.a1 released.
 * Fall 2009: PyWENO is in early development, and is a bit rough around
   the edges.
 
@@ -103,5 +104,5 @@ please see the `PyWENO project page`_.
 .. _`semantic versioning`: http://semver.org/
 .. _`PyBLAW`: http://memmett.github.com/PyBLAW
 .. _`Python Balance LAW`: http://memmett.github.com/PyBLAW
-.. _`PyWENO 0.3.a1`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.3.a1.tar.gz
 .. _`PyWENO 0.4.0`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.4.0.tar.gz
+.. _`PyWENO 0.5.0`: http://cloud.github.com/downloads/memmett/PyWENO/PyWENO-0.5.0.tar.gz
