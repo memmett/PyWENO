@@ -201,7 +201,7 @@ class WENO(object):
             import scipy.io as sio
             import re
 
-            mat = sio.loadmat(cache, struct_as_record=True)
+            mat = sio.loadmat(cache) # , struct_as_record=True)
 
             for key in mat:
                 m = re.match(r'weno.k(\d+)\.c\.(.+)', key)
@@ -210,10 +210,8 @@ class WENO(object):
 
                 m = re.match(r'weno.k(\d+)\.w\.(.+)', key)
                 if (m is not None) and (int(m.group(1)) == order):
-                    if m.group(2) not in self.w:
-                        self.w[m.group(2)] = {}
-
                     self.w[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
+
 
             for key in self.c:
                 self._pre_allocate_key(key)
@@ -244,7 +242,11 @@ class WENO(object):
 
         N = shape[0]
         k = shape[1]
-        n = shape[2]
+
+        try:
+            n = shape[2]
+        except:
+            n = 1
 
         self.qr[key] = np.zeros((N,k,n))
 
@@ -315,7 +317,7 @@ class WENO(object):
 
                 # function to minimise and initial guess
                 f = lambda x: _omegaerr(x, s, cstar[N/2,:,:], c[N/2,:,:,:])
-                x0 = 0.5 * np.ones(k - abs(s))
+                x0 = np.ones(k - abs(s)) / (k - abs(s))
 
                 # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
                 cons = list(range(k-abs(s)))
@@ -326,6 +328,11 @@ class WENO(object):
 
                 x = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
                 wc[0+max(0,s):k-abs(s)+max(0,s)] = x[:]
+
+                # XXX: use equal weights when good optimal weights
+                # can't be found
+                if f(x) > 1.0:
+                    wc[0+max(0,s):k-abs(s)+max(0,s)] = x0[:]
 
                 # reset w^r_i to 0.0 if w^r_i <= 1e-12
                 for j in xrange(k):
@@ -435,7 +442,7 @@ class WENO(object):
             import scipy.io as sio
 
             try:
-                mat = sio.loadmat(output, struct_as_record=True)
+                mat = sio.loadmat(output) #, struct_as_record=True)
             except:
                 mat = {}
 

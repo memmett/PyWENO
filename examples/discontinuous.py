@@ -37,7 +37,6 @@ weno.reconstruct(f_avg, 'right', f_right)
 weno.reconstruct(f_avg, 'd|left', f_left_x)
 weno.reconstruct(f_avg, 'dd|left', f_left_xx)
 
-
 # plot results
 import matplotlib
 matplotlib.use('Agg')
