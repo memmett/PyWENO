@@ -16,7 +16,7 @@
 from textwrap import dedent
 
 # set of k values to generate reconstruction functions for
-K = range(3, 9)
+K = range(3, 10)
 
 
 ######################################################################
@@ -153,9 +153,98 @@ def reconstruction_coeff_functions_d1(k):
 
     f.close()
 
+
+def reconstruction_coeff_functions_d2(k):
+
+    f = open('reconstruction_coeffs_k%d_d%d.c' % (k, 2), 'w')
+
+    f.write(dedent('''\
+             void
+             reconstruction_coeffs_k%d_d%d(double xi, long int i, int r, double *x, double *c)
+             {
+               double sum_l, sum_m, sum_n, sum_p, prod_q, prod_m;
+             ''' % (k,2)))
+
+    for j in xrange(k):
+
+        f.write('  /* j = %d */\n' % (j))
+        f.write('  sum_l = 0.0;\n')
+
+        for l in xrange(j+1, k+1):
+
+            f.write('\n')
+            f.write('  /* l = %d */\n' % (l))
+            f.write('  sum_m = 0.0;\n')
+
+            ms = range(0,k+1)
+            ms.remove(l)
+
+            for m in ms:
+
+                f.write('\n')
+                f.write('  /* m = %d */\n' % (m))
+
+                ns = range(0,k+1)
+                ns.remove(l)
+                ns.remove(m)
+
+                f.write('  sum_n = 0.0;\n')
+
+                for n in ns:
+
+                    f.write('\n')
+                    f.write('  /* n = %d */\n' % (n))
+
+                    ps = range(0,k+1)
+                    ps.remove(l)
+                    ps.remove(m)
+                    ps.remove(n)
+
+                    f.write('  sum_p = 0.0;\n')
+
+                    for p in ps:
+
+                        f.write('\n')
+                        f.write('  /* p = %d */\n' % (p))
+
+                        qs = range(0,k+1)
+                        qs.remove(l)
+                        qs.remove(m)
+                        qs.remove(n)
+                        qs.remove(p)
+
+                        f.write('  prod_q = 1.0;\n')
+
+                        for q in qs:
+                            f.write('  prod_q *= xi - x[i-r+%d];  /* q = %d */\n' % (q, q))
+
+                        f.write('  sum_p += prod_q;\n')
+
+                    f.write('  sum_n += sum_p;\n')
+
+                f.write('  sum_m += sum_n;\n')
+
+
+            f.write('\n')
+            f.write('  prod_m = 1.0;\n')
+            for m in ms:
+                f.write('  prod_m *= x[i-r+%d] - x[i-r+%d];\n' % (l,m))
+
+
+            f.write('\n')
+            f.write('  sum_l += sum_m / prod_m * (x[i-r+%d+1] - x[i-r+%d]);\n' % (j, j))
+
+        f.write('\n')
+        f.write('  c[%d] = sum_l;\n' % (j))
+
+    f.write('}\n')
+
+    f.close()
+
 for k in K:
     reconstruction_coeff_functions_d0(k)
     reconstruction_coeff_functions_d1(k)
+    reconstruction_coeff_functions_d2(k)
 
 
 ######################################################################
@@ -177,6 +266,7 @@ for k in K:
     f.write(dedent('''\
              void reconstruction_coeffs_k%(k)d_d0(double xi, long int i, int r, double *x, double *c);
              void reconstruction_coeffs_k%(k)d_d1(double xi, long int i, int r, double *x, double *c);
+             void reconstruction_coeffs_k%(k)d_d2(double xi, long int i, int r, double *x, double *c);
              ''' % {'k': k}))
 
 f.write(dedent('''\
@@ -226,6 +316,8 @@ for k in K:
                  reconstruction_coeffs_k%(k)d_d0(xi, i, r, x, c);
                else if (d==1)
                  reconstruction_coeffs_k%(k)d_d1(xi, i, r, x, c);
+               else if (d==2)
+                 reconstruction_coeffs_k%(k)d_d2(xi, i, r, x, c);
                break;
              ''' % {'k': k}))
 

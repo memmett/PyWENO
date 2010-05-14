@@ -6,8 +6,8 @@ import pyweno.grid
 import pyweno.weno
 
 # first, define the stencil order k and cache file
-k = 3
-cache = 'gridk%d.mat' % (k)
+k = 5
+cache = 'gridk%d.h5' % (k)
 
 # if the cache file isn't present ...
 if not os.access(cache, os.F_OK):
@@ -26,6 +26,8 @@ if not os.access(cache, os.F_OK):
     weno.precompute_reconstruction('right')
     weno.precompute_reconstruction('gauss_quad3')
     weno.precompute_reconstruction('d|gauss_quad3')
+    weno.precompute_reconstruction('d|left')
+    weno.precompute_reconstruction('dd|left')
 
     # cache everything
-    weno.cache(cache)
+    weno.cache(cache, format='h5py')
