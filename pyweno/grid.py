@@ -88,7 +88,7 @@ class Grid(object):
             sz[i] = x[i+1] - x[i]
 
         self.structured = False
-        if abs(max(sz) - min(sz)) < 1e-12:
+        if abs(max(sz) - min(sz)) < 1e-10:
             self.structured = True
 
         # init self
