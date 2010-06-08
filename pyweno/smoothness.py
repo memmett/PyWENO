@@ -113,7 +113,9 @@ def beta(smoothness, grid, k, beta):
     for j in range(-(k-1), k):
         f.append(sympy.var('f_%d' % (j)))
 
-    if grid.structured:
+    if grid.uniform:
+
+        print 'smoothness: uniform grid...'
 
         for r in range(k):
 
@@ -125,6 +127,8 @@ def beta(smoothness, grid, k, beta):
                     c = s.coeff(f[m]*f[n])
                     if c is not None:
                         beta[k,r,m,n] = c
+
+        print 'smoothness: uniform grid... done.'
 
         for i in range(0, N):
             beta[i,:,:,:] = beta[k,:,:,:]

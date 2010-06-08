@@ -9,7 +9,7 @@ import scipy.integrate
 
 
 class Grid(object):
-    """Unstructured spatial grid (discretisation).
+    """Non-uniform spatial grid (discretisation).
 
     **Basic usage**
 
@@ -48,8 +48,7 @@ class Grid(object):
     * *boundaries* - list of grid cell boundaries, eg,
       ``numpy.linspace(-1.0, 1.0, 20+1)``
 
-    The cell boundaries do **not** have to be structured (ie,
-    uniformly spaced).
+    The cell boundaries do **not** have to be uniform.
 
     **Keyword arguments (with cache)**
 
@@ -87,9 +86,9 @@ class Grid(object):
         for i in xrange(sz.size):
             sz[i] = x[i+1] - x[i]
 
-        self.structured = False
+        self.uniform = False
         if abs(max(sz) - min(sz)) < 1e-10:
-            self.structured = True
+            self.uniform = True
 
         # init self
         self._cntr      = cntr

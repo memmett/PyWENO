@@ -300,9 +300,11 @@ class WENO(object):
         #### optimal weights (varpi)
         self.w[key] = np.zeros((2*k-1,N,k))
 
-        if grid.structured:
+        if grid.uniform:
 
-            #### structured grid, only do one cell
+            print "weights (%s): uniform grid..." % key
+
+            #### uniform grid, only do one cell
 
             for s in range(-(k-1), k):
 
@@ -343,9 +345,11 @@ class WENO(object):
                 for i in xrange(shift,N-order+shift+1):
                     self.w[key][s+(k-1),i,:] = wc[:]
 
+            print "weights (%s): uniform grid... done." % key
+
         else:
 
-            #### unstructured grid, cycle through all cells
+            #### non-uniform grid, cycle through all cells
 
             for s in range(-(k-1), k):
 

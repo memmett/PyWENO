@@ -292,16 +292,30 @@ class Stencil(object):
             n = len(xi(0))
 
         # compute reconstruction coeffs
-        # XXX: structred grid
-        if n == 1:
-            c = np.zeros((N,n,k))
-            for i in xrange(r,N-k+r+1):
-                reconstruction_coeffs(xi(i), i, r, k, x, c[i,0,:], d)
+        if self.grid.uniform:
+
+            if n == 1:
+                c = np.zeros((N,n,k))
+                reconstruction_coeffs(xi(r), r, r, k, x, c[r,0,:], d)
+            else:
+                c = np.zeros((N,n,k))
+
+                for l, z in enumerate(xi(r)):
+                    reconstruction_coeffs(z, r, r, k, x, c[r,l,:], d)
+
+            for i in xrange(r+1,N-k+r+1):
+                c[i,:,:] = c[r,:,:]
+
         else:
-            c = np.zeros((N,n,k))
-            for i in xrange(r,N-k+r+1):
-                for l, z in enumerate(xi(i)):
-                    reconstruction_coeffs(z, i, r, k, x, c[i,l,:], d)
+            if n == 1:
+                c = np.zeros((N,n,k))
+                for i in xrange(r,N-k+r+1):
+                    reconstruction_coeffs(xi(i), i, r, k, x, c[i,0,:], d)
+            else:
+                c = np.zeros((N,n,k))
+                for i in xrange(r,N-k+r+1):
+                    for l, z in enumerate(xi(i)):
+                        reconstruction_coeffs(z, i, r, k, x, c[i,l,:], d)
 
         # save and we're done!
         self.c[key] = c
