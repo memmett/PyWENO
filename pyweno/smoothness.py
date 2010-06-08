@@ -119,8 +119,8 @@ def beta(smoothness, grid, k, beta):
 
         for r in range(k):
 
-            # XXX: there is something funny going on here
-            s = _sigma(N/2, r, k, grid.x)
+            # use a simple uniform grid for better results
+            s = _sigma(k, r, k, np.linspace(1.0,2*k+1,2*k+1))
 
             for m in range(2*k-1):
                 for n in range(m, 2*k-1):
@@ -134,6 +134,9 @@ def beta(smoothness, grid, k, beta):
             beta[i,:,:,:] = beta[k,:,:,:]
 
     else:
+
+        # XXX: this is (most likely) not reliable...
+        raise NotImplemented, 'non-uniform smoothness is implemented but not reliable'
 
         for i in range(0, N):
             for r in range(max(0,i-(N-k)), min(i,k-1)+1):
