@@ -2,8 +2,8 @@ PyWENO
 ======
 
 PyWENO is a Python implementation of one-dimensional Weighted
-Essentially Non-oscillatory (WENO) approximations over unstructured
-(non-uniform) grids.
+Essentially Non-oscillatory (WENO) approximations over non-uniform
+grids.
 
 Please see
 
@@ -17,15 +17,15 @@ Installing PyWENO
 
 PyWENO uses the 'setuptools' package to automate building and
 installing PyWENO.  Once you have installed setuptools, you can
-install PyWENO by running
+install PyWENO by running:
 
-  # python setup.py install
+# python setup.py install
 
 If you plan on modifying PyWENO you can install PyWENO into your
 PYHTONPATH in development mode by running, eg,
 
-  $ python setup.py develop -d /home/memmett/local/python
-  $ export PYTHONPATH=/home/memmett/local/python:$PYTHONPATH
+$ python setup.py develop -d ~/opt/python
+$ export PYTHONPATH=~/opt/python:$PYTHONPATH
 
 
 License

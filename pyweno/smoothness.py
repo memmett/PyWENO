@@ -126,12 +126,9 @@ def beta(smoothness, grid, k, beta):
                 for n in range(m, 2*k-1):
                     c = s.coeff(f[m]*f[n])
                     if c is not None:
-                        beta[k,r,m,n] = c
+                        beta[r,m,n] = c
 
         print 'smoothness: uniform grid... done.'
-
-        for i in range(0, N):
-            beta[i,:,:,:] = beta[k,:,:,:]
 
     else:
 

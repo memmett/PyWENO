@@ -112,6 +112,10 @@ class Stencil(object):
 
     Cache to an HDF5 file (through H5PY)::
 
+    >>> stencil.cache('mycache.h5')
+
+    or (more explicitly):
+
     >>> stencil.cache('mycache.h5', format='h5py')
 
     **Instance variables**
@@ -120,6 +124,13 @@ class Stencil(object):
     * *order* - order of approximation (also *k*)
     * *shift* - left shift (also *r*)
     * *c*     - dictionary of reconstruction coefficients
+
+    Each entry of the *c* dictionary is indexed as::
+
+    * c[j]: uniform grid, one reconstruction point per cell
+    * c[l,j] - uniform grid, multiple reconstruction points per cell
+    * c[i,j] - non-uniform grid, one reconstruction point per cell
+    * c[i,l,j] - non-uniform grid, multiple reconstruction points per cell
 
     **Keyword arguments (without cache)**
 
@@ -144,8 +155,8 @@ class Stencil(object):
     """
 
     def __init__(self,
-                 grid=None, order=None, quad=None, shift=None,
-                 cache=None, format='mat'
+                 grid=None, order=None, shift=None,
+                 cache=None, format=None
                  ):
 
         # check order
@@ -186,16 +197,25 @@ class Stencil(object):
         k = self.order
         r = self.shift
 
+        if format is None:
+            if cache.find('.mat') != -1:
+                format = 'mat'
+            elif cache.find('.h5') != -1:
+                format = 'h5py'
+
         if format is 'h5py':
             import h5py as h5
 
             hdf = h5.File(cache, 'r')
-            r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
+            try:
+                r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
+            except:
+                raise ValueError, 'order (k) or shift (r) does not exist in cache'
 
             for key in r_sgrp:
                 dst = r_sgrp[key + '/c']
                 self.c[key] = np.zeros(dst.shape)
-                self.c[key][:,:,:] = dst[:,:,:]
+                dst.read_direct(self.c[key])
 
             hdf.close()
 
@@ -268,6 +288,11 @@ class Stencil(object):
 
         d = len(dstr)
 
+        # redefine x if grid is uniform
+        if self.grid.uniform:
+            dx = self.grid.x[1] - self.grid.x[0]
+            x = dx * np.linspace(0.0, 2.0*k-1.0, 2*k)
+
         # if xi is not passed, check key against predefined choices
         if xi is None:
             if pkey == 'left':
@@ -295,22 +320,21 @@ class Stencil(object):
         if self.grid.uniform:
 
             if n == 1:
-                c = np.zeros((N,n,k))
-                reconstruction_coeffs(xi(r), r, r, k, x, c[r,0,:], d)
+                c = np.zeros(k)
+                reconstruction_coeffs(xi(k-1), k-1, r, k, x, c, d)
+
             else:
-                c = np.zeros((N,n,k))
+                c = np.zeros((n,k))
 
-                for l, z in enumerate(xi(r)):
-                    reconstruction_coeffs(z, r, r, k, x, c[r,l,:], d)
-
-            for i in xrange(r+1,N-k+r+1):
-                c[i,:,:] = c[r,:,:]
+                for l, z in enumerate(xi(k-1)):
+                    reconstruction_coeffs(z, k-1, r, k, x, c[l,:], d)
 
         else:
+
             if n == 1:
-                c = np.zeros((N,n,k))
+                c = np.zeros((N,k))
                 for i in xrange(r,N-k+r+1):
-                    reconstruction_coeffs(xi(i), i, r, k, x, c[i,0,:], d)
+                    reconstruction_coeffs(xi(i), i, r, k, x, c[i,:], d)
             else:
                 c = np.zeros((N,n,k))
                 for i in xrange(r,N-k+r+1):
@@ -321,7 +345,7 @@ class Stencil(object):
         self.c[key] = c
 
 
-    def cache(self, output, format='mat'):
+    def cache(self, output, format=None):
         """Store all reconstruction coefficients in the cache file *output*.
 
            Supported formats are:
@@ -338,6 +362,12 @@ class Stencil(object):
 
         k = self.order
         r = self.shift
+
+        if format is None:
+            if output.find('.mat') != -1:
+                format = 'mat'
+            elif output.find('.h5') != -1:
+                format = 'h5py'
 
         if format is 'h5py':
             import h5py as h5
