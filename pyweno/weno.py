@@ -594,7 +594,7 @@ class WENO(object):
         varpi = self.w[key][s+(k-1),:,:]
         wr    = self.wr[key]
 
-        if (imin > k-1) and (imax < N-k):
+        if (imin >= k-1) and (imax <= N-k):
             weights(imin, imax, sigma, varpi, wr)
 
         else:
@@ -604,11 +604,13 @@ class WENO(object):
             # left edge cells
             for i in xrange(imin, k-1):
                 s = i - k + 1
+                varpi = self.w[key][s+(k-1),:,:]
                 weights(i, i, sigma, varpi, wr)
 
             # right edge cells
             for i in xrange(N-k+1, N):
                 s = i - (N - k + 1) + 1
+                varpi = self.w[key][s+(k-1),:,:]
                 weights(i, i, sigma, varpi, wr)
 
 
@@ -662,7 +664,7 @@ class WENO(object):
         else:
             pass
 
-        if (imin > k-1) and (imax < N-k):
+        if (imin >= k-1) and (imax <= N-k):
 
             reconstruct(q, s, imin, imax, c, wr, qr, qs)
 
@@ -674,12 +676,10 @@ class WENO(object):
             # left edge cells
             for i in xrange(imin, k-1):
                 s = i - k + 1
-
                 reconstruct(q, s, i, i, c, wr, qr, qs)
 
             # right edge cells
             for i in xrange(N-k+1, N):
                 s = i - (N - k + 1) + 1
-
                 reconstruct(q, s, i, i, c, wr, qr, qs)
 
