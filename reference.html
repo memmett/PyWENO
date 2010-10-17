@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Reference &mdash; PyWENO v0.5.1.dev documentation</title>
+    <title>PyWENO Reference &mdash; PyWENO v0.5.7 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.1.dev',
+        VERSION:     '0.5.7',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.1.dev documentation" href="index.html" />
+    <link rel="top" title="PyWENO v0.5.7 documentation" href="index.html" />
     <link rel="next" title="PyWENO Examples" href="examples.html" />
     <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.1.dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -128,7 +128,7 @@ preserved.</p>
 
 <dl class="method">
 <dt id="pyweno.weno.WENO.precompute_reconstruction">
-<tt class="descname">precompute_reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.precompute_reconstruction" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">precompute_reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.precompute_reconstruction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Precompute reconstruction coefficients and optimal weights.</p>
 <p><strong>Arguments:</strong></p>
 <ul class="simple">
@@ -204,7 +204,7 @@ full domain excluding cells near the edges.</p>
 <dt id="pyweno.grid.Grid">
 <em class="property">
 class </em><tt class="descclassname">pyweno.grid.</tt><tt class="descname">Grid</tt><big>(</big><em>boundaries=None</em>, <em>cache=None</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.grid.Grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unstructured spatial grid (discretisation).</p>
+<dd><p>Non-uniform spatial grid (discretisation).</p>
 <p><strong>Basic usage</strong></p>
 <p>From scratch:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">])</span>
@@ -240,8 +240,7 @@ cell boundaries.</p>
 <li><em>boundaries</em> - list of grid cell boundaries, eg,
 <tt class="docutils literal"><span class="pre">numpy.linspace(-1.0,</span> <span class="pre">1.0,</span> <span class="pre">20+1)</span></tt></li>
 </ul>
-<p>The cell boundaries do <strong>not</strong> have to be structured (ie,
-uniformly spaced).</p>
+<p>The cell boundaries do <strong>not</strong> have to be uniform.</p>
 <p><strong>Keyword arguments (with cache)</strong></p>
 <ul class="simple">
 <li><em>cache</em>  - cache filename</li>
@@ -295,7 +294,7 @@ all other contents are preserved.</p>
 <dl class="class">
 <dt id="pyweno.stencil.Stencil">
 <em class="property">
-class </em><tt class="descclassname">pyweno.stencil.</tt><tt class="descname">Stencil</tt><big>(</big><em>grid=None</em>, <em>order=None</em>, <em>quad=None</em>, <em>shift=None</em>, <em>cache=None</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil" title="Permalink to this definition">¶</a></dt>
+class </em><tt class="descclassname">pyweno.stencil.</tt><tt class="descname">Stencil</tt><big>(</big><em>grid=None</em>, <em>order=None</em>, <em>shift=None</em>, <em>cache=None</em>, <em>format=None</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil" title="Permalink to this definition">¶</a></dt>
 <dd><p>Polynomial approximation stencil.</p>
 <p>The Stencil class is usually used the WENO class, but can be used
 by itself too.</p>
@@ -330,6 +329,10 @@ sets of reconstruction coefficients and cache them.</p>
 </pre></div>
 </div>
 <p>Cache to an HDF5 file (through H5PY):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or (more explicitly):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;h5py&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -340,6 +343,12 @@ sets of reconstruction coefficients and cache them.</p>
 <li><em>shift</em> - left shift (also <em>r</em>)</li>
 <li><em>c</em>     - dictionary of reconstruction coefficients</li>
 </ul>
+<p>Each entry of the <em>c</em> dictionary is indexed as:</p>
+<div class="highlight-python"><pre>* c[j]: uniform grid, one reconstruction point per cell
+* c[l,j] - uniform grid, multiple reconstruction points per cell
+* c[i,j] - non-uniform grid, one reconstruction point per cell
+* c[i,l,j] - non-uniform grid, multiple reconstruction points per cell</pre>
+</div>
 <p><strong>Keyword arguments (without cache)</strong></p>
 <ul class="simple">
 <li><em>order</em> - order of approximation</li>
@@ -359,7 +368,7 @@ centered difference shift (ie, <tt class="docutils literal"><span class="pre">sh
 <p><strong>Methods</strong></p>
 <dl class="method">
 <dt id="pyweno.stencil.Stencil.cache">
-<tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil.cache" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format=None</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil.cache" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store all reconstruction coefficients in the cache file <em>output</em>.</p>
 <p>Supported formats are:</p>
 <ul class="simple">
@@ -542,12 +551,12 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.1.dev documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
       &copy; Copyright 2009, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
     </div>
   </body>
 </html>

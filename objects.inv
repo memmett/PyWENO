@@ -1,6 +1,6 @@
 # Sphinx inventory version 1
 # Project: PyWENO
-# Version: 0.5.1.dev
+# Version: 0.5.7
 pyweno.version mod reference.html
 pyweno.smoothness mod reference.html
 pyweno.stencil.Stencil.cache method reference.html
