@@ -12,10 +12,10 @@
 """
 
 import math
-
 import numpy as np
-
+import h5py as h5
 import pyweno.cstencil
+
 
 ######################################################################
 # reconstruction_coeffs (c wrapper)
@@ -72,7 +72,7 @@ def _quad_pts(a, b, x):
 class Stencil(object):
     """Polynomial approximation stencil.
 
-    The Stencil class is usually used the WENO class, but can be used
+    The Stencil class is usually used by the WENO class, but can be used
     by itself too.
 
     The cell averages *f_j* of a function *f* can be used to
@@ -94,7 +94,7 @@ class Stencil(object):
 
     From a cache::
 
-    >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, cache='mycache.mat')
+    >>> stencil = pyweno.stencil.Stencil(order=k, shift=r, cache='mycache.h5')
 
     Pre-compute reconstruction coefficients at the left and right boundaries::
 
@@ -106,17 +106,9 @@ class Stencil(object):
     >>> c = stencil.c['left'][i,0,:]
     >>> v_left = numpy.dot(c, v_avg[i-r:i-r+k])
 
-    Cache to a MATLAB file (through SciPy)::
-
-    >>> stencil.cache('mycache.mat')
-
     Cache to an HDF5 file (through H5PY)::
 
     >>> stencil.cache('mycache.h5')
-
-    or (more explicitly):
-
-    >>> stencil.cache('mycache.h5', format='h5py')
 
     **Instance variables**
 
@@ -127,10 +119,10 @@ class Stencil(object):
 
     Each entry of the *c* dictionary is indexed as::
 
-    * c[j]: uniform grid, one reconstruction point per cell
-    * c[l,j] - uniform grid, multiple reconstruction points per cell
-    * c[i,j] - non-uniform grid, one reconstruction point per cell
-    * c[i,l,j] - non-uniform grid, multiple reconstruction points per cell
+    * ``c[j]`` - uniform grid, one reconstruction point per cell
+    * ``c[l,j]`` - uniform grid, multiple reconstruction points per cell
+    * ``c[i,j]`` - non-uniform grid, one reconstruction point per cell
+    * ``c[i,l,j]`` - non-uniform grid, multiple reconstruction points per cell
 
     **Keyword arguments (without cache)**
 
@@ -145,28 +137,33 @@ class Stencil(object):
 
     **Keyword arguments (with cache)**
 
-    * *order*  - order of approximation
-    * *shift*  - left shift of the stencil or ``None``
+    * *order* (or *k*) - order of approximation
+    * *shift* (or *r*) - left shift of the stencil or ``None``
     * *cache*  - cache filename
-    * *format* - cache format (default is ``'mat'``)
 
     **Methods**
 
     """
 
     def __init__(self,
-                 grid=None, order=None, shift=None,
-                 cache=None, format=None
-                 ):
+                 grid=None,
+                 order=None, k=None, shift=None, r=None,
+                 cache=None, **kwargs):
 
         # check order
-        if order is None:
+        if (order is None) and (k is None):
             raise ValueError, 'stencil order must be specified'
+
+        if (order is None):
+            order = k
 
         self.order = order
         self.k     = order
 
         # centered difference by default
+        if (shift is None) and (r is not None):
+            shift = r
+
         if shift is None:
             shift = order / 2
 
@@ -182,7 +179,7 @@ class Stencil(object):
         if (grid is not None) and (cache is None):
             self._init_with_grid(grid)
         elif (cache is not None) and (grid is None):
-            self._init_with_cache(cache, format)
+            self._init_with_cache(cache)
         else:
             raise ValueError, 'both grid and cache specified'
 
@@ -192,47 +189,23 @@ class Stencil(object):
         self.grid = grid
 
 
-    def _init_with_cache(self, cache, format):
+    def _init_with_cache(self, cache):
 
-        k = self.order
-        r = self.shift
+        k = self.k
+        r = self.r
 
-        if format is None:
-            if cache.find('.mat') != -1:
-                format = 'mat'
-            elif cache.find('.h5') != -1:
-                format = 'h5py'
+        hdf = h5.File(cache, 'r')
+        try:
+            r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
+        except:
+            raise ValueError, 'order (k) or shift (r) does not exist in cache'
 
-        if format is 'h5py':
-            import h5py as h5
+        for key in r_sgrp:
+            dst = r_sgrp[key + '/c']
+            self.c[key] = np.zeros(dst.shape)
+            dst.read_direct(self.c[key])
 
-            hdf = h5.File(cache, 'r')
-            try:
-                r_sgrp = hdf['stencil/k%d/r%d' % (k, r)]
-            except:
-                raise ValueError, 'order (k) or shift (r) does not exist in cache'
-
-            for key in r_sgrp:
-                dst = r_sgrp[key + '/c']
-                self.c[key] = np.zeros(dst.shape)
-                dst.read_direct(self.c[key])
-
-            hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-            import re
-
-            mat = sio.loadmat(cache, struct_as_record=True)
-
-            self.c = {}
-            for key in mat:
-                m = re.match(r'stencil.k(\d+).r(\d+).(.+)', key)
-                if (m is not None) and (int(m.group(1)) == k) and (int(m.group(2)) == r):
-                    self.c[m.group(3)] = np.ascontiguousarray(mat[m.group(0)])
-
-        else:
-            raise ValueError, "cache format '%s' not supported" % (format)
+        hdf.close()
 
 
     def reconstruction_coeffs(self, key, xi=None):
@@ -276,8 +249,8 @@ class Stencil(object):
         """
 
         N = self.grid.size
-        k = self.order
-        r = self.shift
+        k = self.k
+        r = self.r
         x = self.grid.x
 
         # parse key for derivatives: d|key
@@ -345,13 +318,8 @@ class Stencil(object):
         self.c[key] = c
 
 
-    def cache(self, output, format=None):
+    def cache(self, output):
         """Store all reconstruction coefficients in the cache file *output*.
-
-           Supported formats are:
-
-           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
-           * ``'h5py'`` - HDF5 file (through H5PY)
 
            The reconstruction coefficients are *appended* to the cache
            file.  That is, they are overwritten if they previously
@@ -360,58 +328,33 @@ class Stencil(object):
         """
 
 
-        k = self.order
-        r = self.shift
+        k = self.k
+        r = self.r
 
-        if format is None:
-            if output.find('.mat') != -1:
-                format = 'mat'
-            elif output.find('.h5') != -1:
-                format = 'h5py'
+        hdf = h5.File(output, 'a')
 
-        if format is 'h5py':
-            import h5py as h5
-
-            hdf = h5.File(output, 'a')
-
-            # cache in 'stencil/kX/rX'
-            if 'stencil' in hdf:
-                sgrp = hdf['stencil']
-            else:
-                sgrp = hdf.create_group('stencil')
-
-            kstr = 'k%d' % (k)
-            if kstr in sgrp:
-                sgrp = sgrp[kstr]
-            else:
-                sgrp = sgrp.create_group(kstr)
-
-            rstr = 'r%d' % (r)
-            if rstr in sgrp:
-                del sgrp[rstr]
-
-            r_sgrp = sgrp.create_group(rstr)
-
-            # create a dataset for each key
-            for key in self.c:
-                c_sgrp = r_sgrp.create_group(key)
-                c_sgrp.create_dataset('c', data=self.c[key])
-
-            # done
-            hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-
-            try:
-                mat = sio.loadmat(output, struct_as_record=True)
-            except:
-                mat = {}
-
-            for key in self.c:
-                mat['stencil.k%d.r%d.%s' % (k, r, key)] = self.c[key]
-
-            sio.savemat(output, mat)
-
+        # cache in 'stencil/kX/rX'
+        if 'stencil' in hdf:
+            sgrp = hdf['stencil']
         else:
-            raise ValueError, "cache format '%s' not supported" % (format)
+            sgrp = hdf.create_group('stencil')
+
+        kstr = 'k%d' % (k)
+        if kstr in sgrp:
+            sgrp = sgrp[kstr]
+        else:
+            sgrp = sgrp.create_group(kstr)
+
+        rstr = 'r%d' % (r)
+        if rstr in sgrp:
+            del sgrp[rstr]
+
+        r_sgrp = sgrp.create_group(rstr)
+
+        # create a dataset for each key
+        for key in self.c:
+            c_sgrp = r_sgrp.create_group(key)
+            c_sgrp.create_dataset('c', data=self.c[key])
+
+        # done
+        hdf.close()

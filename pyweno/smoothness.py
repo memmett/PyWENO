@@ -1,6 +1,4 @@
-"""PyWENO smoothness indicators.
-
-"""
+"""PyWENO smoothness indicators."""
 
 import numpy as np
 import sympy
@@ -107,7 +105,7 @@ def beta(smoothness, grid, k, beta):
     if smoothness == 'jiang_shu':
         _sigma = _jiang_shu
     else:
-        raise NotImplemented, "smoothness indicator '%s' not implemented yet" % (smoothness)
+        raise NotImplementedError, "smoothness indicator '%s' not implemented yet" % (smoothness)
 
     f = []
     for j in range(-(k-1), k):
@@ -132,8 +130,8 @@ def beta(smoothness, grid, k, beta):
 
     else:
 
-        # XXX: this is (most likely) not reliable...
-        raise NotImplemented, 'non-uniform smoothness is implemented but not reliable'
+        # XXX: this is (most likely) not reliable (need higher accuracy substitutions)...
+        raise NotImplementedError, 'non-uniform smoothness is implemented but not reliable'
 
         for i in range(0, N):
             for r in range(max(0,i-(N-k)), min(i,k-1)+1):

@@ -1,10 +1,9 @@
-"""PyWENO Grid class.
-
-"""
+"""PyWENO Grid class."""
 
 import math
 
 import numpy as np
+import h5py as h5
 import scipy.integrate
 
 
@@ -27,13 +26,9 @@ class Grid(object):
     >>> f = lambda x: x**2
     >>> f_avg = grid.average(f)
 
-    Cache to a MATLAB file (through SciPy)::
-
-    >>> grid.cache('mycache.mat')
-
     Cache to an HDF5 file (through H5PY)::
 
-    >>> grid.cache('mycache.h5', format='h5py')
+    >>> grid.cache('mycache.h5')
 
     **Instance variables**
 
@@ -45,7 +40,7 @@ class Grid(object):
 
     **Keyword arguments (without cache)**
 
-    * *boundaries* - list of grid cell boundaries, eg,
+    * *boundaries* (or *x*) - list of grid cell boundaries, eg,
       ``numpy.linspace(-1.0, 1.0, 20+1)``
 
     The cell boundaries do **not** have to be uniform.
@@ -53,28 +48,26 @@ class Grid(object):
     **Keyword arguments (with cache)**
 
     * *cache*  - cache filename
-    * *format* - cache format (default is 'mat')
 
     **Methods**
 
     """
 
     def __init__(self,
-                 boundaries=None,
-                 cache=None, format='mat'
-                 ):
+                 boundaries=None, x=None, cache=None, **kwargs):
+
+        if (boundaries is None) and (x is not None):
+            boundaries = x
 
         if (boundaries is not None) and (cache is None):
             self._init_with_boundaries(boundaries)
         elif (cache is not None) and (boundaries is None):
-            self._init_with_cache(cache, format)
+            self._init_with_cache(cache)
         else:
             ValueError, 'both boundaries and cache specified'
 
 
-    def _init_with_boundaries(self, boundaries):
-
-        x = boundaries
+    def _init_with_boundaries(self, x):
 
         # cell centres
         cntr = np.zeros(x.size-1)
@@ -97,85 +90,55 @@ class Grid(object):
         self.N          = cntr.size
         self.x          = x
 
-    def _init_with_cache(self, cache, format):
 
-        if format is 'h5py':
-            import h5py as h5
+    def _init_with_cache(self, cache):
 
-            hdf = h5.File(cache, "r")
-            dst = hdf["grid/bndry"]
-            boundaries = np.zeros(dst.shape)
-            boundaries[:] = dst[:]
+        hdf = h5.File(cache, "r")
+        dst = hdf["grid/bndry"]
+        boundaries = np.zeros(dst.shape)
+        boundaries[:] = dst[:]
 
-            self._init_with_boundaries(boundaries)
+        self._init_with_boundaries(boundaries)
 
-            hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-
-            mat = sio.loadmat(cache, struct_as_record=True)
-            boundaries = mat['grid.bndry']
-
-            self._init_with_boundaries(boundaries)
-
-        else:
-
-            raise NotImplementedError, "cache format '%s' not supported" % (format)
+        hdf.close()
 
 
-    def cache(self, output, format='mat'):
+    def cache(self, output):
         """Store cell boundaries in the cache file *output*.
-
-           Supported formats are:
-
-           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
-           * ``'h5py'`` - HDF5 file (through H5PY)
 
            The cell boundaries are *appended* to the cache file.  That
            is, they are overwritten if they previously existed, but
            all other contents are preserved.
         """
 
-        if format is 'h5py':
-            import h5py as h5
+        hdf = h5.File(output, "a")
+        if "grid" in hdf:
+            raise ValueError, 'a grid cache already exists.'
 
-            hdf = h5.File(output, "a")
-            sgrp = hdf.create_group("grid")
-            sgrp.create_dataset("bndry", data=self.x)
-            hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-
-            try:
-                mat = sio.loadmat(output, struct_as_record=True)
-            except:
-                mat = {}
-
-            mat['grid.bndry'] = self.x
-            sio.savemat(output, mat)
-
-        else:
-
-            raise NotImplementedError, "cache format '%s' not supported" % (format)
+        sgrp = hdf.create_group("grid")
+        sgrp.create_dataset("bndry", data=self.x)
+        hdf.close()
 
 
     def boundaries(self):
         """Return array of *N+1* cell boundaries."""
         return self.x
 
+
     def centres(self):
         """Return array of *N* cell centres."""
         return self._cntr
+
 
     def centers(self):
         """Return array of *N* cell centers."""
         return self._cntr
 
+
     def sizes(self):
         """Return array of *N* cell sizes."""
         return self._sz
+
 
     def average(self, f):
         """Return cell averages of *f*."""
