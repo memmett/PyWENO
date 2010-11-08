@@ -1,16 +1,12 @@
-"""PyWENO WENO class.
-
-   In the PyWENO documentation, the first cell has an index of 1.
-
-   In the PyWENO code, the first cell has an index of 0.
-
-"""
+"""PyWENO WENO class."""
 
 import math
 import sys
 
 import numpy as np
 import scipy.optimize
+import h5py as h5
+import re
 
 import pyweno.grid
 import pyweno.stencil
@@ -22,6 +18,8 @@ import pyweno.cweno
 ######################################################################
 # private helpers
 #
+
+# XXX: add tests for these...
 
 def _omegaerr(omega, s, cs, c):
     """Helper function for computing the sum of squared errors.
@@ -122,7 +120,7 @@ class WENO(object):
 
     From a cache::
 
-    >>> weno = pyweno.weno.WENO(order=k, cache='mycache.mat')
+    >>> weno = pyweno.weno.WENO(order=k, cache='mycache.h5')
 
     Pre-compute reconstruction coefficients and optimal weights at the
     left and right boundaries::
@@ -137,33 +135,29 @@ class WENO(object):
     >>> weno.smoothness(f_avg)
     >>> weno.reconstruct(f_avg, 'left', f_left)
 
-    Cache to a MATLAB file (through SciPy)::
-
-    >>> weno.cache('mycache.mat')
-
     Cache to an HDF5 file (through H5PY)::
 
-    >>> weno.cache('mycache.h5', format='h5py')
+    >>> weno.cache('mycache.h5')
 
     **Instance variables**
 
     * *grid*  - spatial grid
     * *order* - order of stencil approximations
+    * *k*     - same as *order*
     * *beta*  - smoothness indicator coefficients
     * *c*     - dictionary of reconstruction coefficients
     * *w*     - dictionary of optimal weights
 
     **Keyword arguments (without cache)**
 
-    * *grid*       - spatial grid (``pyweno.grid.Grid``)
-    * *order*      - order of approximation
-    * *smoothness* - type of smoothness indicator to use
+    * *grid*           - spatial grid (``pyweno.grid.Grid``)
+    * *order* (or *k*) - order of approximation
+    * *smoothness*     - type of smoothness indicator to use
 
     **Keyword arguments (with cache)**
 
-    * *cache*  - cache file
-    * *order*  - order of stencil approximation
-    * *format* - format of cache file (default is ``'mat'``)
+    * *cache*          - cache file
+    * *order* (or *k*) - order of stencil approximation
 
     **Methods**
 
@@ -179,11 +173,18 @@ class WENO(object):
     #
 
     def __init__(self,
-                 order=3,
-                 cache=None,
-                 format='mat',
-                 smoothness='jiang_shu',
-                 grid=None):
+                 order=None, k=None,
+                 grid=None, cache=None,
+                 smoothness='jiang_shu', **kwargs):
+
+        if (order is None) and (k is None):
+            order = 3
+
+        if (order is None) and (k is not None):
+            order = k
+
+        self.order = order
+        self.k     = order
 
         # compute or load from cache
         if (grid is None) and (cache is None):
@@ -191,93 +192,60 @@ class WENO(object):
         elif (grid is not None) and (cache is not None):
             raise ValueError, 'both grid and cache cannot be specified'
         elif (grid is not None):
-            self._init_with_grid(grid, order, smoothness)
+            self._init_with_grid(grid, smoothness)
         else:
-            self._init_with_cache(cache, order, format)
+            self._init_with_cache(cache)
 
         # allocate remaining buffers
-        N = self.grid.size
-        k = self.order
-
-        self.sigma = np.zeros((N,k))
+        self.sigma = np.zeros((self.grid.N,self.k))
 
 
-    def _init_with_cache(self, cache, order, format):
+    def _init_with_cache(self, cache):
 
-        self.order = order
+        # XXX: if there is only one k in the h5 file, use that by
+        # default so we don't have to explicitly pass an 'order'
 
         self.c = {}
         self.w = {}
 
-        if format is 'h5py':
-            import h5py as h5
-            import re
+        self.grid = pyweno.grid.Grid(cache=cache)
 
-            self.grid = pyweno.grid.Grid(cache=cache, format='h5py')
+        hdf = h5.File(cache, 'r')
 
-            hdf = h5.File(cache, 'r')
+        try:
+            k_sgrp = hdf['weno/k%d' % (self.k)]
 
-            try:
-                k_sgrp = hdf['weno/k%d' % (self.order)]
+            dst = k_sgrp['beta']
+            self.beta = np.zeros(dst.shape)
+            dst.read_direct(self.beta)
 
-                dst = k_sgrp['beta']
-                self.beta = np.zeros(dst.shape)
-                dst.read_direct(self.beta)
+            for key in k_sgrp:
 
-                for key in k_sgrp:
+                if key == 'beta':
+                    continue
 
-                    if key == 'beta':
-                        continue
+                key_sgrp = k_sgrp[key]
 
-                    key_sgrp = k_sgrp[key]
+                dst = key_sgrp['c']
+                self.c[key] = np.zeros(dst.shape)
+                dst.read_direct(self.c[key])
 
-                    dst = key_sgrp['c']
-                    self.c[key] = np.zeros(dst.shape)
-                    dst.read_direct(self.c[key])
+                dst = key_sgrp['w']
+                self.w[key] = np.zeros(dst.shape)
+                dst.read_direct(self.w[key])
 
-                    dst = key_sgrp['w']
-                    self.w[key] = np.zeros(dst.shape)
-                    dst.read_direct(self.w[key])
-
-                    self._pre_allocate_key(key)
-
-            finally:
-                hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-            import re
-
-            self.grid = pyweno.grid.Grid(cache=cache, format='mat')
-
-            mat = sio.loadmat(cache) # , struct_as_record=True)
-
-            for key in mat:
-                m = re.match(r'weno.k(\d+)\.c\.(.+)', key)
-                if (m is not None) and (int(m.group(1)) == order):
-                    self.c[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
-
-                m = re.match(r'weno.k(\d+)\.w\.(.+)', key)
-                if (m is not None) and (int(m.group(1)) == order):
-                    self.w[m.group(2)] = np.ascontiguousarray(mat[m.group(0)])
-
-
-            for key in self.c:
                 self._pre_allocate_key(key)
 
-            self.beta = np.ascontiguousarray(mat['weno.beta'])
-
-        else:
-            raise ValueError, "cache format '%s' not supported" % (format)
+        finally:
+            hdf.close()
 
 
-    def _init_with_grid(self, grid, order, smoothness):
+    def _init_with_grid(self, grid, smoothness):
 
         self.grid  = grid
-        self.order = order
 
-        N = self.grid.size
-        k = self.order
+        N = self.grid.N
+        k = self.k
 
         # allocate beta and precompute
         if self.grid.uniform:
@@ -344,8 +312,8 @@ class WENO(object):
         """
 
         grid = self.grid
-        N = self.grid.size
-        k = self.order
+        N = self.grid.N
+        k = self.k
 
         # get shape of order k coeffs
         stncl = pyweno.stencil.Stencil(grid=grid, order=k, shift=0)
@@ -477,15 +445,10 @@ class WENO(object):
     # cache
     #
 
-    def cache(self, output, format='mat'):
+    def cache(self, output):
         """Store grid, all reconstruction coefficients, all optimal
            weights, and smoothness indicator coefficients in the cache
            file *output*.
-
-           Supported formats are:
-
-           * ``'mat'`` - MATLAB compatible matrix file (through SciPy)
-           * ``'h5py'`` - HDF5 file (through H5PY)
 
            The reconstruction coefficients, optimal weights, and
            smoothness indicator coefficients are *appended* to the
@@ -494,59 +457,35 @@ class WENO(object):
            preserved.
         """
 
-        k = self.order
+        self.grid.cache(output)
 
-        self.grid.cache(output, format)
+        hdf = h5.File(output, 'a')
 
-        if format is 'h5py':
-            import h5py as h5
+        try:
+            if 'weno' in hdf:
+                sgrp = hdf['weno']
+            else:
+                sgrp = hdf.create_group('weno')
 
-            hdf = h5.File(output, 'a')
+            kstr = 'k%d' % (self.k)
+            if kstr in sgrp:
+                del sgrp[kstr]
 
-            try:
-                if 'weno' in hdf:
-                    sgrp = hdf['weno']
-                else:
-                    sgrp = hdf.create_group('weno')
-
-                kstr = 'k%d' % (k)
-                if kstr in sgrp:
-                    del sgrp[kstr]
-
-                k_sgrp = sgrp.create_group(kstr)
-
-                for key in self.c:
-                    key_sgrp = k_sgrp.create_group(key)
-                    key_sgrp.create_dataset('c', data=self.c[key])
-                    key_sgrp.create_dataset('w', data=self.w[key])
-
-                k_sgrp.create_dataset('beta', data=self.beta)
-
-            finally:
-                hdf.close()
-
-        elif format is 'mat':
-            import scipy.io as sio
-
-            try:
-                mat = sio.loadmat(output) #, struct_as_record=True)
-            except:
-                mat = {}
+            k_sgrp = sgrp.create_group(kstr)
 
             for key in self.c:
-                mat['weno.k%d.c.%s' % (k, key)] = self.c[key]
-                mat['weno.k%d.w.%s' % (k, key)] = self.w[key]
+                key_sgrp = k_sgrp.create_group(key)
+                key_sgrp.create_dataset('c', data=self.c[key])
+                key_sgrp.create_dataset('w', data=self.w[key])
 
-            mat['weno.beta'] = self.beta
+            k_sgrp.create_dataset('beta', data=self.beta)
 
-            sio.savemat(output, mat)
-
-        else:
-            raise ValueError, "cache format '%s' not supported" % (format)
+        finally:
+            hdf.close()
 
 
     ##################################################################
-    # smoothness and reconstruct wrappers
+    # smoothness and reconstruction wrappers
     #
 
     def smoothness(self, q, imin=0, imax=-1):
@@ -579,8 +518,8 @@ class WENO(object):
 
            """
 
-        N = self.grid.size
-        k = self.order
+        N = self.grid.N
+        k = self.k
 
         if imax == -1:
             imax = N - 1
@@ -593,6 +532,8 @@ class WENO(object):
         sigma = self.sigma
         varpi = self.w[key][s+(k-1),:,:]
         wr    = self.wr[key]
+
+        # XXX: move this if/else crap to C
 
         if (imin >= k-1) and (imax <= N-k):
             weights(imin, imax, sigma, varpi, wr)
@@ -640,8 +581,8 @@ class WENO(object):
 
         """
 
-        N = self.grid.size
-        k = self.order
+        N = self.grid.N
+        k = self.k
 
         if imax == -1:
             imax = N - 1
@@ -658,11 +599,7 @@ class WENO(object):
         wr = self.wr[key]
         qr = self.qr[key]
 
-        if len(qr.shape) == 3:
-            for l in range(qr.shape[0]):
-                pass
-        else:
-            pass
+        # XXX: move this if/else crap to C
 
         if (imin >= k-1) and (imax <= N-k):
 
