@@ -27,14 +27,12 @@ dot(double *u, double *v, int n, int s)
   double d;
   int i;
 
-  d = *u * *v;
-  for (i=1; i<n; i++) {
-    u++;
-    v += s;
-    d += *u * *v;
+  d = 0.0;
+  for (i=0; i<n; i++) {
+    d += u[i] * v[i*s];
   }
 
-   return d;
+  return d;
 }
 
 
@@ -43,9 +41,9 @@ dot(double *u, double *v, int n, int s)
  *         indicator s
  */
 double
-alpha(double *w, double *s)
+alpha(double w, double s)
 {
-  return *w / ( (10e-6 + *s) * (10e-6 + *s) );
+  return w / ( (10e-6 + s) * (10e-6 + s) );
 }
 
 
@@ -107,24 +105,17 @@ weights_nonuniform(PyObject *self, PyObject *args)
     for (l=0; l<n; l++) {
       sum_alpha = 0.0;
 
-      w = (double *) PyArray_GETPTR3(w_py, i, l, rmin);
-      wr = (double *) PyArray_GETPTR3(wr_py, i, l, rmin);
-      sigma = (double *) PyArray_GETPTR2(sigma_py, i, rmin);
+      w = (double *) PyArray_GETPTR3(w_py, i, l, 0);
+      wr = (double *) PyArray_GETPTR3(wr_py, i, l, 0);
+      sigma = (double *) PyArray_GETPTR2(sigma_py, i, 0);
 
       for (r=rmin; r<=rmax; r++) {
-        *wr = alpha(w, sigma);
-
-        sum_alpha += *wr;
-
-        wr++;
-        w++;
-        sigma++;
+        wr[r] = alpha(w[r], sigma[r]);
+        sum_alpha += wr[r];
       }
 
-      wr = (double *) PyArray_GETPTR3(wr_py, i, l, rmin);
       for (r=rmin; r<=rmax; r++) {
-        *wr /= sum_alpha;
-        wr++;
+        wr[r] /= sum_alpha;
       }
     }
   }
@@ -195,24 +186,17 @@ weights_uniform(PyObject *self, PyObject *args)
     for (l=0; l<n; l++) {
       sum_alpha = 0.0;
 
-      w = (double *) PyArray_GETPTR2(w_py, l, rmin);
-      wr = (double *) PyArray_GETPTR3(wr_py, i, l, rmin);
-      sigma = (double *) PyArray_GETPTR2(sigma_py, i, rmin);
+      w = (double *) PyArray_GETPTR2(w_py, l, 0);
+      wr = (double *) PyArray_GETPTR3(wr_py, i, l, 0);
+      sigma = (double *) PyArray_GETPTR2(sigma_py, i, 0);
 
       for (r=rmin; r<=rmax; r++) {
-        *wr = alpha(w, sigma);
-
-        sum_alpha += *wr;
-
-        wr++;
-        w++;
-        sigma++;
+        wr[r] = alpha(w[r], sigma[r]);
+        sum_alpha += wr[0];
       }
 
-      wr = (double *) PyArray_GETPTR3(wr_py, i, l, rmin);
       for (r=rmin; r<=rmax; r++) {
-        *wr /= sum_alpha;
-        wr++;
+        wr[r] /= sum_alpha;
       }
     }
   }

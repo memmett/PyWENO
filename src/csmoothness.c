@@ -71,8 +71,8 @@ sigma_nonuniform(PyObject *self, PyObject *args)
         for (n=m; n<2*k-r-1; n++) {
 
           beta = (double *) PyArray_GETPTR4(beta_py, i, r, m, n);
-          fm = (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
-          fn = (double *) PyArray_GETPTR1(f_py, i-(k-1)+n);
+          fm =   (double *) PyArray_GETPTR1(f_py, i-(k-1)+m);
+          fn =   (double *) PyArray_GETPTR1(f_py, i-(k-1)+n);
 
           sum += (*beta) * (*fm) * (*fn);
         }
@@ -80,7 +80,6 @@ sigma_nonuniform(PyObject *self, PyObject *args)
 
       sigma = (double *) PyArray_GETPTR2(sigma_py, i, r);
       *sigma = sum;
-
     }
   }
 
@@ -131,7 +130,6 @@ sigma_nonuniform(PyObject *self, PyObject *args)
   /*
    * done
    */
-
   Py_INCREF(Py_None);
   return Py_None;
 }
@@ -254,7 +252,6 @@ sigma_uniform(PyObject *self, PyObject *args)
   /*
    * done
    */
-
   Py_INCREF(Py_None);
   return Py_None;
 }
