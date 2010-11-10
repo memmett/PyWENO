@@ -16,96 +16,6 @@ import pyweno.cweno
 
 
 ######################################################################
-# private helpers
-#
-
-# XXX: add tests for these...
-
-def _omegaerr(omega, s, cs, c):
-    """Helper function for computing the sum of squared errors.
-
-       **Arguments:**
-
-       * *omega* - guess for optimal weights, indexed as omega[r],
-          where r is modified by the biasing
-       * *cs* - order 2k-|s|-1 reconstruction coeffs (c^*), indexed as
-          cs[j], where j is modified by the biasing
-       * *c* - order k reconstruction coeffs (c^r), indexed as
-          c[r,j], where r is not modified by the biasing
-
-    """
-
-    err = cs.copy()
-
-    k = c.shape[0]
-
-    for j in xrange(2*k-abs(s)-1):      # cycle through all entries of cs[j]
-
-        js = j - min(0,s)               # if s were 0, j would be js
-
-        r_min = max(0, (k-1)-js)
-        r_max = min(k-1, 2*(k-1)-js)
-
-        # remove any r's that don't apply due to biasing
-        rs = range(r_min, r_max+1)
-        if (s < 0):
-            for r in range(abs(s)):
-                if k-1-r in rs:
-                    rs.remove(k-1-r)
-        elif (s > 0):
-            for r in range(abs(s)):
-                if r in rs:
-                    rs.remove(r)
-
-        # giv'r
-        for r in rs:
-            err[j] = err[j] - omega[r-max(0,s)] * c[r,r-(k-1)+js]
-
-    return np.linalg.norm(err)
-
-
-def _makecons(j):
-    """Helper function for creating optimisation constraints."""
-    return lambda x: x[j]
-
-
-def _varpi(key, k, s, cs, c, verbose=True):
-
-    wc = np.zeros(k)
-
-    # function to minimise and initial guess
-    f = lambda x: _omegaerr(x, s, cs[:], c[:,:])
-    x0 = np.ones(k - abs(s)) / (k - abs(s))
-
-    # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
-    cons = list(range(k-abs(s)))
-    for j in xrange(k-abs(s)):
-        cons[j] = _makecons(j)
-    cons.append(lambda x: 1.0 - sum(x))
-    cons.append(lambda x: sum(x) - 1.0)
-
-    x = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
-    wc[0+max(0,s):k-abs(s)+max(0,s)] = x[:]
-
-    # use equal weights when good optimal weights can't be found
-    method = 'minimised'
-    if f(x) > 1e-5:
-        x = np.ones(k - abs(s)) / (k - abs(s))
-        wc[0+max(0,s):k-abs(s)+max(0,s)] = x0[:]
-        method = 'equal'
-
-    if verbose:
-        print "optimal weights (%s, s=%+d, %s) error: %g" % (key, s, method, f(x))
-
-    # reset w^r_i to 0.0 if w^r_i <= 1e-12
-    for j in xrange(k):
-        if wc[j] <= 1e-12:
-            wc[j] = 0.0
-
-    return wc
-
-
-######################################################################
 # WENO
 #
 
@@ -620,3 +530,93 @@ class WENO(object):
                 s = i - (N - k + 1) + 1
                 reconstruct(q, s, i, i, c, wr, qr, qs)
 
+
+
+######################################################################
+# private helpers
+#
+
+# XXX: add tests for these...
+
+def _omegaerr(omega, s, cs, c):
+    """Helper function for computing the sum of squared errors.
+
+       **Arguments:**
+
+       * *omega* - guess for optimal weights, indexed as omega[r],
+          where r is modified by the biasing
+       * *cs* - order 2k-|s|-1 reconstruction coeffs (c^*), indexed as
+          cs[j], where j is modified by the biasing
+       * *c* - order k reconstruction coeffs (c^r), indexed as
+          c[r,j], where r is not modified by the biasing
+
+    """
+
+    err = cs.copy()
+
+    k = c.shape[0]
+
+    for j in xrange(2*k-abs(s)-1):      # cycle through all entries of cs[j]
+
+        js = j - min(0,s)               # if s were 0, j would be js
+
+        r_min = max(0, (k-1)-js)
+        r_max = min(k-1, 2*(k-1)-js)
+
+        # remove any r's that don't apply due to biasing
+        rs = range(r_min, r_max+1)
+        if (s < 0):
+            for r in range(abs(s)):
+                if k-1-r in rs:
+                    rs.remove(k-1-r)
+        elif (s > 0):
+            for r in range(abs(s)):
+                if r in rs:
+                    rs.remove(r)
+
+        # giv'r
+        for r in rs:
+            err[j] = err[j] - omega[r-max(0,s)] * c[r,r-(k-1)+js]
+
+    return np.linalg.norm(err)
+
+
+def _makecons(j):
+    """Helper function for creating optimisation constraints."""
+    return lambda x: x[j]
+
+
+def _varpi(key, k, s, cs, c, verbose=True):
+
+    wc = np.zeros(k)
+
+    # function to minimise and initial guess
+    f = lambda x: _omegaerr(x, s, cs[:], c[:,:])
+    x0 = np.ones(k - abs(s)) / (k - abs(s))
+
+    # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
+    cons = list(range(k-abs(s)))
+    for j in xrange(k-abs(s)):
+        cons[j] = _makecons(j)
+    cons.append(lambda x: 1.0 - sum(x))
+    cons.append(lambda x: sum(x) - 1.0)
+
+    x = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
+    wc[0+max(0,s):k-abs(s)+max(0,s)] = x[:]
+
+    # use equal weights when good optimal weights can't be found
+    method = 'minimised'
+    if f(x) > 1e-5:
+        x = np.ones(k - abs(s)) / (k - abs(s))
+        wc[0+max(0,s):k-abs(s)+max(0,s)] = x0[:]
+        method = 'equal'
+
+    if verbose:
+        print "optimal weights (%s, s=%+d, %s) error: %g" % (key, s, method, f(x))
+
+    # reset w^r_i to 0.0 if w^r_i <= 1e-12
+    for j in xrange(k):
+        if wc[j] <= 1e-12:
+            wc[j] = 0.0
+
+    return wc
