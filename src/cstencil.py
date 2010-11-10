@@ -16,7 +16,7 @@
 from textwrap import dedent
 
 # set of k values to generate reconstruction functions for
-K = range(3, 10)
+K = range(3, 5+1)
 
 
 ######################################################################
@@ -244,7 +244,7 @@ def reconstruction_coeff_functions_d2(k):
 for k in K:
     reconstruction_coeff_functions_d0(k)
     reconstruction_coeff_functions_d1(k)
-    reconstruction_coeff_functions_d2(k)
+    #reconstruction_coeff_functions_d2(k)
 
 
 ######################################################################
@@ -266,7 +266,7 @@ for k in K:
     f.write(dedent('''\
              void reconstruction_coeffs_k%(k)d_d0(double xi, long int i, int r, double *x, double *c);
              void reconstruction_coeffs_k%(k)d_d1(double xi, long int i, int r, double *x, double *c);
-             void reconstruction_coeffs_k%(k)d_d2(double xi, long int i, int r, double *x, double *c);
+             // void reconstruction_coeffs_k%(k)d_d2(double xi, long int i, int r, double *x, double *c);
              ''' % {'k': k}))
 
 f.write(dedent('''\
@@ -316,8 +316,8 @@ for k in K:
                  reconstruction_coeffs_k%(k)d_d0(xi, i, r, x, c);
                else if (d==1)
                  reconstruction_coeffs_k%(k)d_d1(xi, i, r, x, c);
-               else if (d==2)
-                 reconstruction_coeffs_k%(k)d_d2(xi, i, r, x, c);
+               //else if (d==2)
+               //  reconstruction_coeffs_k%(k)d_d2(xi, i, r, x, c);
                break;
              ''' % {'k': k}))
 
