@@ -7,25 +7,13 @@
 
 void reconstruction_coeffs_k3_d0(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k3_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k3_d2(double xi, long int i, int r, double *x, double *c);
+// void reconstruction_coeffs_k3_d2(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k4_d0(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k4_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k4_d2(double xi, long int i, int r, double *x, double *c);
+// void reconstruction_coeffs_k4_d2(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k5_d0(double xi, long int i, int r, double *x, double *c);
 void reconstruction_coeffs_k5_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k5_d2(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k6_d0(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k6_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k6_d2(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k7_d0(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k7_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k7_d2(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k8_d0(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k8_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k8_d2(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k9_d0(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k9_d1(double xi, long int i, int r, double *x, double *c);
-void reconstruction_coeffs_k9_d2(double xi, long int i, int r, double *x, double *c);
+// void reconstruction_coeffs_k5_d2(double xi, long int i, int r, double *x, double *c);
 
 
 PyObject *
@@ -68,56 +56,24 @@ case 3:
     reconstruction_coeffs_k3_d0(xi, i, r, x, c);
   else if (d==1)
     reconstruction_coeffs_k3_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k3_d2(xi, i, r, x, c);
+  //else if (d==2)
+  //  reconstruction_coeffs_k3_d2(xi, i, r, x, c);
   break;
 case 4:
   if (d==0)
     reconstruction_coeffs_k4_d0(xi, i, r, x, c);
   else if (d==1)
     reconstruction_coeffs_k4_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k4_d2(xi, i, r, x, c);
+  //else if (d==2)
+  //  reconstruction_coeffs_k4_d2(xi, i, r, x, c);
   break;
 case 5:
   if (d==0)
     reconstruction_coeffs_k5_d0(xi, i, r, x, c);
   else if (d==1)
     reconstruction_coeffs_k5_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k5_d2(xi, i, r, x, c);
-  break;
-case 6:
-  if (d==0)
-    reconstruction_coeffs_k6_d0(xi, i, r, x, c);
-  else if (d==1)
-    reconstruction_coeffs_k6_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k6_d2(xi, i, r, x, c);
-  break;
-case 7:
-  if (d==0)
-    reconstruction_coeffs_k7_d0(xi, i, r, x, c);
-  else if (d==1)
-    reconstruction_coeffs_k7_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k7_d2(xi, i, r, x, c);
-  break;
-case 8:
-  if (d==0)
-    reconstruction_coeffs_k8_d0(xi, i, r, x, c);
-  else if (d==1)
-    reconstruction_coeffs_k8_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k8_d2(xi, i, r, x, c);
-  break;
-case 9:
-  if (d==0)
-    reconstruction_coeffs_k9_d0(xi, i, r, x, c);
-  else if (d==1)
-    reconstruction_coeffs_k9_d1(xi, i, r, x, c);
-  else if (d==2)
-    reconstruction_coeffs_k9_d2(xi, i, r, x, c);
+  //else if (d==2)
+  //  reconstruction_coeffs_k5_d2(xi, i, r, x, c);
   break;
     default:
       return NULL;
