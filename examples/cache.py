@@ -6,7 +6,7 @@ import pyweno.grid
 import pyweno.weno
 
 # first, define the stencil order k and cache file
-k = 5
+k = 3
 cache = 'gridk%d.h5' % (k)
 
 # if the cache file isn't present ...

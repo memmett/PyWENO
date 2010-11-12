@@ -23,7 +23,7 @@ def fp(x):
 ufp = numpy.frompyfunc(fp, 1, 1)
 
 # load the weno reconstructor from the cache
-k = 4
+k = 3
 x = numpy.linspace(-4.0, 4.0, 21)
 
 grid = pyweno.grid.Grid(x)
@@ -98,12 +98,11 @@ plt.subplot(2,1,2)
 plt.plot(grid.centres(), weno.sigma[:,0], '.r')
 plt.plot(grid.centres(), weno.sigma[:,1], '.b')
 plt.plot(grid.centres(), weno.sigma[:,2], '.k')
-plt.plot(grid.centres(), weno.sigma[:,3], '.m')
 
 plt.ylabel('sigma')
 plt.xlabel('x')
-plt.legend(['r=0', 'r=1', 'r=2', 'r=3'])
+plt.legend(['r=0', 'r=1', 'r=2'])
 
-plt.savefig('discontinuous.png', format='png')
+plt.savefig('uniform_discontinuous.png', format='png')
 
 
