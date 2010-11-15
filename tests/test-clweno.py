@@ -40,29 +40,35 @@ def test_by_reconstructing_uniform():
         for s in (0,):                  # XXX: test more s values
 
             weno = pyweno.clweno.CLWENO(ctx=ctx, grid=grid, order=k)
+            weno.precompute_reconstruction('left')
+
+            weno2 = pyweno.weno.WENO(grid=grid, order=k)
+            weno2.precompute_reconstruction('left')
+
+            # f reconstructed at boundaries
+            frcnst = np.zeros(grid.N)
+
             weno.smoothness(fbar)
+            weno2.smoothness(fbar)
 
-            # weno.precompute_reconstruction('left')
-            # weno.precompute_reconstruction('d|left')
+            weno.weights('left')
+#            weno.weights('left')
+            weno2.weights('left')
 
-            # # f reconstructed at boundaries
-            # frcnst = np.zeros((grid.N,3))
-            # fprcnst = np.zeros((grid.N,3))
+            print weno.wr['left']
+            print weno2.wr['left']
+            
+            weno.reconstruct(fbar, 'left', frcnst, s=s) #, compute_weights=False)
+#            print weno.wr['left']
+#            print weno2.wr['left']
 
-            # weno.smoothness(fbar[0,:])
-            # weno.reconstruct(fbar[0,:], 'left', frcnst[:,0], s=s)
-            # weno.reconstruct(fbar[0,:], 'd|left', fprcnst[:,0], s=s)
+            # assert
+            d  = fbndry[:-1] - frcnst[:]
+            l2 = math.sqrt(np.dot(d, d))
 
-            # # assert
-            # d  = fbndry[:-1] - frcnst[:,0]
-            # l2 = math.sqrt(np.dot(d, d))
+            print l2
 
-            # assert l2 < 1e-10, "WENO (k=%d, left) is broken" % (k)
-
-            # d  = fpbndry[:-1] - fprcnst[:,0]
-            # l2 = math.sqrt(np.dot(d, d))
-
-            # assert l2 < 1e-10, "WENO (k=%d, d|left) is broken" % (k)
+            assert l2 < 1e-8, "WENO (k=%d, left) is broken" % (k)
 
 
 
