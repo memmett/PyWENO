@@ -101,13 +101,10 @@ def test_coefficients():
     c = stencil.c['left']
     c_exact = np.array([1.8333333333333337, -1.166666666666667, 0.33333333333333348])
 
-    assert np.all(c == c_exact)
+    assert np.max(abs(c - c_exact)) < 1e-10, 'left coefficients are broken'
 
     stencil.reconstruction_coeffs('right')
     c = stencil.c['right']
     c_exact = np.array([0.3333333333333332, 0.83333333333333348, -0.16666666666666671])
 
-    assert np.all(c == c_exact)
-
-if __name__ == '__main__':
-    test_coefficients()
+    assert np.max(abs(c - c_exact)) < 1e-10, 'right coefficients are broken'

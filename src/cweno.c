@@ -192,7 +192,7 @@ weights_uniform(PyObject *self, PyObject *args)
 
       for (r=rmin; r<=rmax; r++) {
         wr[r] = alpha(w[r], sigma[r]);
-        sum_alpha += wr[0];
+        sum_alpha += wr[r];
       }
 
       for (r=rmin; r<=rmax; r++) {

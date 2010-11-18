@@ -7,6 +7,11 @@ WENO class
 .. autoclass:: pyweno.weno.WENO
    :members:
 
+CLWENO class
+------------
+
+.. autoclass:: pyweno.clweno.CLWENO
+
 Grid class
 ----------
 

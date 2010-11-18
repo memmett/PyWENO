@@ -12,9 +12,9 @@ import pyweno.weno
 ######################################################################
 # test cache
 
-def test_cache():
-    raise NotImplementedError
-
+# XXX
+# def test_cache():
+#     raise NotImplementedError
 
 ######################################################################
 # test by reconstructing
@@ -27,9 +27,15 @@ def fp(x):
     return -1.0 + 2.0*x
 ufp = np.frompyfunc(fp, 1, 1)
 
+<<<<<<< HEAD:tests/test-weno.py
 def test_by_reconstructing_uniform():
 
     K = range(3, 5)
+=======
+def test_reconstruction():
+
+    K = range(3, 4)
+>>>>>>> f0a56b840fe9993b98b3f55d40ca4ce2c1d546e3:tests/test-weno.py
     x = np.linspace(0.0, 1.0)
     grid = pyweno.grid.Grid(boundaries=x)
 
@@ -107,9 +113,5 @@ def test_coefficients_uniform():
                          [[0.0, 0.49999999999929795, 0.50000000000070211]],
                          [[0.0, 0.0, 1.0]]])
 
-    assert(np.all(sigma_exact == weno.sigma))
-    assert(np.all(wr_exact == weno.wr['left']))
-
-
-if __name__ == '__main__':
-    test_coefficients_uniform()
+    assert np.max(abs(sigma_exact - weno.sigma)) < 1e-10
+    assert np.max(abs(wr_exact - weno.wr['left'])) < 1e-10
