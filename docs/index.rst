@@ -7,6 +7,7 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 
 **News**
 
+* November 19 2010: PyWENO now has preliminary support for OpenCL (GPUs).
 * October 17 2010: `PyWENO 0.5.7`_ released (see :doc:`what's new <whatsnew>`).
 * February 22 2010: `PyWENO 0.5.0`_ released (see :doc:`what's new <whatsnew>`).
 * January 29 2010: `PyWENO 0.4.0`_ released (see :doc:`what's new <whatsnew>`).

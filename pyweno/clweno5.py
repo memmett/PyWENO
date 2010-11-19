@@ -4,8 +4,6 @@
 import numpy as np
 import pyopencl as cl
 
-import pyweno.weno
-
 
 ######################################################################
 # WENO
@@ -15,17 +13,28 @@ class CLWENO5PM(object):
     """OpenCL WENO5 class.
 
     This class is a highly optimised OpenCL WENO class for 5th order
-    reconstructions at the left and right boundary of each cell.
+    reconstructions at the left boundary of each cell on uniform
+    grids.
+
+    Two reconstructions are computed for each cell boundary.  These
+    reconstructions are called the *plus* and *minus* reconstructions,
+    and can be thought of as right and left limits as in calculus.
 
     **Basic usage**
 
-    >>> weno = pyweno.weno.CLWENO5LR()
-    >>> weno.reconstruct(fbar, f_left, f_right)
+    To reconstruct *f* from ``f_avg``::
+
+    >>> f_plus  = np.zeros(grid.size)
+    >>> f_minus = np.zeros(grid.size)
+    >>> weno = pyweno.clweno5.CLWENO5PM()
+    >>> weno.reconstruct(f_avg, f_plus, f_minus)
 
     **Keyword arguments**
 
     * *ctx* - PyOpenCL context (if ``None``, a context is created)
     * *queue* - PyOpenCL queue (if ``None``, a queue is created)
+
+    **Methods**
 
     """
 
@@ -53,6 +62,19 @@ class CLWENO5PM(object):
     #
 
     def reconstruct(self, q, q_plus, q_minus):
+        """Reconstruct *q* at the left edge of each cell and store the
+           results in *q_plus* (right/+ limit) and *q_minus* (left/-
+           limit).
+
+           **Arguments:**
+
+           * *q* - cell averages of function to reconstruct
+           * *q_plus* - store + reconstruction here
+           * *q_minus* - store - reconstruction here
+
+           NOTE: the domain boundaries are avoided (zeroed out in
+           *q_plus* and *q_minus*).
+        """
 
         k = 3
 
