@@ -245,8 +245,9 @@ class WENO(object):
         #### optimal weights (varpi)
         if grid.uniform:
 
+            #### uniform grid, only do one cell
+
             c = np.zeros((n,k,k))
-            w = np.zeros((2*k-1,n,k))
 
             if n == 1:
                 for r in xrange(k):
@@ -261,12 +262,11 @@ class WENO(object):
                     c[:,r,:] = stncl.c[key][:,:]
 
             self.c[key] = c
-            self.w[key] = w
 
             if verbose:
                 print "weights (%s): uniform grid..." % key
 
-            #### uniform grid, only do one cell
+            self.w[key] = np.zeros((2*k-1,n,k))
 
             for s in range(-(k-1), k):
 
@@ -276,6 +276,7 @@ class WENO(object):
                 stncl = pyweno.stencil.Stencil(grid=grid, order=order, shift=shift)
                 stncl.reconstruction_coeffs(key, xi)
                 cstar = np.zeros((n,order))
+
                 if n == 1:
                     cstar[0,:] = stncl.c[key][:]
                 else:
@@ -291,60 +292,53 @@ class WENO(object):
 
         else:
 
-            raise NotImplemented, 'not finished yet...'
-
             #### non-uniform grid, cycle through all cells
 
-            # c indexing should be: N,l,r,k
+            c = np.zeros((N,n,k,k))
 
-            # XXX
-
-            shape = stncl.c[key].shape
-            if len(shape) > 2:
-                n = shape[1]
-                c = np.zeros((N,k,n,k))
+            if n == 1:
+                for r in xrange(k):
+                    stncl = pyweno.stencil.Stencil(grid=grid, order=k, shift=r)
+                    stncl.reconstruction_coeffs(key, xi)
+                    c[:,0,r,:] = stncl.c[key][:,:]
             else:
-                c = np.zeros((N,k,k))
+                for r in xrange(k):
+                    stncl = pyweno.stencil.Stencil(grid=grid, order=k, shift=r)
+                    stncl.reconstruction_coeffs(key, xi)
+                    c[:,:,r,:] = stncl.c[key][:,:,:]
 
-            # XXX
-            for r in xrange(k):
-                stncl = pyweno.stencil.Stencil(grid=grid, order=k, shift=r)
-                stncl.reconstruction_coeffs(key, xi)
-                c[:,r,:,:] = stncl.c[key][:,:,:]
+            self.c[key] = c
+
+            if verbose:
+                print "weights (%s): uniform grid..." % key
+
+            self.w[key] = np.zeros((2*k-1,N,n,k))
 
             for s in range(-(k-1), k):
-
-                w = np.zeros((N,k))
 
                 # order 2k-abs(s)-1 coeffs (c^*)
                 order = 2*k-abs(s)-1
                 shift = k + min(0,s) - 1
                 stncl = pyweno.stencil.Stencil(grid=grid, order=order, shift=shift)
                 stncl.reconstruction_coeffs(key, xi)
-                cstar = stncl.c[key]
+                cstar = np.zeros((N,n,order))
+
+                if n == 1:
+                    cstar[:,0,:] = stncl.c[key][:,:]
+                else:
+                    cstar[:,:,:] = stncl.c[key][:,:,:]
+
+                print cstar
+                print self.c[key]
 
                 for i in xrange(shift,N-order+shift+1):
+                    for l in range(n):
+                        wc = _varpi(key, k, s, cstar[i,l,:], c[i,l,:,:], verbose)
+                        self.w[key][s+(k-1),i,l,:] = wc[:]
 
-                    # function to minimise and initial guess
-                    f = lambda x: _omegaerr(x, s, cstar[i,:,:], c[i,:,:,:])
-                    x0 = 0.5 * np.ones(k - abs(s))
+            if verbose:
+                print "weights (%s): uniform grid... done." % key
 
-                    # constraints: w^r_i >= 0, sum_{r=0}^{k-1} w^r_i = 1
-                    cons = list(range(k-abs(s)))
-                    for j in xrange(k-abs(s)):
-                        cons[j] = _makecons(j)
-                    cons.append(lambda x: 1.0 - sum(x))
-                    cons.append(lambda x: sum(x) - 1.0)
-
-                    x = scipy.optimize.fmin_cobyla(f, x0, cons, rhoend=1e-12, iprint=0)
-                    w[i,0+max(0,s):k-abs(s)+max(0,s)] = x[:]
-
-                    # reset w^r_i to 0.0 if w^r_i <= 1e-12
-                    for j in xrange(k):
-                        if w[i,j] <= 1e-12:
-                            w[i,j] = 0.0
-
-                self.w[key][s+(k-1),:,:] = w[:,:]
 
 
         # pre-allocate work space
@@ -436,11 +430,12 @@ class WENO(object):
 
         if self.grid.uniform:
             weights = pyweno.cweno.weights_uniform
+            varpi = self.w[key][s+(k-1),:,:]
         else:
             weights = pyweno.cweno.weights_nonuniform
+            varpi = self.w[key][s+(k-1),:,:,:]
 
         sigma = self.sigma
-        varpi = self.w[key][s+(k-1),:,:]
         wr    = self.wr[key]
 
         # XXX: move this if/else crap to C
