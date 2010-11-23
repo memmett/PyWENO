@@ -50,18 +50,13 @@
             
   <div class="section" id="pyweno-examples">
 <h1>PyWENO Examples<a class="headerlink" href="#pyweno-examples" title="Permalink to this headline">¶</a></h1>
-<p>Throughout these examples we will reconstruct:</p>
-<ul class="simple">
-<li>functions at the left and right edges of each cell,</li>
-<li>functions at the Gaussian 3-point quadrature points within each cell,</li>
-<li>and the first derivative of functions at the Gaussian 3-point
-quadrature points.</li>
-</ul>
+<p>The following are a few selected examples from the <tt class="docutils literal"><span class="pre">examples</span></tt>
+directory of PyWENO.</p>
 <div class="section" id="reconstructing-with-opencl">
 <h2>Reconstructing with OpenCL<a class="headerlink" href="#reconstructing-with-opencl" title="Permalink to this headline">¶</a></h2>
-<p>In this example we use the CLWENO5PM class to reconstruct using
-OpenCL.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO discontinuous reconstruction example.&quot;&quot;&quot;</span>
+<p>In this example we use the CLWENO5PM class to reconstruct a
+discontinuous function on a uniform grid using OpenCL.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO discontinuous reconstruction example using OpenCL.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
@@ -120,11 +115,116 @@ OpenCL.</p>
 <p>The resulting plot is:</p>
 <img alt="_images/clweno5.png" src="_images/clweno5.png" />
 </div>
+<div class="section" id="reconstructing-a-discontinous-function-on-a-uniform-grid">
+<h2>Reconstructing a discontinous function on a uniform grid<a class="headerlink" href="#reconstructing-a-discontinous-function-on-a-uniform-grid" title="Permalink to this headline">¶</a></h2>
+<p>In this example we reconstruct a discontinuous function on a
+uniform grid and plot the result.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO uniform discontinuous reconstruction example.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pyweno.grid</span>
+<span class="kn">import</span> <span class="nn">pyweno.weno</span>
+
+<span class="c"># explicitly define the function f that we will reconstruct ...</span>
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">uf</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">fp</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">ufp</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># load the weno reconstructor from the cache</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+
+<span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
+
+<span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;gauss_quad3&#39;</span><span class="p">)</span>
+
+<span class="c"># average f</span>
+<span class="n">f_avg</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="c"># allocate arrays for reconstruction</span>
+<span class="n">f_left</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+<span class="n">f_right</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">N</span><span class="p">)</span>
+<span class="n">f_gauss</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid</span><span class="o">.</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="c"># compute smoothness indicators</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
+
+<span class="c"># reconstruct!</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">f_right</span><span class="p">)</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;gauss_quad3&#39;</span><span class="p">,</span> <span class="n">f_gauss</span><span class="p">)</span>
+
+<span class="c"># plot results</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&#39;Agg&#39;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">gauss_points</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">5.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.0</span><span class="o">/</span><span class="mf">5.0</span><span class="p">)</span> <span class="p">])</span>
+<span class="k">def</span> <span class="nf">quad3_points</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+
+    <span class="k">return</span> <span class="n">w</span> <span class="o">*</span> <span class="n">gauss_points</span> <span class="o">+</span> <span class="n">c</span>
+
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mi">1001</span><span class="p">);</span>
+<span class="n">uf</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">uf</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s">&#39;-k&#39;</span><span class="p">)</span>
+
+<span class="n">xq</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid</span><span class="o">.</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">quad3_points</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])):</span>
+        <span class="n">xq</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">xi</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">f_left</span><span class="p">,</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">f_right</span><span class="p">,</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xq</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">f_gauss</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="s">&#39;.k&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;PyWENO reconstruction and smoothness indicators&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s">&#39;actual&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;gauss&#39;</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;.r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;.k&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;.b&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;sigma&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s">&#39;r=0&#39;</span><span class="p">,</span> <span class="s">&#39;r=1&#39;</span><span class="p">,</span> <span class="s">&#39;r=2&#39;</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;uniform_discontinuous.png&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting plot is:</p>
+<img alt="_images/uniform_discontinuous.png" src="_images/uniform_discontinuous.png" />
+</div>
 <div class="section" id="pre-computing-and-caching">
 <h2>Pre-computing and caching<a class="headerlink" href="#pre-computing-and-caching" title="Permalink to this headline">¶</a></h2>
 <p>In this example we pre-compute all the reconstruction coefficients,
-optimal weights, and smoothness indicator ceofficients and cache
-everything.</p>
+optimal weights, and smoothness indicator ceofficients for a
+non-uniform grid and cache everything.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO cache example.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -133,7 +233,7 @@ everything.</p>
 <span class="kn">import</span> <span class="nn">pyweno.weno</span>
 
 <span class="c"># first, define the stencil order k and cache file</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;gridk</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <span class="c"># if the cache file isn&#39;t present ...</span>
@@ -151,10 +251,9 @@ everything.</p>
     <span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
     <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
     <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
-<span class="c">#    weno.precompute_reconstruction(&#39;gauss_quad3&#39;)</span>
-<span class="c">#    weno.precompute_reconstruction(&#39;d|gauss_quad3&#39;)</span>
-<span class="c">#    weno.precompute_reconstruction(&#39;d|left&#39;)</span>
-<span class="c">#    weno.precompute_reconstruction(&#39;dd|left&#39;)</span>
+    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;gauss_quad3&#39;</span><span class="p">)</span>
+    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;d|gauss_quad3&#39;</span><span class="p">)</span>
+    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;d|left&#39;</span><span class="p">)</span>
 
     <span class="c"># cache everything</span>
     <span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
@@ -163,7 +262,8 @@ everything.</p>
 </div>
 <div class="section" id="reconstructing-a-smooth-function">
 <h2>Reconstructing a smooth function<a class="headerlink" href="#reconstructing-a-smooth-function" title="Permalink to this headline">¶</a></h2>
-<p>In this example we reconstruct a polynomial and plot the result.</p>
+<p>In this example we reconstruct a polynomial on a non-uniform grid and
+plot the result.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO smooth reconstruction example.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
@@ -180,7 +280,7 @@ everything.</p>
     <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">x</span>
 
 <span class="c"># load the weno reconstructor from the cache</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;gridk</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
@@ -201,8 +301,6 @@ everything.</p>
 <span class="c"># reconstruct!</span>
 <span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
 <span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">f_right</span><span class="p">)</span>
-<span class="c">#weno.reconstruct(f_avg, &#39;gauss_quad3&#39;, f_gauss)</span>
-<span class="c">#weno.reconstruct(f_avg, &#39;d|gauss_quad3&#39;, fp_gauss)</span>
 
 <span class="c"># plot results</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
@@ -233,9 +331,6 @@ everything.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s">&#39;r=0&#39;</span><span class="p">,</span> <span class="s">&#39;r=1&#39;</span><span class="p">,</span> <span class="s">&#39;r=2&#39;</span><span class="p">])</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;smooth.png&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">)</span>
-
-<span class="c"># XXX: plot quadrature points</span>
-<span class="c"># XXX: plot derivative</span>
 </pre></div>
 </div>
 <p>The resulting plot is:</p>
@@ -243,8 +338,8 @@ everything.</p>
 </div>
 <div class="section" id="reconstructing-a-discontinuous-function">
 <h2>Reconstructing a discontinuous function<a class="headerlink" href="#reconstructing-a-discontinuous-function" title="Permalink to this headline">¶</a></h2>
-<p>In this example we reconstruct a discontinuous function and plot the
-result.</p>
+<p>In this example we reconstruct a discontinuous function on a
+non-uniform grid and plot the result.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;PyWENO discontinuous reconstruction example.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
@@ -260,7 +355,7 @@ result.</p>
     <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c"># load the weno reconstructor from the cache</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;gridk</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
@@ -281,8 +376,7 @@ result.</p>
 <span class="c"># reconstruct!</span>
 <span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
 <span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">f_right</span><span class="p">)</span>
-<span class="c">#weno.reconstruct(f_avg, &#39;d|left&#39;, f_left_x)</span>
-<span class="c">#weno.reconstruct(f_avg, &#39;dd|left&#39;, f_left_xx)</span>
+<span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;d|left&#39;</span><span class="p">,</span> <span class="n">f_left_x</span><span class="p">)</span>
 
 <span class="c"># plot results</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
@@ -298,13 +392,12 @@ result.</p>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">f_left</span><span class="p">,</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">f_right</span><span class="p">,</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
-<span class="c">#plt.plot(grid.x[:-1], f_left_x, &#39;xk&#39;)</span>
-<span class="c">#plt.plot(grid.x[:-1], f_left_xx, &#39;.k&#39;)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">f_left_x</span><span class="p">,</span> <span class="s">&#39;xk&#39;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;PyWENO reconstruction and smoothness indicators&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s">&#39;actual&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">])</span> <span class="c"># , &#39;left_x&#39;, &#39;left_xx&#39;])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s">&#39;actual&#39;</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="s">&#39;left_x&#39;</span><span class="p">])</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 
@@ -334,6 +427,7 @@ result.</p>
             <ul>
 <li><a class="reference external" href="#">PyWENO Examples</a><ul>
 <li><a class="reference external" href="#reconstructing-with-opencl">Reconstructing with OpenCL</a></li>
+<li><a class="reference external" href="#reconstructing-a-discontinous-function-on-a-uniform-grid">Reconstructing a discontinous function on a uniform grid</a></li>
 <li><a class="reference external" href="#pre-computing-and-caching">Pre-computing and caching</a></li>
 <li><a class="reference external" href="#reconstructing-a-smooth-function">Reconstructing a smooth function</a></li>
 <li><a class="reference external" href="#reconstructing-a-discontinuous-function">Reconstructing a discontinuous function</a></li>

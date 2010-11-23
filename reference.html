@@ -359,11 +359,12 @@ sets of reconstruction coefficients and cache them.</p>
 <li><em>c</em>     - dictionary of reconstruction coefficients</li>
 </ul>
 <p>Each entry of the <em>c</em> dictionary is indexed as:</p>
-<div class="highlight-python"><pre>* ``c[j]`` - uniform grid, one reconstruction point per cell
-* ``c[l,j]`` - uniform grid, multiple reconstruction points per cell
-* ``c[i,j]`` - non-uniform grid, one reconstruction point per cell
-* ``c[i,l,j]`` - non-uniform grid, multiple reconstruction points per cell</pre>
-</div>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">c[j]</span></tt> - uniform grid, one reconstruction point per cell</li>
+<li><tt class="docutils literal"><span class="pre">c[l,j]</span></tt> - uniform grid, multiple reconstruction points per cell</li>
+<li><tt class="docutils literal"><span class="pre">c[i,j]</span></tt> - non-uniform grid, one reconstruction point per cell</li>
+<li><tt class="docutils literal"><span class="pre">c[i,l,j]</span></tt> - non-uniform grid, multiple reconstruction points per cell</li>
+</ul>
 <p><strong>Keyword arguments (without cache)</strong></p>
 <ul class="simple">
 <li><em>order</em> - order of approximation</li>
@@ -484,6 +485,36 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
 </dd></dl>
 
 </div>
+<div class="section" id="module-pyweno.symbolic">
+<h2>Symbolic toolkit<a class="headerlink" href="#module-pyweno.symbolic" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="pyweno.symbolic.polynomial_interpolator">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the symbolic polynomial that interpolates the points
+(x_i, y_i).</p>
+<p>The returned polynomial is a function of the SymPy variable x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.symbolic.primative_polynomial_interpolator">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">primative_polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.primative_polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the symbolic polynomial that approximates the primative
+function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).</p>
+<p>The returned polynomial is a function of the SymPy variable x.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.symbolic.weno_reconstruction_coefficients">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">weno_reconstruction_coefficients</tt><big>(</big><em>k</em>, <em>xi</em>, <em>uniform=True</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.weno_reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the reconstruction coefficients for a 2k-1 order WENO
+scheme corresponding to the reconstruction point <em>xi</em>.</p>
+<p>The coefficients are stored as SymPy variables in an array
+indexed according to <tt class="docutils literal"><span class="pre">c[r][j]</span></tt>.  That is,</p>
+<blockquote>
+f^r(xi) pprox sum_j c[r][j] * f[i-r+j].</blockquote>
+</dd></dl>
+
+</div>
 <div class="section" id="module-pyweno.version">
 <h2>Version information<a class="headerlink" href="#module-pyweno.version" title="Permalink to this headline">¶</a></h2>
 <p>PyWENO version information.</p>
@@ -513,6 +544,7 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
 </ul>
 </li>
 <li><a class="reference external" href="#module-pyweno.smoothness">Smoothness indicators</a></li>
+<li><a class="reference external" href="#module-pyweno.symbolic">Symbolic toolkit</a></li>
 <li><a class="reference external" href="#module-pyweno.version">Version information</a></li>
 </ul>
 </li>

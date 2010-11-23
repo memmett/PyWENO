@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    '#',
         VERSION:     '0.5.7',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
@@ -56,14 +56,14 @@ detailed examples can be found on the <a class="reference external" href="exampl
 <h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
 <p>Briefly, to use PyWENO to reconstruct a function given its cell
 averages, we first define the grid:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">boundaries</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Next, we define a WENO reconstructor and tell it to pre-compute
 everything needed to reconstruct a function at the left side of each
 cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mf">3</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -86,8 +86,8 @@ edges of each cell, and take advantage of PyWENOs caching features.</p>
 <p>If the cache file doesn&#8217;t exist we define the grid, pre-compute
 everything we need to reconstruct, and cache the results for future
 runs:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mf">3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;grid_k</span><span class="si">%d</span><span class="s">.mat&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;grid_k</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span><span class="p">):</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
@@ -127,7 +127,7 @@ runs:</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">PyWENO Tutorial</a><ul>
+<li><a class="reference external" href="#">PyWENO Tutorial</a><ul>
 <li><a class="reference external" href="#basic-usage">Basic usage</a></li>
 <li><a class="reference external" href="#more-reconstructions-and-caching">More reconstructions and caching</a></li>
 <li><a class="reference external" href="#version-information">Version information</a></li>
@@ -183,7 +183,7 @@ runs:</p>
     </div>
     <div class="footer">
       &copy; Copyright 2009, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
     </div>
   </body>
 </html>

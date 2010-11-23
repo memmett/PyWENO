@@ -69,14 +69,15 @@ to solve PDEs, check out the <a class="reference external" href="http://memmett.
 <p><strong>Main parts of the documentation</strong></p>
 <ul class="simple">
 <li><a class="reference external" href="tutorial.html"><em>Tutorial</em></a> - basic usage.</li>
-<li><a class="reference external" href="examples.html"><em>Examples</em></a> - more detailed examples.</li>
+<li><a class="reference external" href="symbolic.html"><em>Symbolic</em></a> - the symbolic tool kit.</li>
+<li><a class="reference external" href="examples.html"><em>Examples</em></a> - more detailed examples, including OpenCL examples.</li>
 <li><a class="reference external" href="reference.html"><em>Reference</em></a> - reference documentation.</li>
 <li><a href="_downloads/weno.pdf"><strong class="xref">Maths</strong></a> (PDF) - the maths behind WENO approximations.</li>
 </ul>
 <p><strong>Features</strong></p>
 <p>PyWENO is designed to:</p>
 <ul class="simple">
-<li>Work on unstructured (and structured) grids.</li>
+<li>Work on non-uniform and uniform grids.</li>
 <li>Reconstruct at arbitrary points within each grid cell.  For
 example, we can reconstruct a function at the left edge, right
 edge, or at various quadrature points within each cell.</li>
@@ -86,7 +87,10 @@ too.</li>
 smoothness indicator coefficients for a given grid (for future
 runs).</li>
 <li>Be fast (except for pre-computing).  The time sensitive routines
-(eg, that might appear in loops) are implemented in C.</li>
+(eg, that might appear in loops) are implemented in C.  Some
+specialised reconstruction routines are also implemented in OpenCL.</li>
+<li>Provide a set of symbolic tools to help authors develop specialised
+WENO methods.</li>
 <li>Be easy to use.</li>
 </ul>
 <p><strong>Known issues</strong></p>
@@ -98,6 +102,9 @@ runs).</li>
 <p><strong>Related projects</strong></p>
 <p>Adrian Townsend (University of Washington) is working on a Python
 implementation of WENO interpolations and reconstructions as well.</p>
+<p>David Ketcheson (KAUST) wrote WENOCLAW, which uses WENO methods to
+solve conservation laws, and is based on the CLAWPACK software of
+R.J. LeVeque.</p>
 <p><strong>Using PyWENO to solve PDEs</strong>: if you are interested in using PyWENO
 to solve PDEs, check out the <a class="reference external" href="http://memmett.github.com/PyBLAW">Python Balance LAW</a> package <a class="reference external" href="http://memmett.github.com/PyBLAW">PyBLAW</a>.</p>
 </div>
