@@ -11,6 +11,20 @@ Throughout these examples we will reconstruct:
   quadrature points.
 
 
+Reconstructing with OpenCL
+--------------------------
+
+In this example we use the CLWENO5PM class to reconstruct using
+OpenCL.
+
+.. literalinclude:: ../examples/clweno5.py
+
+The resulting plot is:
+
+.. image:: ../examples/clweno5.png
+
+
+
 Pre-computing and caching
 -------------------------
 
@@ -43,5 +57,5 @@ result.
 
 The resulting plot is:
 
-.. image:: ../images/discontinuous.png
+.. image:: ../examples/discontinuous.png
 
