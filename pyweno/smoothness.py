@@ -3,6 +3,8 @@
 import numpy as np
 import sympy
 
+import warnings
+
 
 def _poly_approximator(i, r, k, x):
     """Compute symbolic polynomial approximator of order *k* and left
@@ -131,7 +133,7 @@ def beta(smoothness, grid, k, beta):
     else:
 
         # XXX: this is (most likely) not reliable (need higher accuracy substitutions)...
-        raise NotImplementedError, 'non-uniform smoothness is implemented but not reliable'
+        warnings.warn('non-uniform smoothness is implemented but not reliable.')
 
         for i in range(0, N):
             for r in range(max(0,i-(N-k)), min(i,k-1)+1):
