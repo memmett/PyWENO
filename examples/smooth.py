@@ -15,7 +15,7 @@ def fp(x):
 
 # load the weno reconstructor from the cache
 k = 3
-cache = 'gridk%d.mat' % (k)
+cache = 'gridk%d.h5' % (k)
 
 grid = pyweno.grid.Grid(cache=cache)
 weno = pyweno.weno.WENO(order=k, cache=cache)
@@ -35,8 +35,8 @@ weno.smoothness(f_avg)
 # reconstruct!
 weno.reconstruct(f_avg, 'left', f_left)
 weno.reconstruct(f_avg, 'right', f_right)
-weno.reconstruct(f_avg, 'gauss_quad3', f_gauss)
-weno.reconstruct(f_avg, 'd|gauss_quad3', fp_gauss)
+#weno.reconstruct(f_avg, 'gauss_quad3', f_gauss)
+#weno.reconstruct(f_avg, 'd|gauss_quad3', fp_gauss)
 
 # plot results
 import matplotlib
