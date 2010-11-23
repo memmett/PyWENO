@@ -1,4 +1,4 @@
-"""PyWENO discontinuous reconstruction example."""
+"""PyWENO uniform discontinuous reconstruction example."""
 
 import math
 import numpy

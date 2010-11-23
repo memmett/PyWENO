@@ -16,8 +16,8 @@ def f(x):
 k = 5
 cache = 'gridk%d.h5' % (k)
 
-grid = pyweno.grid.Grid(cache=cache, format='h5py')
-weno = pyweno.weno.WENO(order=k, cache=cache, format='h5py')
+grid = pyweno.grid.Grid(cache=cache)
+weno = pyweno.weno.WENO(order=k, cache=cache)
 
 # average f
 f_avg = grid.average(f)
@@ -35,7 +35,6 @@ weno.smoothness(f_avg)
 weno.reconstruct(f_avg, 'left', f_left)
 weno.reconstruct(f_avg, 'right', f_right)
 weno.reconstruct(f_avg, 'd|left', f_left_x)
-weno.reconstruct(f_avg, 'dd|left', f_left_xx)
 
 # plot results
 import matplotlib
@@ -52,12 +51,11 @@ plt.plot(x, uf(x), '-k')
 plt.plot(grid.x[:-1], f_left, 'or')
 plt.plot(grid.x[1:], f_right, 'ob')
 plt.plot(grid.x[:-1], f_left_x, 'xk')
-plt.plot(grid.x[:-1], f_left_xx, '.k')
 
 plt.title('PyWENO reconstruction and smoothness indicators')
 plt.ylabel('f')
 plt.xlabel('x')
-plt.legend(['actual', 'left', 'right', 'left_x', 'left_xx'])
+plt.legend(['actual', 'left', 'right', 'left_x'])
 
 plt.subplot(2,1,2)
 
@@ -70,5 +68,3 @@ plt.xlabel('x')
 plt.legend(['r=0', 'r=1', 'r=2'])
 
 plt.savefig('discontinuous.png', format='png')
-
-

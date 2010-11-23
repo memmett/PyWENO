@@ -27,7 +27,6 @@ if not os.access(cache, os.F_OK):
     weno.precompute_reconstruction('gauss_quad3')
     weno.precompute_reconstruction('d|gauss_quad3')
     weno.precompute_reconstruction('d|left')
-    weno.precompute_reconstruction('dd|left')
 
     # cache everything
-    weno.cache(cache, format='h5py')
+    weno.cache(cache)

@@ -117,7 +117,7 @@ class Stencil(object):
     * *shift* - left shift (also *r*)
     * *c*     - dictionary of reconstruction coefficients
 
-    Each entry of the *c* dictionary is indexed as::
+    Each entry of the *c* dictionary is indexed as:
 
     * ``c[j]`` - uniform grid, one reconstruction point per cell
     * ``c[l,j]`` - uniform grid, multiple reconstruction points per cell

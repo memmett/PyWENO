@@ -16,7 +16,7 @@
 from textwrap import dedent
 
 # set of k values to generate reconstruction functions for
-K = range(3, 5+1)
+K = range(3, 9+1)
 
 
 ######################################################################

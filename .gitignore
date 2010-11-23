@@ -18,6 +18,7 @@ PyWENO*
 # examples
 *.png
 *.mat
+*.h5
 
 # tex
 *.aux

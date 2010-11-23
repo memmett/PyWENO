@@ -29,7 +29,8 @@ Documentation
 **Main parts of the documentation**
 
 * :doc:`Tutorial <tutorial>` - basic usage.
-* :doc:`Examples <examples>` - more detailed examples.
+* :doc:`Symbolic <symbolic>` - the symbolic tool kit.
+* :doc:`Examples <examples>` - more detailed examples, including OpenCL examples.
 * :doc:`Reference <reference>` - reference documentation.
 * :download:`Maths <weno.pdf>` (PDF) - the maths behind WENO approximations.
 
@@ -38,7 +39,7 @@ Documentation
 
 PyWENO is designed to:
 
-* Work on unstructured (and structured) grids.
+* Work on non-uniform and uniform grids.
 
 * Reconstruct at arbitrary points within each grid cell.  For
   example, we can reconstruct a function at the left edge, right
@@ -52,7 +53,11 @@ PyWENO is designed to:
   runs).
 
 * Be fast (except for pre-computing).  The time sensitive routines
-  (eg, that might appear in loops) are implemented in C.
+  (eg, that might appear in loops) are implemented in C.  Some
+  specialised reconstruction routines are also implemented in OpenCL.
+
+* Provide a set of symbolic tools to help authors develop specialised
+  WENO methods.
 
 * Be easy to use.
 
@@ -69,6 +74,10 @@ PyWENO has a few known issues:
 
 Adrian Townsend (University of Washington) is working on a Python
 implementation of WENO interpolations and reconstructions as well.
+
+David Ketcheson (KAUST) wrote WENOCLAW, which uses WENO methods to
+solve conservation laws, and is based on the CLAWPACK software of
+R.J. LeVeque.
 
 **Using PyWENO to solve PDEs**: if you are interested in using PyWENO
 to solve PDEs, check out the `Python Balance LAW`_ package `PyBLAW`_.
