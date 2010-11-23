@@ -1,4 +1,4 @@
-"""PyWENO smooth reconstruction example."""
+"""PyWENO step reconstruction example."""
 
 import math
 import numpy

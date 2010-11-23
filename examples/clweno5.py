@@ -1,4 +1,4 @@
-"""PyWENO discontinuous reconstruction example."""
+"""PyWENO discontinuous reconstruction example using OpenCL."""
 
 import math
 import numpy
