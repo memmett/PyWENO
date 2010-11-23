@@ -45,7 +45,7 @@ everything we need to reconstruct, and cache the results for future
 runs::
 
   >>> k = 3
-  >>> cache = 'grid_k%d.mat' % (k)
+  >>> cache = 'grid_k%d.h5' % (k)
   >>> if not os.access(cache, os.F_OK):
   >>>     grid = pyweno.grid.Grid(x)
   >>>     weno = pyweno.weno.WENO(grid=grid, order=k)

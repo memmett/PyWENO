@@ -38,6 +38,13 @@ Smoothness indicators
    :members:
 
 
+Symbolic toolkit
+----------------
+
+.. automodule:: pyweno.symbolic
+   :members:
+
+
 Version information
 -------------------
 

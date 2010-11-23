@@ -310,7 +310,7 @@ class WENO(object):
             self.c[key] = c
 
             if verbose:
-                print "weights (%s): uniform grid..." % key
+                print "weights (%s): non-uniform grid..." % key
 
             self.w[key] = np.zeros((2*k-1,N,n,k))
 
@@ -328,16 +328,13 @@ class WENO(object):
                 else:
                     cstar[:,:,:] = stncl.c[key][:,:,:]
 
-                print cstar
-                print self.c[key]
-
                 for i in xrange(shift,N-order+shift+1):
                     for l in range(n):
                         wc = _varpi(key, k, s, cstar[i,l,:], c[i,l,:,:], verbose)
                         self.w[key][s+(k-1),i,l,:] = wc[:]
 
             if verbose:
-                print "weights (%s): uniform grid... done." % key
+                print "weights (%s): non-uniform grid... done." % key
 
 
 
