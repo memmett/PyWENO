@@ -1,6 +1,12 @@
 What's new in PyWENO
 ====================
 
+**New in v0.5.9:**
+
+* OpenCL support for 5th order WENO reconstructions.
+
+* New symbolic toolkit.
+
 **New in v0.5.7:**
 
 * periodic domain reconstruction

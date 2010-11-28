@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Reference &mdash; PyWENO v0.5.7 documentation</title>
+    <title>PyWENO Reference &mdash; PyWENO v0.5.9 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '#',
-        VERSION:     '0.5.7',
+        VERSION:     '0.5.9',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.7 documentation" href="index.html" />
+    <link rel="top" title="PyWENO v0.5.9 documentation" href="index.html" />
     <link rel="next" title="PyWENO Examples" href="examples.html" />
     <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -487,18 +487,30 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
 </div>
 <div class="section" id="module-pyweno.symbolic">
 <h2>Symbolic toolkit<a class="headerlink" href="#module-pyweno.symbolic" title="Permalink to this headline">¶</a></h2>
+<p>PyWENO symbolic toolkit.</p>
+<dl class="function">
+<dt id="pyweno.symbolic.jiang_shu_smoothness_coefficients">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">jiang_shu_smoothness_coefficients</tt><big>(</big><em>k</em>, <em>uniform=True</em>, <em>boundaries=None</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.jiang_shu_smoothness_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
+WENO scheme.</p>
+<p>The coefficients are stored as SymPy variables in an array
+indexed according to <tt class="docutils literal"><span class="pre">beta[r][m][n]</span></tt>.  That is</p>
+<div class="math">
+<p><span class="math">\sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \\beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.</span></p>
+</div></dd></dl>
+
 <dl class="function">
 <dt id="pyweno.symbolic.polynomial_interpolator">
 <tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the symbolic polynomial that interpolates the points
-(x_i, y_i).</p>
+<dd><p>Build a symbolic polynomial that interpolates the points (x_i,
+y_i).</p>
 <p>The returned polynomial is a function of the SymPy variable x.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pyweno.symbolic.primative_polynomial_interpolator">
 <tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">primative_polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.primative_polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the symbolic polynomial that approximates the primative
+<dd><p>Build a symbolic polynomial that approximates the primative
 function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).</p>
 <p>The returned polynomial is a function of the SymPy variable x.</p>
 </dd></dl>
@@ -508,11 +520,11 @@ function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).</p>
 <tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">weno_reconstruction_coefficients</tt><big>(</big><em>k</em>, <em>xi</em>, <em>uniform=True</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.weno_reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the reconstruction coefficients for a 2k-1 order WENO
 scheme corresponding to the reconstruction point <em>xi</em>.</p>
-<p>The coefficients are stored as SymPy variables in an array
-indexed according to <tt class="docutils literal"><span class="pre">c[r][j]</span></tt>.  That is,</p>
-<blockquote>
-f^r(xi) pprox sum_j c[r][j] * f[i-r+j].</blockquote>
-</dd></dl>
+<p>The coefficients are stored as SymPy variables in an ndarray
+indexed according to <tt class="docutils literal"><span class="pre">c[r,j]</span></tt>.  That is</p>
+<div class="math">
+<p><span class="math">f^r(\xi) \approx \sum_j c^r_j * f_{i-r+j}.</span></p>
+</div></dd></dl>
 
 </div>
 <div class="section" id="module-pyweno.version">
@@ -593,7 +605,7 @@ f^r(xi) pprox sum_j c[r][j] * f[i-r+j].</blockquote>
         <li class="right" >
           <a href="tutorial.html" title="PyWENO Tutorial"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
