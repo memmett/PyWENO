@@ -45,6 +45,13 @@ Symbolic toolkit
    :members:
 
 
+OpenCL toolkit
+--------------
+
+.. automodule:: pyweno.opencl
+   :members:
+
+
 Version information
 -------------------
 

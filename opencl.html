@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyWENO OpenCL toolkit &mdash; PyWENO v0.5.9 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.5.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyWENO v0.5.9 documentation" href="index.html" />
+    <link rel="next" title="PyWENO Reference" href="reference.html" />
+    <link rel="prev" title="PyWENO symbolic toolkit" href="symbolic.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="reference.html" title="PyWENO Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="symbolic.html" title="PyWENO symbolic toolkit"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pyweno-opencl-toolkit">
+<h1>PyWENO OpenCL toolkit<a class="headerlink" href="#pyweno-opencl-toolkit" title="Permalink to this headline">¶</a></h1>
+<p>PyWENO contains an OpenCL module to help authors develop their own
+specialized WENO methods on GPUs.  Below are a few quick examples
+demonstrating how the OpenCL routines of PyWENO are used.</p>
+<div class="section" id="half-of-a-weno5-kernel">
+<h2>Half of a WENO5 kernel<a class="headerlink" href="#half-of-a-weno5-kernel" title="Permalink to this headline">¶</a></h2>
+<p>In this example we&#8217;ll build an OpenCL kernel to reconstruct a function
+based on its cell averages in a global OpenCL array <tt class="docutils literal"><span class="pre">f</span></tt>.  We will
+build approximations at the left (plus) side of each cell boundary.</p>
+<p>First, we&#8217;ll define the OpenCL function and the local variables that
+will be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">src</span> <span class="o">=</span> <span class="p">[</span><span class="s">r&quot;&quot;&quot;</span>
+<span class="s">  __kernel void weno5_plus(__global const float *f,</span>
+<span class="s">                           __global float *f_plus) {</span>
+<span class="s">    int i;</span>
+<span class="s">    float sigma0, sigma1, sigma2;</span>
+<span class="s">    float omega0, omega1, omega2, alpha;</span>
+<span class="s">    float f0, f1, f2;</span>
+<span class="s">    float accumulator;</span>
+
+<span class="s">    i = get_global_id(0);</span>
+<span class="s">    &quot;&quot;&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Subsequently, we&#8217;ll append kernel snippets returned by the PyWENO
+OpenCL routines onto the <tt class="docutils literal"><span class="pre">src</span></tt> array.  Note that <tt class="docutils literal"><span class="pre">sigma0</span></tt> denotes
+the smoothness indicator with a left-shift of zero.</p>
+<p>Next, we&#8217;ll use Jiang-Shu smoothness coefficients to compute the
+smoothness indicators <tt class="docutils literal"><span class="pre">sigma0</span></tt>, <tt class="docutils literal"><span class="pre">sigma1</span></tt>, and <tt class="docutils literal"><span class="pre">sigma2</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">beta</span>       <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">jiang_shu_smoothness_coefficients</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smoothness</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">opencl</span><span class="o">.</span><span class="n">uniform_smoothness_kernel</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">src</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">smoothness</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">smoothness</span>
+<span class="go">sigma0 = 0.0;</span>
+<span class="go">sigma0 += 3.33333333333333 * f[i+0] * f[i+0];</span>
+<span class="go">sigma0 += -10.3333333333333 * f[i+0] * f[i+1];</span>
+<span class="go">sigma0 += 3.66666666666667 * f[i+0] * f[i+2];</span>
+<span class="go">sigma0 += 8.33333333333333 * f[i+1] * f[i+1];</span>
+<span class="go">sigma0 += -6.33333333333333 * f[i+1] * f[i+2];</span>
+<span class="go">sigma0 += 1.33333333333333 * f[i+2] * f[i+2];</span>
+<span class="go">sigma1 = 0.0;</span>
+<span class="go">sigma1 += 1.33333333333333 * f[i-1] * f[i-1];</span>
+<span class="go">sigma1 += -4.33333333333333 * f[i-1] * f[i+0];</span>
+<span class="go">sigma1 += 1.66666666666667 * f[i-1] * f[i+1];</span>
+<span class="go">sigma1 += 4.33333333333333 * f[i+0] * f[i+0];</span>
+<span class="go">sigma1 += -4.33333333333333 * f[i+0] * f[i+1];</span>
+<span class="go">sigma1 += 1.33333333333333 * f[i+1] * f[i+1];</span>
+<span class="go">sigma2 = 0.0;</span>
+<span class="go">sigma2 += 1.33333333333333 * f[i-2] * f[i-2];</span>
+<span class="go">sigma2 += -6.33333333333333 * f[i-2] * f[i-1];</span>
+<span class="go">sigma2 += 3.66666666666667 * f[i-2] * f[i+0];</span>
+<span class="go">sigma2 += 8.33333333333333 * f[i-1] * f[i-1];</span>
+<span class="go">sigma2 += -10.3333333333333 * f[i-1] * f[i+0];</span>
+<span class="go">sigma2 += 3.33333333333333 * f[i+0] * f[i+0];</span>
+</pre></div>
+</div>
+<p>Next, we&#8217;ll compute the weights for reconstructing at the side of each
+cell:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">varpi</span>    <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">optimal_weights</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weights</span>  <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">opencl</span><span class="o">.</span><span class="n">uniform_weights_kernel</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">varpi</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">src</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">weights</span>
+<span class="go">accumulator = 0.0;</span>
+<span class="go">alpha = 0.1 / (10e-6 + sigma0) / (10e-6 + sigma0);</span>
+<span class="go">omega0 = alpha;</span>
+<span class="go">accumulator += alpha;</span>
+<span class="go">alpha = 0.6 / (10e-6 + sigma1) / (10e-6 + sigma1);</span>
+<span class="go">omega1 = alpha;</span>
+<span class="go">accumulator += alpha;</span>
+<span class="go">alpha = 0.3 / (10e-6 + sigma2) / (10e-6 + sigma2);</span>
+<span class="go">omega2 = alpha;</span>
+<span class="go">accumulator += alpha;</span>
+<span class="go">omega0 /= accumulator;</span>
+<span class="go">omega1 /= accumulator;</span>
+<span class="go">omega2 /= accumulator;</span>
+</pre></div>
+</div>
+<p>Next, we reconstruct the function on the left side of each cell, and
+store the result in the <tt class="docutils literal"><span class="pre">f_plus</span></tt> array:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">coeffs</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">reconstruction_coefficients</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reconstruct</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">opencl</span><span class="o">.</span><span class="n">uniform_reconstruction_kernel</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">coeffs</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="s">&#39;f_plus[i]&#39;</span><span class="p">,</span> <span class="n">function</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">src</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reconstruct</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">reconstruct</span>
+<span class="go">f0 = 1.83333333333333 * f[i+0] + -1.16666666666667 * f[i+1] + 0.333333333333333 * f[i+2];</span>
+<span class="go">f1 = 0.333333333333333 * f[i-1] + 0.833333333333333 * f[i+0] + -0.166666666666667 * f[i+1];</span>
+<span class="go">f2 = -0.166666666666667 * f[i-2] + 0.833333333333333 * f[i-1] + 0.333333333333333 * f[i+0];</span>
+<span class="go">f_plus[i] = f0 * omega0 + f1 * omega1 + f2 * omega2;</span>
+</pre></div>
+</div>
+<p>Finally, the source code for OpenCL kernel would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">src</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;}&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">kernel_source</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>One could add the right (minus) reconstruction to the above as well.</p>
+<p>Furthermore, when solving hyperbolic PDEs, one could add the code
+necessary to compute the flux at each cell boundary by appending onto
+the <tt class="docutils literal"><span class="pre">src</span></tt> array above (before appending the last <tt class="docutils literal"><span class="pre">}</span></tt>).  In this
+way, one can put as much code as possible into a single OpenCL kernel
+that only references one global array.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">PyWENO OpenCL toolkit</a><ul>
+<li><a class="reference external" href="#half-of-a-weno5-kernel">Half of a WENO5 kernel</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="symbolic.html"
+                                  title="previous chapter">PyWENO symbolic toolkit</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="reference.html"
+                                  title="next chapter">PyWENO Reference</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/opencl.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reference.html" title="PyWENO Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="symbolic.html" title="PyWENO symbolic toolkit"
+             >previous</a> |</li>
+        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+    </div>
+  </body>
+</html>

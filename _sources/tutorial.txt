@@ -1,8 +1,10 @@
 PyWENO Tutorial
 ===============
 
-Below are a few quick examples demonstrating how PyWENO is used.  More
-detailed examples can be found on the :doc:`examples <examples>` page.
+
+Below are a few quick examples demonstrating how the numerical
+routines of PyWENO for CPUs are used.  More detailed examples can be
+found on the :doc:`examples <examples>` page.
 
 
 Basic usage

@@ -19,7 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.9 documentation" href="index.html" /> 
+    <link rel="top" title="PyWENO v0.5.9 documentation" href="index.html" />
+    <link rel="next" title="PyWENO OpenCL toolkit" href="opencl.html" />
+    <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,6 +33,12 @@
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="opencl.html" title="PyWENO OpenCL toolkit"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="PyWENO Tutorial"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -43,8 +51,97 @@
   <div class="section" id="pyweno-symbolic-toolkit">
 <h1>PyWENO symbolic toolkit<a class="headerlink" href="#pyweno-symbolic-toolkit" title="Permalink to this headline">¶</a></h1>
 <p>PyWENO contains a symbolic module to help authors develop their own
-WENO methods.  See <a class="reference external" href="reference.html"><em>PyWENO Reference</em></a> for more information (more
-information to come...).</p>
+WENO methods and/or explore the basics of WENO methods.  Below are a
+few quick examples demonstrating how the symbolic routines of PyWENO
+are used.</p>
+<div class="section" id="interpolating-polynomials">
+<h2>Interpolating polynomials<a class="headerlink" href="#interpolating-polynomials" title="Permalink to this headline">¶</a></h2>
+<p>First, let&#8217;s build some grid points and y-values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyweno.symbolic</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">&#39;x0 x1 x2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">&#39;y0 y1 y2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, the polynomial that interpolates the points <tt class="docutils literal"><span class="pre">(x0,</span> <span class="pre">y0)</span></tt>, <tt class="docutils literal"><span class="pre">(x1,</span>
+<span class="pre">y1)</span></tt>, and <tt class="docutils literal"><span class="pre">(x2,</span> <span class="pre">y2)</span></tt> is given by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">polynomial_interpolator</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span>
+<span class="go">y0*(x - x1)*(x - x2)/((x0 - x1)*(x0 - x2)) + y1*(x - x0)*(x - x2)/((x1 - x0)*(x1 - x2)) + y2*(x - x0)*(x - x1)/((x2 - x0)*(x2 - x1))</span>
+</pre></div>
+</div>
+<p>and is a function of the SymPy variable <tt class="docutils literal"><span class="pre">x</span></tt>.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="go">y2</span>
+</pre></div>
+</div>
+<p>The polynomial that interpolates the primitive function of <em>f</em> such
+that</p>
+<div class="math">
+<p><img src="_images/math/2655c5cf80e37b1a2deedc9d204ac128414c5f38.png" alt="f(x_i) = \sum_j y_j (x_{j+1} - x_{j})" /></p>
+</div><p>is given by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">primitive_polynomial_interpolator</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">P</span>
+<span class="go">y1*(x - x0)*(x - x2)/(x1 - x2) + (x - x0)*(x - x1)*(y1*(x1 - x0) + y2*(x2 - x1))/((x2 - x0)*(x2 - x1))</span>
+</pre></div>
+</div>
+<p>and is also a function of the SymPy variable <tt class="docutils literal"><span class="pre">x</span></tt>.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">P</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+<span class="go">y1*(x1 - x0)</span>
+</pre></div>
+</div>
+<p>For uniform grids, one could define the grid points by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span> <span class="o">=</span> <span class="n">sympy</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">&#39;x dx&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">xs</span> <span class="o">=</span> <span class="p">[</span> <span class="n">dx</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">dx</span> <span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">polynomial_interpolator</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="p">[</span><span class="n">y0</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span>
+<span class="go">y0*(x - 3*dx)*(x - 2*dx)/(2*dx**2) + y2*(x - dx)*(x - 2*dx)/(2*dx**2) - y1*(x - dx)*(x - 3*dx)/dx**2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reconstruction-coefficients">
+<h2>Reconstruction coefficients<a class="headerlink" href="#reconstruction-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>Hereafter we assume that the grid is uniform.</p>
+<p>The reconstruction coefficients for a 5th (=2k-1 where k=3) order WENO
+scheme corresponding to the reconstruction point at the left side of
+each grid cell are given by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">reconstruction_coefficients</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">array([[11/6, -7/6, 1/3],</span>
+<span class="go">       [1/3, 5/6, -1/6],</span>
+<span class="go">       [-1/6, 5/6, 1/3]], dtype=object)</span>
+</pre></div>
+</div>
+<p>Note that the return value <em>c</em> is a NumPy array of SymPy objects,
+indexed according to <tt class="docutils literal"><span class="pre">c[r,j]</span></tt> where <tt class="docutils literal"><span class="pre">r</span></tt> is the left-shift of the
+stencil.</p>
+</div>
+<div class="section" id="optimal-weights">
+<h2>Optimal weights<a class="headerlink" href="#optimal-weights" title="Permalink to this headline">¶</a></h2>
+<p>The optimal weights for a 5th (=2k-1 where k=3) order WENO scheme
+corresponding to the reconstruction point at the left side of each
+grid cell are given by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">optimal_weights</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span>
+<span class="go">[1/10, 3/5, 3/10]</span>
+</pre></div>
+</div>
+<p>Note that the return value <em>w</em> is a Python list of SymPy objects, and
+is indexed according to <tt class="docutils literal"><span class="pre">w[r]</span></tt> where <tt class="docutils literal"><span class="pre">r</span></tt> is the left-shift of the
+stencil.</p>
+</div>
+<div class="section" id="smoothness-coefficients">
+<h2>Smoothness coefficients<a class="headerlink" href="#smoothness-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>The Jiang-Shu smoothness coefficients for a 5th (=2k-1 where k=3)
+order WENO scheme are given by:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">beta</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">jiang_shu_smoothness_coefficients</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The return value <em>beta</em> is a NumPy array of SymPy objects, and is
+indexed according to <tt class="docutils literal"><span class="pre">beta[r,m,n]</span></tt> (see the reference documentation
+for details).</p>
+</div>
 </div>
 
 
@@ -53,6 +150,23 @@ information to come...).</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="#">PyWENO symbolic toolkit</a><ul>
+<li><a class="reference external" href="#interpolating-polynomials">Interpolating polynomials</a></li>
+<li><a class="reference external" href="#reconstruction-coefficients">Reconstruction coefficients</a></li>
+<li><a class="reference external" href="#optimal-weights">Optimal weights</a></li>
+<li><a class="reference external" href="#smoothness-coefficients">Smoothness coefficients</a></li>
+</ul>
+</li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tutorial.html"
+                                  title="previous chapter">PyWENO Tutorial</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="opencl.html"
+                                  title="next chapter">PyWENO OpenCL toolkit</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/symbolic.txt"
@@ -84,6 +198,12 @@ information to come...).</p>
         <li class="right" >
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="opencl.html" title="PyWENO OpenCL toolkit"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="PyWENO Tutorial"
+             >previous</a> |</li>
         <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
       </ul>
     </div>
