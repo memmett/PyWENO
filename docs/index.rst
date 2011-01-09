@@ -2,8 +2,8 @@ PyWENO
 ======
 
 PyWENO is a Python implementation of one-dimensional Weighted
-Essentially Non-oscillatory (WENO) approximations over unstructured
-(non-uniform) grids.
+Essentially Non-oscillatory (WENO) approximations over non-uniform
+grids.
 
 **News**
 
@@ -13,15 +13,21 @@ Essentially Non-oscillatory (WENO) approximations over unstructured
 * February 22 2010: `PyWENO 0.5.0`_ released (see :doc:`what's new <whatsnew>`).
 * January 29 2010: `PyWENO 0.4.0`_ released (see :doc:`what's new <whatsnew>`).
 * January 29 2010: PyWENO now uses `semantic versioning`_.
-* November 26 2009: PyWENO 0.3.a1 released.
-* Fall 2009: PyWENO is in early development, and is a bit rough around
-  the edges.
+
+PyWENO is useful for:
+
+* Numerically reconstructing an unknown function based on its cell
+  averages over uniform or non-uniform grids.
+
+* Exploring WENO methods symbolically.
+
+* Building custom high-performance OpenCL based WENO codes.
+
+If you are interested in using PyWENO to solve systems of hyperbolic
+PDEs, check out the `Python Balance LAW`_ package `PyBLAW`_.
 
 Please check out the documentation (below) or the `PyWENO project
-page`_ for more infomation about using and contributing to PyWENO.
-
-**Using PyWENO to solve PDEs**: if you are interested in using PyWENO
-to solve PDEs, check out the `Python Balance LAW`_ package `PyBLAW`_.
+page`_ for more information about using and contributing to PyWENO.
 
 
 Documentation
@@ -29,9 +35,10 @@ Documentation
 
 **Main parts of the documentation**
 
-* :doc:`Tutorial <tutorial>` - basic usage.
-* :doc:`Symbolic <symbolic>` - the symbolic tool kit.
-* :doc:`Examples <examples>` - more detailed examples, including OpenCL examples.
+* :doc:`Tutorial <tutorial>` - basic numerical usage.
+* :doc:`Symbolic <symbolic>` - the symbolic toolkit.
+* :doc:`OpenCL <opencl>` - the OpenCL code generator.
+* :doc:`Examples <examples>` - some examples.
 * :doc:`Reference <reference>` - reference documentation.
 * :download:`Maths <weno.pdf>` (PDF) - the maths behind WENO approximations.
 
@@ -46,29 +53,30 @@ PyWENO is designed to:
   example, we can reconstruct a function at the left edge, right
   edge, or at various quadrature points within each cell.
 
-* Reconstruct derivatives at arbitrary points with each grid cell
-  too.
+* Be fast (except for pre-computing); time sensitive routines are
+  implemented in C.  Some specialized routines are also implemented in
+  OpenCL.
 
-* Cache the reconstruction coefficients, optimal weights, and
-  smoothness indicator coefficients for a given grid (for future
-  runs).
-
-* Be fast (except for pre-computing).  The time sensitive routines
-  (eg, that might appear in loops) are implemented in C.  Some
-  specialised reconstruction routines are also implemented in OpenCL.
-
-* Provide a set of symbolic tools to help authors develop specialised
+* Provide a set of symbolic tools to help authors develop specialized
   WENO methods.
 
+* Provide a set of OpenCL kernels and OpenCL code generation tools to
+  help authors develop specialized WENO methods.
+
 * Be easy to use.
+
+* For non-uniform grids, cache the reconstruction coefficients,
+  optimal weights, and smoothness indicator coefficients for a given
+  grid (for future runs).
 
 
 **Known issues**
 
 PyWENO has a few known issues:
 
-* Pre-computing the optimal weights is slow.
-* Pre-computing the smoothness indicator coefficients is slow.
+* Pre-computing the optimal weights on non-uniform grids is slow.
+* Pre-computing the smoothness indicator coefficients on non-uniform
+  grids is slow.
 
 
 **Related projects**
@@ -83,6 +91,7 @@ R.J. LeVeque.
 **Using PyWENO to solve PDEs**: if you are interested in using PyWENO
 to solve PDEs, check out the `Python Balance LAW`_ package `PyBLAW`_.
 
+
 Download
 --------
 
@@ -96,7 +105,6 @@ Contributing
 Contributions are welcome!  Please send comments, suggestions, and/or
 patches to the primary author (`Matthew Emmett`_).  You will be credited.
 
-
 If you plan to extend or modify PyWENO in a more substantial way,
 please see the `PyWENO project page`_.
 
@@ -106,6 +114,8 @@ please see the `PyWENO project page`_.
 
    self
    tutorial
+   symbolic
+   opencl
    reference
    examples
    whatsnew
