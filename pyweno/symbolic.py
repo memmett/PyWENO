@@ -40,8 +40,8 @@ def polynomial_interpolator(x, y):
 
 ######################################################################
 
-def primative_polynomial_interpolator(x, y):
-    """Build a symbolic polynomial that approximates the primative
+def primitive_polynomial_interpolator(x, y):
+    """Build a symbolic polynomial that approximates the primitive
        function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).
 
        The returned polynomial is a function of the SymPy variable x.
@@ -56,7 +56,7 @@ def primative_polynomial_interpolator(x, y):
 
 ######################################################################
 
-def weno_reconstruction_coefficients(k, xi, uniform=True):
+def reconstruction_coefficients(k, xi, uniform=True):
     r"""Compute the reconstruction coefficients for a 2k-1 order WENO
         scheme corresponding to the reconstruction point *xi*.
 
@@ -65,7 +65,7 @@ def weno_reconstruction_coefficients(k, xi, uniform=True):
 
         .. math::
 
-          f^r(\xi) \approx \sum_j c^r_j * f_{i-r+j}.
+          f^r(\xi) \approx \sum_j c^r_j \, f_{i-r+j}.
 
 
         """
@@ -103,7 +103,7 @@ def weno_reconstruction_coefficients(k, xi, uniform=True):
     c = np.zeros((k,k), dtype=np.dtype(object))
 
     for r in range(0, k):
-        p = primative_polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
+        p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
 
         for j in range(0, k):
             c[r,j] = p.subs(x, xi).coeff(fs[i-r+j])
@@ -113,16 +113,63 @@ def weno_reconstruction_coefficients(k, xi, uniform=True):
 
 ######################################################################
 
+def optimal_weights(k, xi, uniform=True):
+    r"""Compute the optimal weights for a 2k-1 order WENO scheme
+        corresponding to the reconstruction point *xi*.
+
+        The coefficients are stored as SymPy variables in an ndarray
+        indexed according to ``w[r]``.  That is
+
+        .. math::
+
+          f(\xi) \approx \sum_r w^r f^r.
+
+        """
+
+    if not uniform:
+        raise ValueError, "symbolic optimal weights can't be computed for non-uniform grids"
+
+    c   = reconstruction_coefficients(k, xi, uniform=True)
+    c2k = reconstruction_coefficients(2*k-1, xi, uniform=True)[k-1]
+
+    omega = []
+    for r in range(k):
+        omega.append(sympy.var('omega%d' % r))
+
+    eqns = []
+    for j in range(2*k-1):
+
+        rmin = max(0, (k-1)-j)
+        rmax = min(k-1, 2*(k-1)-j)
+
+        accum = 0
+        for r in range(rmin, rmax+1):
+            accum = accum + omega[r] * c[r,r-(k-1)+j]
+
+        eqns.append(accum - c2k[j])
+
+    sol = sympy.solve(eqns, omega)
+
+    varpi = []
+    for r in range(k):
+        varpi.append(sol[omega[r]])
+
+    return varpi
+
+
+######################################################################
+
 def jiang_shu_smoothness_coefficients(k, uniform=True, boundaries=None):
     r"""Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
         WENO scheme.
 
         The coefficients are stored as SymPy variables in an array
-        indexed according to ``beta[r][m][n]``.  That is
+        indexed according to ``beta[r,m,n]``.  That is
 
         .. math::
 
-          \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \\beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
+          \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
+
         """
 
     i = k-1
@@ -155,7 +202,7 @@ def jiang_shu_smoothness_coefficients(k, uniform=True, boundaries=None):
     beta = np.zeros((k,2*k-1,2*k-1), dtype=np.dtype(object))
 
     for r in range(0, k):
-        p = primative_polynomial_interpolator(xs[i-r:i-r+k+1],
+        p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1],
                                               fs[i-r:i-r+k]).diff(x)
 
         # sum of L^2 norms of derivatives
