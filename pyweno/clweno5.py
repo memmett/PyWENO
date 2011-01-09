@@ -4,6 +4,9 @@
 import numpy as np
 import pyopencl as cl
 
+import pyweno.symbolic
+import pyweno.opencl
+
 
 ######################################################################
 # WENO
@@ -105,40 +108,6 @@ class CLWENO5PM(object):
 
 
 ######################################################################
-# coefficient tables
-#
-
-beta_jiang_shu = [
-    [ [          '',            '',            '',            '',            '' ],
-      [          '',            '',            '',            '',            '' ],
-      [          '',            '',  '(10.0/3.0)', '(-31.0/3.0)',  '(11.0/3.0)' ],
-      [          '',            '',            '',  '(25.0/3.0)', '(-19.0/3.0)' ],
-      [          '',            '',            '',            '',   '(4.0/3.0)' ] ],
-    [ [          '',            '',            '',            '',            '' ],
-      [          '',   '(4.0/3.0)', '(-13.0/3.0)',   '(5.0/3.0)',            '' ],
-      [          '',            '',  '(13.0/3.0)', '(-13.0/3.0)',            '' ],
-      [          '',            '',            '',   '(4.0/3.0)',            '' ],
-      [          '',            '',            '',            '',            '' ] ],
-    [ [ '(4.0/3.0)', '(-19.0/3.0)',  '(11.0/3.0)',            '',            '' ],
-      [          '',  '(25.0/3.0)', '(-31.0/3.0)',            '',            '' ],
-      [          '',            '',  '(10.0/3.0)',            '',            '' ],
-      [          '',            '',            '',            '',            '' ],
-      [          '',            '',            '',            '',            '' ] ] ]
-
-beta = beta_jiang_shu
-
-left_optimal_weights  = [ '(0.1)', '(0.6)', '(0.3)' ]
-right_optimal_weights = [ '(0.3)', '(0.6)', '(0.1)' ]
-
-left_reconstruction_coeffs  = [ ['(11.0/6.0)', '(-7.0/6.0)',  '(2.0/6.0)'],
-                                [ '(2.0/6.0)',  '(5.0/6.0)', '(-1.0/6.0)'],
-                                ['(-1.0/6.0)',  '(5.0/6.0)',  '(2.0/6.0)'] ]
-right_reconstruction_coeffs = [ [ '(2.0/6.0)',  '(5.0/6.0)', '(-1.0/6.0)'],
-                                ['(-1.0/6.0)',  '(5.0/6.0)',  '(2.0/6.0)'],
-                                [ '(2.0/6.0)', '(-7.0/6.0)', '(11.0/6.0)'] ]
-
-
-######################################################################
 # kernel
 #
 
@@ -146,15 +115,16 @@ def _kernel_weno5():
     """Fully un-rolled WENO5 kernel."""
 
     src = [r"""
-      __kernel void weno5(__global const float *f,
-                          __global float *f_plus,
-                          __global float *f_minus) {
+__kernel void weno5(__global const float *f,
+                    __global float *f_plus,
+                    __global float *f_minus) {
 
-      int i;
-      float sigma0, sigma1, sigma2;
-      float omega0, omega1, omega2, alpha;
-      float f0, f1, f2;
-      """]
+int i;
+float sigma0, sigma1, sigma2;
+float omega0, omega1, omega2, alpha;
+float f0, f1, f2;
+float accumulator;
+"""]
 
     k = 3
 
@@ -163,60 +133,50 @@ def _kernel_weno5():
     #src.append('i = get_global_id(0);')
 
     # smoothness indicators
+    beta       = pyweno.symbolic.jiang_shu_smoothness_coefficients(k)
+    smoothness = pyweno.opencl.uniform_smoothness_kernel(
+        k, beta, function=False)
+
+    src.append('')
     src.append('/* smoothness indicators */')
-    for r in range(k):
-        sigma = 'sigma%d' % (r)
-        src.append(sigma + ' = 0.0;')
+    src.append(smoothness)
 
-        for m in range(k-r-1, 2*k-r-1):
-            for n in range(m, 2*k-r-1):
-                pm = -(k-1) + m
-                pn = -(k-1) + n
-                b  = beta[r][m][n]
-                src.append(sigma + ' += %(b)s * f[i%(pm)+d] * f[i%(pn)+d];'
-                           % { 'b': b, 'pm': pm, 'pn': pn })
+    # left reconstruction
+    coeffs   = pyweno.symbolic.reconstruction_coefficients(
+        k, 'left')
+    varpi    = pyweno.symbolic.optimal_weights(k, 'left')
+    weights  = pyweno.opencl.uniform_weights_kernel(
+        k, varpi, function=False)
+    reconstruct = pyweno.opencl.uniform_reconstruction_kernel(
+        k, coeffs, rf='f_plus[i]', function=False)
 
-        #src.append(('sigma[i*3+%d] = ' % (r)) + sigma + ';')
+    src.append('')
+    src.append('/* left weights */')
+    src.append(weights)
 
-    # weights
-    for (point, offset, optimal_weights, reconstruction_coeffs) in [
-          ('plus',  0, left_optimal_weights,  left_reconstruction_coeffs),
-          ('minus', 1, right_optimal_weights, right_reconstruction_coeffs) ]:
+    src.append('')
+    src.append('/* left (+) reconstruction */')
+    src.append(reconstruct)
 
-        src.append('/* %s weights */' % (point))
-        for r in range(k):
-            sigma = 'sigma%d' % (r)
-            omega = 'omega%d' % (r)
-            varpi = optimal_weights[r]
+    # right reconstruction
+    coeffs   = pyweno.symbolic.reconstruction_coefficients(
+        k, 'right')
+    varpi    = pyweno.symbolic.optimal_weights(k, 'right')
+    weights  = pyweno.opencl.uniform_weights_kernel(
+        k, varpi, function=False)
+    reconstruct = pyweno.opencl.uniform_reconstruction_kernel(
+        k, coeffs, rf='f_minus[i+1]', function=False)
 
-            src.append(omega + ' = %s / (10e-6 + %s) / (10e-6 + %s);' % (varpi, sigma, sigma))
+    src.append('')
+    src.append('/* right weights */')
+    src.append(weights)
 
-        sum_omega = ' + '.join(['omega%d' % (r) for r in range(k)])
-        src.append('alpha = ' + sum_omega + ';')
-
-        for r in range(k):
-            omega = 'omega%d' % (r)
-            src.append(omega + ' /= alpha;')
-
-        # reconstructions
-        src.append('/* %s reconstructions */' % (point))
-        for r in range(k):
-            f = 'f%d' % (r)
-
-            reconstruction = []
-            for j in range(k):
-                reconstruction.append('%s * f[i%+d]' % (reconstruction_coeffs[r][j], -r+j))
-
-            src.append(f + ' = ' + ' + '.join(reconstruction) + ';')
-
-        # weighted reconstruction
-        reconstruction = []
-        for r in range(k):
-            reconstruction.append('f%d * omega%d' % (r, r))
-
-        src.append(('f_%s[i+%d] = ' % (point, offset)) + ' + '.join(reconstruction) + ';')
+    src.append('')
+    src.append('/* right (-) reconstruction */')
+    src.append(reconstruct)
 
     # done
+    src.append('')
     src.append('}')
 
     return "\n".join(src)

@@ -29,6 +29,9 @@ fp = numpy.zeros(grid.N)
 # reconstruct!
 weno.reconstruct(fb, fp, fm)
 
+print fp
+print fm
+
 # plot results
 import matplotlib
 matplotlib.use('Agg')
