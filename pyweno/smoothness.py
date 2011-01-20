@@ -102,7 +102,7 @@ def beta(smoothness, grid, k, beta):
 
     """
 
-    N = grid.size
+    N = grid.N
 
     if smoothness == 'jiang_shu':
         _sigma = _jiang_shu

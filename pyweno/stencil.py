@@ -21,8 +21,8 @@ import pyweno.cstencil
 # reconstruction_coeffs (c wrapper)
 
 def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
-    """Compute the reconstruction coefficients *c_j* and store the
-    results in *c* (indexed as ``c[j]``).
+    """Numerically compute the reconstruction coefficients *c_j* and
+    store the results in *c* (indexed as ``c[j]``).
 
     The reconstruction coefficients *c_j* are used to approximate the
     *d*'th derivative of a function *f* given its cell averages *f_j*

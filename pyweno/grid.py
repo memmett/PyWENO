@@ -32,75 +32,49 @@ class Grid(object):
 
     **Instance variables**
 
-    * *size* - number of cells (also *N*)
-    * *x*    - grid boundaries
+    * *N*  - number of cells
+    * *x*  - grid boundaries
+    * *dx* - cell sizes
+    * *uniform* - boolean: is the grid uniform?
 
-    The constructor precomputes the cell centres and sizes from the
-    cell boundaries.
+    **Keyword arguments**
 
-    **Keyword arguments (without cache)**
-
-    * *boundaries* (or *x*) - list of grid cell boundaries, eg,
+    * *x* - list of grid cell boundaries, eg,
       ``numpy.linspace(-1.0, 1.0, 20+1)``
+    * *cache* - cache filename; *x* is ignored if a cache is used in
+       the constructor
 
-    The cell boundaries do **not** have to be uniform.
-
-    **Keyword arguments (with cache)**
-
-    * *cache*  - cache filename
+    Note: the cell boundaries do **not** have to be uniform.
 
     **Methods**
 
     """
 
-    def __init__(self,
-                 boundaries=None, x=None, cache=None, **kwargs):
+    def __init__(self, x=None, y=None, z=None,
+                 cache=None, **kwargs):
 
-        if (boundaries is None) and (x is not None):
-            boundaries = x
+        if (y is not None) or (z is not None):
+            raise NotImplementedError, '2d and 3d grids are not implemented yet.'
 
-        if (boundaries is not None) and (cache is None):
-            self._init_with_boundaries(boundaries)
-        elif (cache is not None) and (boundaries is None):
-            self._init_with_cache(cache)
+        if cache is not None:
+            hdf = h5.File(cache, "r")
+
+            dst = hdf["grid/x"]
+            x = np.zeros(dst.shape)
+            dst.read_direct(x)
+
+            hdf.close()
+
         else:
-            ValueError, 'both boundaries and cache specified'
+            x = np.asarray(x)
 
-
-    def _init_with_boundaries(self, x):
-
-        # cell centres
-        cntr = np.zeros(x.size-1)
-        for i in xrange(cntr.size):
-            cntr[i] = (x[i+1] + x[i]) / 2.0
-
-        # cell sizes
-        sz = np.zeros(x.size-1)
-        for i in xrange(sz.size):
-            sz[i] = x[i+1] - x[i]
+        self.N  = x.shape[0] - 1
+        self.x  = x
+        self.dx = x[1:] - x[:-1]
 
         self.uniform = False
-        if abs(max(sz) - min(sz)) < 1e-10:
+        if abs(max(self.dx) - min(self.dx)) < 1e-10:
             self.uniform = True
-
-        # init self
-        self._cntr      = cntr
-        self._sz        = sz
-        self.size       = cntr.size
-        self.N          = cntr.size
-        self.x          = x
-
-
-    def _init_with_cache(self, cache):
-
-        hdf = h5.File(cache, "r")
-        dst = hdf["grid/bndry"]
-        boundaries = np.zeros(dst.shape)
-        boundaries[:] = dst[:]
-
-        self._init_with_boundaries(boundaries)
-
-        hdf.close()
 
 
     def cache(self, output):
@@ -116,29 +90,12 @@ class Grid(object):
             raise ValueError, 'a grid cache already exists.'
 
         sgrp = hdf.create_group("grid")
-        sgrp.create_dataset("bndry", data=self.x)
+        sgrp.create_dataset("x", data=self.x)
         hdf.close()
 
-
-    def boundaries(self):
-        """Return array of *N+1* cell boundaries."""
-        return self.x
-
-
-    def centres(self):
-        """Return array of *N* cell centres."""
-        return self._cntr
-
-
     def centers(self):
-        """Return array of *N* cell centers."""
-        return self._cntr
 
-
-    def sizes(self):
-        """Return array of *N* cell sizes."""
-        return self._sz
-
+        return 0.5 * (self.x[1:] + self.x[:-1])
 
     def average(self, f):
         """Return cell averages of *f*."""
