@@ -60,8 +60,6 @@ setuptools.setup(
 
     test_suite = 'nose.collector',
 
-#    install_requires = [ "numpy >= 1.0.3", "scipy >= 0.7.0", "sympy >= 0.6.5" ],
-
     ext_modules = [
         setuptools.Extension('pyweno.cstencil',
                              sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
@@ -80,10 +78,10 @@ setuptools.setup(
     exclude_package_data = {'': ['.gitignore']},
 
     author = "Matthew Emmett",
-    author_email = "matthew.emmett@ualberta.ca",
+    author_email = "memmett@unc.edu",
     description = "Weighted Essentially Non-oscillatory (WENO) approximation.",
     license = "BSD",
     keywords = "weno",
-    url = "http://www.math.ualberta.ca/~memmett/pyweno/"
+    url = "http://memmett.github.com/PyWENO/"
 
     )
