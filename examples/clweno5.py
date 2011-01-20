@@ -3,7 +3,7 @@
 import math
 import numpy
 import pyweno.grid
-import pyweno.clweno5
+import pyweno.clweno
 
 # explicitly define the function f that we will reconstruct ...
 def f(x):
@@ -17,7 +17,7 @@ uf = numpy.frompyfunc(f, 1, 1)
 # load the weno reconstructor from the cache
 x = numpy.linspace(-5.0, 5.0, 21)
 grid = pyweno.grid.Grid(x)
-weno = pyweno.clweno5.CLWENO5PM()
+weno = pyweno.clweno.CLPMWENO(3)
 
 # average f
 fb = grid.average(f)

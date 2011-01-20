@@ -13,7 +13,7 @@ def f(x):
     return math.cos(x)
 
 # load the weno reconstructor from the cache
-k = 5
+k = 3
 cache = 'gridk%d.h5' % (k)
 
 grid = pyweno.grid.Grid(cache=cache)
@@ -59,9 +59,9 @@ plt.legend(['actual', 'left', 'right', 'left_x'])
 
 plt.subplot(2,1,2)
 
-plt.plot(grid.centres(), weno.sigma[:,0], 'or')
-plt.plot(grid.centres(), weno.sigma[:,1], 'ok')
-plt.plot(grid.centres(), weno.sigma[:,2], 'ob')
+plt.plot(grid.centers(), weno.sigma[:,0], 'or')
+plt.plot(grid.centers(), weno.sigma[:,1], 'ok')
+plt.plot(grid.centers(), weno.sigma[:,2], 'ob')
 
 plt.ylabel('sigma')
 plt.xlabel('x')
