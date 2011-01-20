@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Examples &mdash; PyWENO v0.5.9 documentation</title>
+    <title>PyWENO Examples &mdash; PyWENO v0.5.11 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '#',
-        VERSION:     '0.5.9',
+        VERSION:     '0.5.11',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,7 +19,7 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.9 documentation" href="index.html" />
+    <link rel="top" title="PyWENO v0.5.11 documentation" href="index.html" />
     <link rel="next" title="What’s new in PyWENO" href="whatsnew.html" />
     <link rel="prev" title="PyWENO Reference" href="reference.html" /> 
   </head>
@@ -39,7 +39,7 @@
         <li class="right" >
           <a href="reference.html" title="PyWENO Reference"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.11 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -61,7 +61,7 @@ discontinuous function on a uniform grid using OpenCL.</p>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">pyweno.grid</span>
-<span class="kn">import</span> <span class="nn">pyweno.clweno5</span>
+<span class="kn">import</span> <span class="nn">pyweno.clweno</span>
 
 <span class="c"># explicitly define the function f that we will reconstruct ...</span>
 <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -75,7 +75,7 @@ discontinuous function on a uniform grid using OpenCL.</p>
 <span class="c"># load the weno reconstructor from the cache</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
 <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">clweno5</span><span class="o">.</span><span class="n">CLWENO5PM</span><span class="p">()</span>
+<span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">clweno</span><span class="o">.</span><span class="n">CLPMWENO</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
 <span class="c"># average f</span>
 <span class="n">fb</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -283,7 +283,7 @@ plot the result.</p>
     <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span><span class="o">*</span><span class="n">x</span>
 
 <span class="c"># load the weno reconstructor from the cache</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;gridk</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
@@ -325,9 +325,9 @@ plot the result.</p>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ok&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ok&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;sigma&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
@@ -358,7 +358,7 @@ non-uniform grid and plot the result.</p>
     <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c"># load the weno reconstructor from the cache</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;gridk</span><span class="si">%d</span><span class="s">.h5&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
 <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
@@ -404,9 +404,9 @@ non-uniform grid and plot the result.</p>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ok&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centres</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="s">&#39;or&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ok&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">centers</span><span class="p">(),</span> <span class="n">weno</span><span class="o">.</span><span class="n">sigma</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;ob&#39;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;sigma&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">)</span>
@@ -481,7 +481,7 @@ non-uniform grid and plot the result.</p>
         <li class="right" >
           <a href="reference.html" title="PyWENO Reference"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.9 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.5.11 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
