@@ -22,15 +22,20 @@ import pyweno.cweno
 class WENO(object):
     """Weighted Essentially Non-Oscillatory reconstruction class.
 
+    The WENO class is a very generalised class for performing various
+    WENO reconstructions on non-uniform and uniform grids.  Please see
+    the other WENO classes for more specific (and easier to use) WENO
+    reconstructors.
+
     **Basic usage**
 
     From scratch::
 
-    >>> weno = pyweno.weno.WENO(order=k, grid=grid)
+    >>> weno = pyweno.weno.WENO(k=3, grid=grid)
 
     From a cache::
 
-    >>> weno = pyweno.weno.WENO(order=k, cache='mycache.h5')
+    >>> weno = pyweno.weno.WENO(cache='mycache.h5')
 
     Pre-compute reconstruction coefficients and optimal weights at the
     left and right boundaries::
@@ -52,8 +57,7 @@ class WENO(object):
     **Instance variables**
 
     * *grid*  - spatial grid
-    * *order* - order of stencil approximations
-    * *k*     - same as *order*
+    * *k*     - order of stencil approximations (WENO order is 2k-1)
     * *beta*  - smoothness indicator coefficients
     * *c*     - dictionary of reconstruction coefficients
     * *w*     - dictionary of optimal weights
@@ -61,40 +65,34 @@ class WENO(object):
     **Keyword arguments (without cache)**
 
     * *grid*           - spatial grid (``pyweno.grid.Grid``)
-    * *order* (or *k*) - order of approximation
+    * *k*              - order of stencil approximation (WENO order is 2k-1)
     * *smoothness*     - type of smoothness indicator to use
 
     **Keyword arguments (with cache)**
 
     * *cache*          - cache file
-    * *order* (or *k*) - order of stencil approximation
+    * *k*              - order of stencil approximation (optional)
 
     **Methods**
 
     """
 
-    c = {}                              # dictionary of reconstruction coeffs
-    w = {}                              # dictionary of optimal weights
-    wr = {}                             # current weights
-    qr = {}                             # dictionary of working space
+    c = {}                  # dictionary of reconstruction coeffs
+    w = {}                  # dictionary of optimal weights
+    wr = {}                 # current weights
+    qr = {}                 # dictionary of working space
+
 
     ##################################################################
     # init
     #
 
     def __init__(self,
-                 order=None, k=None,
+                 k=3,
                  grid=None, cache=None,
                  smoothness='jiang_shu', **kwargs):
 
-        if (order is None) and (k is None):
-            order = 3
-
-        if (order is None) and (k is not None):
-            order = k
-
-        self.order = order
-        self.k     = order
+        self.k = k
 
         # compute or load from cache
         if (grid is None) and (cache is None):
@@ -112,15 +110,17 @@ class WENO(object):
 
     def _init_with_cache(self, cache):
 
-        # XXX: if there is only one k in the h5 file, use that by
-        # default so we don't have to explicitly pass an 'order'
-
         self.c = {}
         self.w = {}
 
         self.grid = pyweno.grid.Grid(cache=cache)
 
         hdf = h5.File(cache, 'r')
+
+        # if there is only one k in the h5 file, use that
+        if len(hdf['weno'].keys()) == 1:
+            key = hdf['weno'].keys()[0]
+            self.k = int(key[1:])
 
         try:
             k_sgrp = hdf['weno/k%d' % (self.k)]
@@ -163,7 +163,7 @@ class WENO(object):
         else:
             self.beta = np.zeros((N,k,2*k-1,2*k-1))
 
-        pyweno.smoothness.beta(smoothness, self.grid, self.order, self.beta)
+        pyweno.smoothness.beta(smoothness, self.grid, self.k, self.beta)
 
 
     def _pre_allocate_key(self, key):
@@ -393,7 +393,7 @@ class WENO(object):
         """Compute smoothness indicators of *q*."""
 
         if imax == -1:
-            imax = self.grid.size - 1
+            imax = self.grid.N - 1
 
         if self.grid.uniform:
             sigma = pyweno.csmoothness.sigma_uniform
@@ -409,10 +409,10 @@ class WENO(object):
 
            **Arguments**
 
-           * *key* -
+           * *key*  -
            * *imin* - minimum cell index
            * *imax* - maximum cell index
-           * *s* - biasing
+           * *s*    - biasing
 
            The default values of *imin* and *imax* are taken to be the
            full domain excluding cells near the edges.
@@ -434,8 +434,6 @@ class WENO(object):
 
         sigma = self.sigma
         wr    = self.wr[key]
-
-        # XXX: move this if/else crap to C
 
         if (imin >= k-1) and (imax <= N-k):
             weights(imin, imax, sigma, varpi, wr)
@@ -483,6 +481,8 @@ class WENO(object):
 
         """
 
+        # XXX: add a storage offset
+
         N = self.grid.N
         k = self.k
 
@@ -500,8 +500,6 @@ class WENO(object):
         c = self.c[key]
         wr = self.wr[key]
         qr = self.qr[key]
-
-        # XXX: move this if/else crap to C
 
         if (imin >= k-1) and (imax <= N-k):
 
@@ -522,6 +520,27 @@ class WENO(object):
                 s = i - (N - k + 1) + 1
                 reconstruct(q, s, i, i, c, wr, qr, qs)
 
+
+
+######################################################################
+# PMWENO
+#
+
+class PMWENO(WENO):
+    """Plus/minus WENO reconstructor."""
+
+    def __init__(self, **kwargs):
+
+        pyweno.weno.WENO.__init__(self, **kwargs)
+
+        # XXX: not necessary when loading from a cache...
+        pyweno.weno.WENO.precompute_reconstruction(self, 'left')
+        pyweno.weno.WENO.precompute_reconstruction(self, 'right')
+
+        raise NotImplementedError, 'PMWENO is not implemented yet.'
+
+    def reconstruct():
+        pass
 
 
 ######################################################################
