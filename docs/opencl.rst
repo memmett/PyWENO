@@ -2,16 +2,20 @@ PyWENO OpenCL toolkit
 =====================
 
 PyWENO contains an OpenCL module to help authors develop their own
-specialized WENO methods on GPUs.  Below are a few quick examples
-demonstrating how the OpenCL routines of PyWENO are used.
+specialized WENO methods on GPUs by generating WENO code.  Below are a
+few quick examples demonstrating how the OpenCL routines of PyWENO are
+used.
 
 
-Half of a WENO5 kernel
-----------------------
+Half of a FVWENO5 kernel
+------------------------
 
 In this example we'll build an OpenCL kernel to reconstruct a function
 based on its cell averages in a global OpenCL array ``f``.  We will
 build approximations at the left (plus) side of each cell boundary.
+
+The steps to generate a full FV OpenCL WENO kernel are contained in
+:mod:`pyweno.opencl`.
 
 First, we'll define the OpenCL function and the local variables that
 will be used::

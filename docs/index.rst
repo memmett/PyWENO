@@ -7,6 +7,7 @@ grids.
 
 **News**
 
+* January 20 2011: `PyWENO 0.5.11`_ released (see :doc:`what's new <whatsnew>`).
 * November 27 2010: `PyWENO 0.5.9`_ released (see :doc:`what's new <whatsnew>`).
 * November 19 2010: PyWENO now has preliminary support for OpenCL (GPUs).
 * October 17 2010: `PyWENO 0.5.7`_ released (see :doc:`what's new <whatsnew>`).
@@ -41,7 +42,6 @@ Documentation
 * :doc:`Examples <examples>` - some examples.
 * :doc:`Reference <reference>` - reference documentation.
 * :download:`Maths <weno.pdf>` (PDF) - the maths behind WENO approximations.
-
 
 **Features**
 
@@ -130,3 +130,4 @@ please see the `PyWENO project page`_.
 .. _`PyWENO 0.5.0`: http://github.com/memmett/PyWENO/downloads
 .. _`PyWENO 0.5.7`: http://github.com/memmett/PyWENO/downloads
 .. _`PyWENO 0.5.9`: http://github.com/memmett/PyWENO/downloads
+.. _`PyWENO 0.5.11`: http://github.com/memmett/PyWENO/downloads

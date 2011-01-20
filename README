@@ -12,6 +12,25 @@ Please see
 for more information.
 
 
+Prerequisites
+-------------
+
+To install PyWENO, you need:
+
+  * NumPy
+  * SciPy
+  * H5PY
+  * SymPy    (optional if you avoid pyweno.symbolic)
+  * PyOpenCL (optional if you avoid pyweno.opencl)
+
+Many distributions include packaged versions of these Python modules.
+If you are running Debian or Ubuntu, you can install the prerequisites
+(except PyOpenCL), the Python development files, and setuptools
+(required in order to build PyWENO) by running:
+
+$ sudo apt-get install python-scipy python-sympy python-h5py python-setuptools python-dev
+
+
 Installing PyWENO
 -----------------
 
@@ -19,13 +38,13 @@ PyWENO uses the 'setuptools' package to automate building and
 installing PyWENO.  Once you have installed setuptools, you can
 install PyWENO by running:
 
-# python setup.py install
+$ sudo python setup.py install
 
 If you plan on modifying PyWENO you can install PyWENO into your
 PYHTONPATH in development mode by running, eg,
 
-$ python setup.py develop -d ~/opt/python
 $ export PYTHONPATH=~/opt/python:$PYTHONPATH
+$ python setup.py develop -d ~/opt/python
 
 
 License
