@@ -32,7 +32,8 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
 
       f^{(d)}(\\xi) \\approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}.
 
-    This function wraps a fast C implementation.
+    This function wraps a fast C implementation, and is especially
+    useful for non-uniform grids.
 
     Arguments:
 
@@ -72,8 +73,8 @@ def _quad_pts(a, b, x):
 class Stencil(object):
     """Polynomial approximation stencil.
 
-    The Stencil class is usually used by the WENO class, but can be used
-    by itself too.
+    The Stencil class is usually used by the WENO class, but can be
+    used by itself too.
 
     The cell averages *f_j* of a function *f* can be used to
     approximate the value of *f* (and its derivatives) according to
@@ -104,7 +105,7 @@ class Stencil(object):
     Reconstruct a function at the left boundaries::
 
     >>> c = stencil.c['left'][i,0,:]
-    >>> v_left = numpy.dot(c, v_avg[i-r:i-r+k])
+    >>> f_left = numpy.dot(c, f_avg[i-r:i-r+k])
 
     Cache to an HDF5 file (through H5PY)::
 
@@ -248,7 +249,7 @@ class Stencil(object):
 
         """
 
-        N = self.grid.size
+        N = self.grid.N
         k = self.k
         r = self.r
         x = self.grid.x

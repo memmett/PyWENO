@@ -1,6 +1,31 @@
 """(Py)WENO OpenCL kernels.
 
-   XXX: put some common documentation in here.
+   The routines throughout this module are designed to generate OpenCL
+   code for use in specialized applications.
+
+   Each function generates either: a stand-alone OpenCL kernel or
+   inlined OpenCL code.  Whether a kernel or inlined code is returned
+   depends on the value of the keyword argument *function*.
+
+   If *function* is a string, the code for a standalone kernel is
+   returned.  Furthermore, the kernel is named according to the value
+   of *function*, which defaults to, eg, ``smoothness`` ``weights``,
+   etc.
+
+   If *function* is ``None`` or ``False``, inlined code returned.  In
+   this case, the various results are stored in the variables named
+   according to:
+
+   * smoothness indicators: *sigma*, default ``sigmaX``
+   * weights:               *omega*, default ``omegaX``
+
+   in which the occurance of ``X`` is replaced by the left-shift *r*.
+   For example, for ``k=3`` and ``omega='omegaX'``, the weights are
+   stored in ``omega0``, ``omega1``, and ``omega2``, each of which are
+   assumed to be in scope.  Finally, in some routines the the
+   accumulator variable ``float accumulator`` is also assumed to be in
+   scope.
+
 """
 
 import numpy as np
@@ -44,25 +69,10 @@ def uniform_smoothness_kernel(k, beta,
 
        .. math::
 
-         \sigma_r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \\beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
-
-       If *function* is a string, the kernel is wrapped in a function
-       called *function*, which defaults to ``smoothness``.  The call
-       signature is::
-
-         __kernel void smoothness(__global const float *f, __global float *sigma)
-
-       If *function* is ``None`` or ``False``, the kernel is returned
-       as inlined code.  In this case, the smoothness indicators are
-       stored in the variables named according to *sigma*, in which
-       the occurance of ``X`` is replaced by the left-shift *r*.  For
-       example, for ``k=3`` and ``sigma='sigmaX'``, the smoothness
-       indicators are stored in ``sigma0``, ``sigma1``, and
-       ``sigma2``, each of are assumed to be in scope.  Finally, the
-       accumulator variable ``float accumulator`` is also assumed to
-       be in scope.
-
-       XXX: need examples.
+         \sigma_r = \sum_{m=1}^{2k-1}
+                    \sum_{n=1}^{2k-1}
+                        \beta_{r,m,n}\, \overline{f}_{i-k+m}\,
+                                        \overline{f}_{i-k+n}.
 
        Returns: OpenCL source code (as a string).
 
@@ -117,12 +127,17 @@ def uniform_weights_kernel(k, varpi, n=1,
                            sigma='sigmaX',
                            omega='omegaX',
                            **kwargs):
-    """Fully un-rolled weights kernel for uniform grids.
+    r"""Fully un-rolled weights kernel for uniform grids.
+
+       The weights kernel computes the weights *omega* determined by
+       the smoothness coefficients *sigma* (which have already been
+       computed).
 
        If *n*>1 (the number of reconstruction points within each
        cell), the caller should flatten the appropriate arrays.
 
-       XXX
+       Returns: OpenCL source code (as a string).
+
     """
 
     varpi = np.array(varpi)
@@ -134,7 +149,7 @@ def uniform_weights_kernel(k, varpi, n=1,
                                        __global float *omega
                                       ) {
               int i = get_global_id(0);
-              float alpha, accumulator;
+              float accumulator;
             """ % { 'function': function }
             ]
     else:
@@ -157,9 +172,8 @@ def uniform_weights_kernel(k, varpi, n=1,
 
             _varpi = _to_string(varpi[r])
 
-            src.append('alpha = %s / (10e-6 + %s) / (10e-6 + %s);' % (_varpi, _sigma, _sigma))
-            src.append('%s = alpha;' % _omega)
-            src.append('accumulator += alpha;')
+            src.append('%s = %s / (10e-6 + %s) / (10e-6 + %s);' % (_omega, _varpi, _sigma, _sigma))
+            src.append('accumulator += %s;' % _omega)
 
         for r in range(rmin, rmax):
 
@@ -180,8 +194,8 @@ def uniform_weights_kernel(k, varpi, n=1,
 
 def uniform_reconstruction_kernel(k, coeffs, n=1,
                                   function='reconstruct',
-                                  fr='fX',
                                   omega='omegaX',
+                                  fr='fX',
                                   rf='rf[i]',
                                   **kwargs):
     """Fully un-rolled reconstruction kernel for uniform grids.
@@ -189,7 +203,8 @@ def uniform_reconstruction_kernel(k, coeffs, n=1,
        If *n*>1 (the number of reconstruction points within each
        cell), the caller should flatten the appropriate arrays.
 
-       XXX
+       Returns: OpenCL source code (as a string).
+
     """
 
     coeffs = np.array(coeffs)
