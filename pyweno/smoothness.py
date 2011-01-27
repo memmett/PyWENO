@@ -78,7 +78,7 @@ def _jiang_shu(i, r, k, x):
     return s
 
 
-def beta(smoothness, grid, k, beta):
+def beta(smoothness, grid, k, beta, verbose=False):
     """Compute smoothness indicator coefficients and store result in
        *beta*.
 
@@ -115,7 +115,8 @@ def beta(smoothness, grid, k, beta):
 
     if grid.uniform:
 
-        print 'smoothness: uniform grid...'
+        if verbose:
+            print 'smoothness: uniform grid...'
 
         for r in range(k):
 
@@ -128,7 +129,8 @@ def beta(smoothness, grid, k, beta):
                     if c is not None:
                         beta[r,m,n] = c
 
-        print 'smoothness: uniform grid... done.'
+        if verbose:
+            print 'smoothness: uniform grid... done.'
 
     else:
 

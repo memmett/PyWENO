@@ -196,7 +196,7 @@ class WENO(object):
     # reconstruction
     #
 
-    def precompute_reconstruction(self, key, xi=None, verbose=True):
+    def precompute_reconstruction(self, key, xi=None, verbose=False):
         """Precompute reconstruction coefficients and optimal weights.
 
            **Arguments:**
@@ -597,7 +597,7 @@ def _makecons(j):
     return lambda x: x[j]
 
 
-def _varpi(key, k, s, cs, c, verbose=True):
+def _varpi(key, k, s, cs, c, verbose=False):
 
     wc = np.zeros(k)
 
