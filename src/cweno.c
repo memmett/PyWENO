@@ -275,16 +275,14 @@ reconstruct_nonuniform(PyObject *self, PyObject *args)
     rmin = max(0, s);
     rmax = min(k-1+s, k-1);
 
-    for (l=0; l<n; l++) {
-      for (r=rmin; r<rmax+1; r++) {
-        q = (double *) PyArray_GETPTR1(q_py, i-r);
+    for (r=rmin; r<rmax+1; r++) {
+      q = (double *) PyArray_GETPTR1(q_py, i-r);
 
-        for (l=0; l<n; l++) {
-          c = (double *) PyArray_GETPTR4(c_py, i, l, r, 0);
-          qr = (double *) PyArray_GETPTR3(qr_py, i, l, r);
+      for (l=0; l<n; l++) {
+        c = (double *) PyArray_GETPTR4(c_py, i, l, r, 0);
+        qr = (double *) PyArray_GETPTR3(qr_py, i, l, r);
 
-          *qr = dot(c, q, k, q_stride);
-        }
+        *qr = dot(c, q, k, q_stride);
       }
     }
   }
@@ -387,16 +385,14 @@ reconstruct_uniform(PyObject *self, PyObject *args)
     rmin = max(0, s);
     rmax = min(k-1+s, k-1);
 
-    for (l=0; l<n; l++) {
-      for (r=rmin; r<rmax+1; r++) {
-        q = (double *) PyArray_GETPTR1(q_py, i-r);
+    for (r=rmin; r<rmax+1; r++) {
+      q = (double *) PyArray_GETPTR1(q_py, i-r);
 
-        for (l=0; l<n; l++) {
-          c = (double *) PyArray_GETPTR3(c_py, l, r, 0);
-          qr = (double *) PyArray_GETPTR3(qr_py, i, l, r);
+      for (l=0; l<n; l++) {
+        c = (double *) PyArray_GETPTR3(c_py, l, r, 0);
+        qr = (double *) PyArray_GETPTR3(qr_py, i, l, r);
 
-          *qr = dot(c, q, k, q_stride);
-        }
+        *qr = dot(c, q, k, q_stride);
       }
     }
   }
