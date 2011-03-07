@@ -122,10 +122,11 @@ def uniform_smoothness_kernel(k, beta,
 
 ######################################################################
 
-def uniform_weights_kernel(k, varpi, n=1,
+def uniform_weights_kernel(k, varpi, split,
                            function='weights',
                            sigma='sigmaX',
                            omega='omegaX',
+                           scale='scaleX',
                            **kwargs):
     r"""Fully un-rolled weights kernel for uniform grids.
 
@@ -141,6 +142,14 @@ def uniform_weights_kernel(k, varpi, n=1,
     """
 
     varpi = np.array(varpi)
+    split = np.array(split)
+
+    if len(varpi.shape) == 1:
+        varpi = np.reshape(varpi, (1, varpi.shape[0]))
+
+    n = varpi.shape[0]
+
+    varpi = np.reshape(varpi, (n, k))
 
     if function:
         src = [
@@ -159,30 +168,61 @@ def uniform_weights_kernel(k, varpi, n=1,
     rmax = k                    # min(k-1, i)
 
     for l in range(n):
-        src.append('accumulator = 0.0;')
+        if not split[l]:
+            src.append('accumulator = 0.0;')
 
-        for r in range(rmin, rmax):
+            for r in range(rmin, rmax):
 
-            if function:
-                _sigma = 'sigma[i*%(k)d + %(r)d]' % { 'k': k, 'r': r };
-                _omega = 'omega[i*%(is)d + %(r)d]' % { 'is': n*k, 'r': l*k + r }
-            else:
-                _sigma = sigma.replace('X', str(r))
-                _omega = omega.replace('X', str(r))
+                if function:
+                    _sigma = 'sigma[i*%(k)d + %(r)d]' % { 'k': k, 'r': r };
+                    _omega = 'omega[i*%(is)d + %(r)d]' % { 'is': n*k, 'r': l*k + r }
+                else:
+                    _sigma = sigma.replace('X', str(r))
+                    _omega = omega.replace('X', str(l*k+r))
 
-            _varpi = _to_string(varpi[r])
+                _varpi = _to_string(varpi[l,r])
 
-            src.append('%s = %s / (10e-6 + %s) / (10e-6 + %s);' % (_omega, _varpi, _sigma, _sigma))
-            src.append('accumulator += %s;' % _omega)
+                src.append('%s = %s / (10e-6 + %s) / (10e-6 + %s);' % (_omega, _varpi, _sigma, _sigma))
+                src.append('accumulator += %s;' % _omega)
 
-        for r in range(rmin, rmax):
 
-            if function:
-                _omega = 'omega[i*%(is)d + %(r)d]' % { 'is': n*k, 'r': l*k + r }
-            else:
-                _omega = omega.replace('X', str(r))
+            for r in range(rmin, rmax):
 
-            src.append('%s /= accumulator;' % _omega)
+                if function:
+                    _omega = 'omega[i*%(is)d + %(r)d]' % { 'is': n*k, 'r': l*k + r }
+                else:
+                    _omega = omega.replace('X', str(l*k+r))
+
+                src.append('%s /= accumulator;' % _omega)
+
+        else:
+
+            for s, pm in enumerate(('p', 'm')):
+                src.append('accumulator = 0.0;')
+
+                _scale = scale.replace('X', str(l) + pm)
+                accum = 0.0
+                for r in range(rmin, rmax):
+                    accum += varpi[l,r][s]
+                src.append('%s = %s;' % (_scale, _to_string(accum)))
+
+                for r in range(rmin, rmax):
+
+                    _sigma = sigma.replace('X', str(r))
+                    _omega = omega.replace('X', str(l*k+r) + pm)
+
+                    _varpi = _to_string(varpi[l,r][s])
+
+                    src.append('%s = %s / %s / (10e-6 + %s) / (10e-6 + %s);' % (_omega, _varpi, _scale, _sigma, _sigma))
+                    src.append('accumulator += %s;' % _omega)
+
+
+
+                for r in range(rmin, rmax):
+
+                    _omega = omega.replace('X', str(l*k+r) + pm)
+
+                    src.append('%s /= accumulator;' % _omega)
 
     if function:
         src.append('}')
@@ -192,11 +232,12 @@ def uniform_weights_kernel(k, varpi, n=1,
 
 ######################################################################
 
-def uniform_reconstruction_kernel(k, coeffs, n=1,
+def uniform_reconstruction_kernel(k, coeffs, split,
                                   function='reconstruct',
                                   omega='omegaX',
+                                  scale='scaleX',
                                   fr='fX',
-                                  rf='rf[i]',
+                                  rf='rf[X]',
                                   **kwargs):
     """Fully un-rolled reconstruction kernel for uniform grids.
 
@@ -208,6 +249,11 @@ def uniform_reconstruction_kernel(k, coeffs, n=1,
     """
 
     coeffs = np.array(coeffs)
+
+    if len(coeffs.shape) == 2:
+        coeffs = np.reshape(coeffs, (coeffs.shape[0], 1, coeffs.shape[1]))
+
+    n = coeffs.shape[1]
 
     if function:
         src = [
@@ -221,32 +267,70 @@ def uniform_reconstruction_kernel(k, coeffs, n=1,
             ]
 
         variables = []
-        for r in range(k):
-            variables.append(fr.replace('X', str(r)))
+        for l in range(n):
+            for r in range(k):
+                variables.append(fr.replace('X', str(l*k+r)))
         src.append('float ' + ', '.join(variables) + ';')
     else:
         src = []
 
     # reconstructions
-    for r in range(k):
-        _f = fr.replace('X', str(r))
+    for l in range(n):
 
-        reconstruction = []
-        for j in range(k):
-            _coeff = _to_string(coeffs[r,j])
-            reconstruction.append('%s * f[i%+d]' % (_coeff, -r+j))
+        for r in range(k):
+            _f = fr.replace('X', str(l*k+r))
 
-        src.append(_f + ' = ' + ' + '.join(reconstruction) + ';')
+            reconstruction = []
+            for j in range(k):
+                _coeff = _to_string(coeffs[l,r,j])
+                reconstruction.append('%s * f[i%+d]' % (_coeff, -r+j))
+
+            src.append(_f + ' = ' + ' + '.join(reconstruction) + ';')
+
 
     # weighted reconstruction
-    reconstruction = []
-    for r in range(k):
-        _f = fr.replace('X', str(r))
-        _omega = omega.replace('X', str(r))
+    for l in range(n):
 
-        reconstruction.append('%s * %s' % (_f, _omega))
+        if not split[l]:
 
-    src.append(rf + ' = ' + ' + '.join(reconstruction) + ';')
+            reconstruction = []
+            for r in range(k):
+                _f = fr.replace('X', str(l*k+r))
+                _omega = omega.replace('X', str(r))
+
+                reconstruction.append('%s * %s' % (_f, _omega))
+
+            if n > 1:
+                _rf = rf.replace('X', 'i*%d+%d' % (n, l))
+            else:
+                _rf = rf.replace('X', 'i')
+
+            src.append(_rf + ' = ' + ' + '.join(reconstruction) + ';')
+
+        else:
+
+            reconstruction = []
+            for s, pm in enumerate(('p', 'm')):
+                _scale = scale.replace('X', str(l) + pm)
+
+                pm_reconstruction = []
+                for r in range(k):
+                    _f = fr.replace('X', str(l*k+r))
+                    _omega = omega.replace('X', str(l*k+r) + pm)
+
+                    pm_reconstruction.append('%s * %s' % (_f, _omega))
+
+                reconstruction.append(('%s * (' % _scale)
+                                      + ' + '.join(pm_reconstruction)
+                                      + ')')
+
+            if n > 1:
+                _rf = rf.replace('X', 'i*%d+%d' % (n, l))
+            else:
+                _rf = rf.replace('X', 'i')
+
+            src.append(_rf + ' = ' + ' + '.join(reconstruction) + ';')
+
 
     if function:
         src.append('}')
