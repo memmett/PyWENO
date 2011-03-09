@@ -56,6 +56,23 @@ def primitive_polynomial_interpolator(x, y):
 
 ######################################################################
 
+def _quad_pts(a, b, x):
+
+    half = sympy.sympify('1/2')
+
+    w = half * (b - a)
+    c = half * (a + b)
+
+    return w * x + c
+
+def _xi_pts(xi):
+
+    if xi == 'gauss_quad3':
+        return 3
+
+    return 1
+
+
 def reconstruction_coefficients(k, xi, uniform=True):
     r"""Compute the reconstruction coefficients for a 2k-1 order WENO
         scheme corresponding to the reconstruction point *xi*.
@@ -87,26 +104,32 @@ def reconstruction_coefficients(k, xi, uniform=True):
     for j in range(-k+1, k):
         fs.append(sympy.var('f[i%+d]' % j))
 
-
     # set reconstruction point xi
+    n = _xi_pts(xi)
+
     if xi == 'left':
-        xi = xs[i]
+        xi = [ xs[i] ]
     elif xi == 'right':
-        xi = xs[i+1]
+        xi = [ xs[i+1] ]
     elif xi == 'gauss_quad3':
-        # XXX
-        raise NotImplementedError
+        xi = [ _quad_pts(xs[i], xs[i+1], -sympy.sqrt(15)/5),
+               _quad_pts(xs[i], xs[i+1], 0),
+               _quad_pts(xs[i], xs[i+1], sympy.sqrt(15)/5) ]
     else:
         raise ValueError, "reconstruction point '%s' not understood." % str(xi)
 
     # compute reconstruction coefficients for each left shift r
-    c = np.zeros((k,k), dtype=np.dtype(object))
+    c = np.zeros((n,k,k), dtype=np.dtype(object))
 
-    for r in range(0, k):
-        p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
+    for l in range(n):
+        for r in range(0, k):
+            p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
 
-        for j in range(0, k):
-            c[r,j] = p.subs(x, xi).coeff(fs[i-r+j])
+            for j in range(0, k):
+                c[l,r,j] = p.subs(x, xi[l]).coeff(fs[i-r+j])
+
+    if n == 1:
+        return np.reshape(c, (k,k))
 
     return c
 
@@ -127,34 +150,63 @@ def optimal_weights(k, xi, uniform=True):
         """
 
     if not uniform:
-        raise ValueError, "symbolic optimal weights can't be computed for non-uniform grids"
+        raise ValueError, "symbolic optimal weights haven't been implemented for non-uniform grids"
+
+    n = _xi_pts(xi)
 
     c   = reconstruction_coefficients(k, xi, uniform=True)
-    c2k = reconstruction_coefficients(2*k-1, xi, uniform=True)[k-1]
+    if n > 1:
+        c2k = reconstruction_coefficients(2*k-1, xi, uniform=True)[:,k-1,:]
+    else:
+        c2k = reconstruction_coefficients(2*k-1, xi, uniform=True)[k-1,:]
+
+    c   = np.reshape(c, (n, k, k))
+    c2k = np.reshape(c2k, (n, 2*k-1))
+
 
     omega = []
     for r in range(k):
         omega.append(sympy.var('omega%d' % r))
 
-    eqns = []
-    for j in range(2*k-1):
-
-        rmin = max(0, (k-1)-j)
-        rmax = min(k-1, 2*(k-1)-j)
-
-        accum = 0
-        for r in range(rmin, rmax+1):
-            accum = accum + omega[r] * c[r,r-(k-1)+j]
-
-        eqns.append(accum - c2k[j])
-
-    sol = sympy.solve(eqns, omega)
-
     varpi = []
-    for r in range(k):
-        varpi.append(sol[omega[r]])
+    split = []
+    for l in range(n):
+        eqns = []
+        for j in range(2*k-1):
 
-    return varpi
+            rmin = max(0, (k-1)-j)
+            rmax = min(k-1, 2*(k-1)-j)
+
+            accum = 0
+            for r in range(rmin, rmax+1):
+                accum = accum + omega[r] * c[l,r,r-(k-1)+j]
+
+            eqns.append(accum - c2k[l,j])
+
+        sol = sympy.solve(eqns, omega)
+
+        if min(sol.values()) < 0:
+            split.append(True)
+        else:
+            split.append(False)
+
+        for r in range(k):
+            if split[-1]:
+                w  = sol[omega[r]]
+                wp = (w + 3*abs(w))/2
+                wm = wp - w
+                varpi.append((wp, wm))
+            else:
+                varpi.append(sol[omega[r]])
+
+    varpi = np.array(varpi, dtype=object)
+    split = np.array(split)
+
+    if n == 1:
+        return (varpi, split)
+
+    return (np.reshape(varpi, (n, k)), split)
+
 
 
 ######################################################################
