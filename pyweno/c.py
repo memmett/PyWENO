@@ -1,3 +1,32 @@
+"""(Py)WENO C kernels.
+
+   The routines throughout this module are designed to generate C code
+   for use in specialized applications.
+
+   Each function generates either: a stand-alone C function or inlined
+   C code.  Whether a function or inlined code is returned depends on
+   the value of the keyword argument *function*.
+
+   If *function* is a string, the code for a standalone function is
+   returned.  Furthermore, the function is named according to the
+   value of *function*, which defaults to, eg, ``smoothness``
+   ``weights``, etc.
+
+   If *function* is ``None`` or ``False``, inlined code is returned.
+   In this case, the various results are stored in the variables named
+   according to:
+
+   * smoothness indicators: *sigma*, default ``sigmaX``
+   * weights:               *omega*, default ``omegaX``
+
+   in which the occurance of ``X`` is replaced by the left-shift *r*.
+   For example, for ``k=3`` and ``omega='omegaX'``, the weights are
+   stored in ``omega0``, ``omega1``, and ``omega2``, each of which are
+   assumed to be in scope.  Finally, in some routines the the
+   accumulator variable ``float accumulator`` is also assumed to be in
+   scope.
+
+"""
 
 import numpy as np
 import pyweno.code
@@ -12,51 +41,6 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
 
         self.wrappers = []
 
-    def omegas(self):
-        """Return list of 'omega' names."""
-
-        n = self.n
-        k = self.k
-
-        w = 0
-        omega = []
-        for l in range(n):
-            if not self.split[l]:
-                for r in range(k):
-                    array = 'omega[i*wsi+{l}*wsl+{r}*wsr]'.format(l=l, r=r)
-                    local = self.omega[w+r]
-                    omega.append((array, local))
-                w += k
-            else:
-                for s, pm in enumerate(('p', 'm')):
-                    for r in range(k):
-                        array = 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]'.format(l=l, r=r, s=s)
-                        local = self.omega[w+r]
-                        omega.append((array, local))
-                    w += k
-
-        return omega
-
-    def get_omegas(self):
-        """Return code to set omega variables from the appropriate
-        elements of the omega array."""
-
-        s = []
-        for (array, local) in self.omegas():
-            s.append(local + ' = ' + array + ';')
-
-        return '\n'.join(s)
-
-    def set_omegas(self):
-        """Return code to set the appropriate elemtes of the omega
-        array from the omega variables."""
-
-        s = []
-        for (array, local) in self.omegas():
-            s.append(array + ' = ' + local + ';')
-
-        return '\n'.join(s)
-
 
     def uniform_smoothness(self, function='smoothness', wrapper=False, **kwargs):
         """Uniform smoothness function."""
@@ -67,9 +51,9 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
             wrapper = ('py_' + function, function)
 
         s = src()
-        s.add('''void {function}(double *f, int n, int fsi,
-                                 double *sigma, int ssi, int ssr)
-               {{ int i;''')
+        s.add('''void {function}(const double *restrict f, int n, int fsi,
+                                 double *restrict sigma, int ssi, int ssr)
+                 {{ int i;''')
 
         s.add('double ' + ', '.join(self.sigma) + ';')
         s.add('for (i={k}; i<n-{k}; i++) {{{{', k=k-1)
@@ -80,7 +64,7 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
                   r = r,
                   sigma = self.sigma[r])
 
-        s.add('}} }}\n')
+        s.add('}}}}\n')
 
         if wrapper:
             s.add(smoothness_wrapper)
@@ -100,8 +84,8 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
 
         s = src()
 
-        s.add('''void {function}(double *sigma, int n, int ssi, int ssr,
-                                 double *omega, int wsi, int wsl, int wsr)
+        s.add('''void {function}(const double *restrict sigma, int n, int ssi, int ssr,
+                                 double *restrict omega, int wsi, int wsl, int wsr)
                {{  int i;''')
         s.add('double accumulator;')
         s.add('double ' + ', '.join(self.sigma) + ';')
@@ -124,7 +108,11 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
         return s.src(function=function, wrapper=wrapper[0])
 
 
-    def uniform_reconstruction(self, function='reconstruct', wrapper=False, **kwargs):
+    def uniform_reconstruction(self,
+                               function='reconstruct',
+                               wrapper=False,
+                               fr='fr[i*frsi + X*frsl]',
+                               **kwargs):
         """Uniform reconstruction function."""
 
         k = self.k
@@ -135,9 +123,9 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
 
         s = src()
 
-        s.add('''void {function}(double *f, int n, int fsi,
-                                 double *omega, int wsi, int wsl, int wsr,
-                                 double *fr, int frsi, int frsl)
+        s.add('''void {function}(const double *restrict f, int n, int fsi,
+                                 const double *restrict omega, int wsi, int wsl, int wsr,
+                                 double *restrict fr, int frsi, int frsl)
               {{ int i;''')
 
         s.add('double ' + ', '.join(self.fr) + ';')
@@ -146,7 +134,7 @@ class CCodeGenerator(pyweno.code.CodeGenerator):
 
         s.add(self.get_omegas())
         s.add(pyweno.code.CodeGenerator.uniform_reconstruction(
-            self, fr='fr[i*frsi + X*frsl]'))
+            self, fr=fr))
 
         s.add('}} }}')
 

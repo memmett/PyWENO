@@ -1,4 +1,4 @@
-"""PyWENO code generation module.
+"""PyWENO Fortran 90 code generation module.
 
    The routines throughout this module are designed to generate C-like
    code for use in specialized applications.
@@ -94,13 +94,13 @@ class src(object):
 ######################################################################
 # CodeGenerator
 
-class CodeGenerator(object):
-    """Generate C-like code kernels for WENO reconstructions.
+class F90CodeGenerator(object):
+    """Generate F90 code kernels for WENO reconstructions.
 
-    Each method generates a C-like 'kernel' (ie, inlined C code) for a
-    specific WENO operation: computing smoothness indicators,
-    non-linear weights, and reconstructions.  These code snippets can,
-    in-turn, be used to create seperate functions or larger kernels.
+    Each method generates a Fortran 'kernel' for a specific WENO
+    operation: computing smoothness indicators, non-linear weights,
+    and reconstructions.  These code snippets can, in-turn, be used to
+    create seperate functions or larger kernels.
 
     The *basenames* dictionary is used to define naming conventions:
 
@@ -115,31 +115,13 @@ class CodeGenerator(object):
     accumulator variable ``accumulator`` is also assumed to be in
     scope.
 
-    The *strides* dictionary controls array striding:
-
-    * *f*: cell averaged function value strides, default ``'fsi'``
-    * *sigma*: tuple: smoothness indicator strides, default ``('ssi', 'ssr')``
-    * *omega*: tuple: weight strides, default ``('wsi', 'wsl', 'wsr')``
-    * *fr*: tuple: intermediate reconstruction strides, default ``('frsi', 'frsr')``
-
-    See also: :py:mod:`pyweno.pyweno.c` and
-    :py:mod:`pyweno.pyweno.opencl`.
-
     """
-
-    strides = {
-        'f': 'fsi',
-        'sigma': ('ssi', 'ssr'),
-        'omega': ('wsi', 'wsl', 'wsr'),
-        'fr':    ('frsi', 'frsl')
-        }
 
     basenames = {
         'sigma': 'sigmaX',
         'omega': 'omegaX',
         'fr':    'frX',
         }
-
 
     def __init__(self, **kwargs):
 
@@ -158,14 +140,14 @@ class CodeGenerator(object):
         for l in range(n):
             if not self.split[l]:
                 for r in range(k):
-                    array = 'omega[i*wsi+{l}*wsl+{r}*wsr]'.format(l=l, r=r)
+                    array = 'omega(i,{l},{r},1)'.format(l=l+1, r=r)
                     local = self.omega[w+r]
                     omega.append((array, local))
                 w += k
             else:
                 for s, pm in enumerate(('p', 'm')):
                     for r in range(k):
-                        array = 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]'.format(l=l, r=r, s=s)
+                        array = 'omega(i,{l},{r},{s})'.format(l=l+1, r=r, s=s+1)
                         local = self.omega[w+r]
                         omega.append((array, local))
                     w += k
@@ -179,7 +161,7 @@ class CodeGenerator(object):
 
         s = []
         for (array, local) in self.omegas():
-            s.append(local + ' = ' + array + ';')
+            s.append(local + ' = ' + array)
 
         return '\n'.join(s)
 
@@ -190,7 +172,7 @@ class CodeGenerator(object):
 
         s = []
         for (array, local) in self.omegas():
-            s.append(array + ' = ' + local + ';')
+            s.append(array + ' = ' + local)
 
         return '\n'.join(s)
 
@@ -259,7 +241,7 @@ class CodeGenerator(object):
                     self.scale[l] = scale
 
 
-    def uniform_smoothness(self):
+    def uniform_smoothness(self, function=False):
         r"""Fully un-rolled smoothness indicator kernel for uniform
         grids.
 
@@ -281,10 +263,21 @@ class CodeGenerator(object):
         k = self.k
 
         s = src()
-        for r in range(0, k):
+        if function:
+            s.add('''
+            subroutine {function}(f, n, sigma)
 
-            s.add('{sigma} = ',
-                  sigma = self.sigma[r])
+              implicit none
+            
+              real(kind=8), intent(in) :: f(n)
+              integer, intent(in) :: n
+              real(kind=8), intent(out) :: sigma(n,0:{k})
+              integer :: i
+              ''', function=function, k=k-1)
+
+            s.add('do i={k}, n-{k}', k=k)
+        
+        for r in range(0, k):
 
             dot = src()
             for m in range(k-r-1, 2*k-r-1):
@@ -292,22 +285,27 @@ class CodeGenerator(object):
                     pm = -(k-1) + m
                     pn = -(k-1) + n
 
-                    dot.add(#'{sigma} += {beta} * f[(i{pm:+d})*{stride}] * f[(i{pn:+d})*{stride}];',
-                          '{beta} * f[(i{pm:+d})*{stride}] * f[(i{pn:+d})*{stride}]',
-                          sigma  = self.sigma[r],
-                          stride = self.strides['f'],
-                          pm     = pm,
-                          pn     = pn,
-                          beta   = _to_string(self.beta[r,m,n]))
+                    dot.add('{beta} * f(i{pm:+d}) * f(i{pn:+d})',
+                            sigma  = self.sigma[r],
+                            pm     = pm,
+                            pn     = pn,
+                            beta   = _to_string(self.beta[r,m,n]))
 
-            s.add(dot.src(' ') + ';')
+            s.add('{sigma} = {dot}',
+                  sigma = self.sigma[r],
+                  dot=dot.src(' &\n'))
+
+        if function:
+            s.add('end do')
+            s.add('end subroutine')
+            s.add('')            
 
         return s.src()
 
 
     ######################################################################
 
-    def uniform_weights(self):
+    def uniform_weights(self, function=False):
         r"""Fully un-rolled weights kernel for uniform grids.
 
         The weights kernel computes the weights *omega* determined by
@@ -323,23 +321,40 @@ class CodeGenerator(object):
 
         w = 0
         s = src()
+
+        if function:
+            s.add('''
+            subroutine {function}(sigma, n, omega)
+
+              implicit none
+
+              real(kind=8), intent(in) :: sigma(n,0:{k})
+              integer, intent(in) :: n
+              real(kind=8), intent(out) :: omega(n,{n},0:{k},2)
+              integer :: i
+              real(kind=8) :: accumulator
+              ''', function=function, k=k-1, n=n)
+
+            s.add('real(kind=8) :: ' + ', '.join(self.omega))
+            s.add('do i={k}, n-{k}', k=k)
+        
         for l in range(n):
 
             if not self.split[l]:
-                s.add('accumulator = 0.0;')
+                s.add('accumulator = 0.0')
 
                 for r in range(0, k):
-                    s.add('{omega} = {varpi} / (10e-6 + {sigma}) / (10e-6 + {sigma});',
+                    s.add('{omega} = {varpi} / (10e-6 + {sigma}) / (10e-6 + {sigma})',
                           omega = self.omega[w+r],
                           varpi = _to_string(self.varpi[l,r]),
                           sigma = self.sigma[r])
 
-                    s.add('accumulator += {omega};',
+                    s.add('accumulator = accumulator + {omega}',
                           omega = self.omega[w+r])
 
                 for r in range(0, k):
 
-                    s.add('{omega} /= accumulator;',
+                    s.add('{omega} = {omega} / accumulator',
                           omega = self.omega[w+r])
 
                 w += k
@@ -347,33 +362,38 @@ class CodeGenerator(object):
             else:
                 for sc, pm in enumerate(('p', 'm')):
 
-                    s.add('accumulator = 0.0;')
+                    s.add('accumulator = 0.0')
 
                     for r in range(0, k):
 
-                        s.add('{omega} = {varpi} / {scale} / (10e-6 + {sigma}) / (10e-6 + {sigma});',
+                        s.add('{omega} = {varpi} / {scale} / (10e-6 + {sigma}) / (10e-6 + {sigma})',
                               omega = self.omega[w+r],
                               varpi = _to_string(self.varpi[l,r][sc]),
                               scale = self.scale[l][sc],
                               sigma = self.sigma[r])
 
-                        s.add('accumulator += {omega};',
+                        s.add('accumulator = accumulator + {omega}',
                               omega = self.omega[w+r])
 
                     for r in range(0, k):
 
-                        s.add('{omega} /= accumulator;',
+                        s.add('{omega} = {omega} / accumulator',
                               scale = self.scale[l][sc],
                               omega = self.omega[w+r])
 
                     w += k
+
+        if function:
+            s.add(self.set_omegas())
+            s.add('end do')
+            s.add('end subroutine')
 
         return s.src()
 
 
     ######################################################################
 
-    def uniform_reconstruction(self, fr='frX'):
+    def uniform_reconstruction(self, fr='fr(i,X)', function=False):
         r"""Fully un-rolled reconstruction kernel for uniform grids.
 
         The reconstruction kernel computes the WENO reconstruction
@@ -387,21 +407,40 @@ class CodeGenerator(object):
         n = self.n
         k = self.k
 
-        # reconstructions
         s = src()
+        if function:
+            # XXX: special n == 1 case
+            s.add('''
+            subroutine {function}(f, n, omega, fr)
+
+              implicit none
+            
+              real(kind=8), intent(in) :: f(n)
+              integer, intent(in) :: n
+              real(kind=8), intent(in) :: omega(n,{n},0:{k},2)
+              real(kind=8), intent(out) :: fr(n,{n})              
+              integer :: i
+              real(kind=8) :: accumulator
+              ''', function=function, k=k-1, n=n)
+
+            s.add('real(kind=8) :: ' + ', '.join(self.omega))
+            s.add('real(kind=8) :: ' + ', '.join(self.fr))            
+            s.add('do i={k}, n-{k}', k=k)
+            s.add(self.get_omegas())            
+        
+            
         for l in range(n):
             for r in range(k):
 
                 rec = src()
                 for j in range(k):
-                    rec.add('{coeff} * f[(i{shift:+d})*{stride}]',
+                    rec.add('{coeff} * f(i{shift:+d})',
                             coeff  = _to_string(self.coeffs[l,r,j]),
-                            shift  = -r+j,
-                            stride = self.strides['f'])
+                            shift  = -r+j)
 
-                s.add('{fr} = {rec};',
+                s.add('{fr} = {rec}',
                       fr  = self.fr[l*k+r],
-                      rec = rec.src(' + '))
+                      rec = rec.src(' &\n'))
 
         # weighted reconstruction
         w = 0
@@ -415,9 +454,9 @@ class CodeGenerator(object):
                             fr    = self.fr[l*k+r],
                             omega = self.omega[w+r])
 
-                s.add('{fr} = {rec};',
-                      fr  = fr.replace('X', str(l)),
-                      rec = rec.src(' + '))
+                s.add('{fr} = {rec}',
+                      fr  = fr.replace('X', str(l+1)),
+                      rec = rec.src(' + &\n'))
 
                 w += k
 
@@ -433,15 +472,17 @@ class CodeGenerator(object):
                                   omega = self.omega[w+r])
                     w += k
 
-
                     rec.add('{scale} * ({pmrec})',
                             scale = self.scale[l][sc],
-                            pmrec = pmrec.src(' + '))
+                            pmrec = pmrec.src(' + &\n'))
 
-                s.add('{fr} = {rec};',
-                      fr  = fr.replace('X', str(l)),
+                s.add('{fr} = {rec}',
+                      fr  = fr.replace('X', str(l+1)),
                       rec = rec.src(' - '))
 
-        return s.src()
+        if function:
+            s.add('end do')
+            s.add('end subroutine')
 
+        return s.src()
 
