@@ -1,7 +1,7 @@
 """PyWENO code generation module.
 
-   The routines throughout this module are designed to generate C-like
-   code for use in specialized applications.
+   The routines throughout this module are designed to generate code
+   (C, OpenCL, or Fortran) for use in specialized applications.
 
 """
 
@@ -89,6 +89,7 @@ class CodeGenerator(object):
 
 
   def omega(self, r, l, s, lang, local):
+    '''Return *omega* (weight) variable name.'''
 
     n = self.n
     k = self.k
@@ -109,6 +110,7 @@ class CodeGenerator(object):
 
 
   def sigma(self, r, lang, local):
+    '''Return *sigma* (smoothness indicator) variable name.'''
 
     if local:
       return self.basenames['sigma'].replace('X', str(r))
@@ -120,6 +122,7 @@ class CodeGenerator(object):
 
 
   def recon(self, l, lang, local):
+    '''Return *recon* (reconstruction) variable name.'''
 
     if local:
       return self.basenames['recon'].replace('X', str(l))
@@ -131,6 +134,7 @@ class CodeGenerator(object):
 
 
   def header(self, module=''):
+    '''Return C Python extension module header.'''
 
     self.module = module
 
@@ -139,6 +143,7 @@ class CodeGenerator(object):
 
 
   def footer(self):
+    '''Return C Python extension module footer.'''
 
     if self.wrappers:
 
@@ -156,12 +161,21 @@ class CodeGenerator(object):
   # set methods
 
   def set_smoothness(self, beta):
+    '''Set the smoothness indicator coefficients to be used
+    throughout.
+
+    See :py:meth:`~pyweno.codegen.CodeGenerator.smoothness`.
+    '''
 
     self.beta = np.array(beta)
     self.k    = self.beta.shape[0]
     
 
   def set_reconstruction_coefficients(self, coeffs):
+    '''Set the reconstruction coefficients to be used throughout.
+
+    See :py:meth:`~pyweno.codegen.CodeGenerator.reconstruction`.
+    '''
       
     if len(coeffs.shape) == 2:
       k = coeffs.shape[0]
@@ -178,6 +192,10 @@ class CodeGenerator(object):
 
 
   def set_optimal_weights(self, varpi, split):
+    '''Set the optimal weights (linear weights) to be used throughout.
+
+    See :py:meth:`~pyweno.codegen.CodeGenerator.weights`.
+    '''
 
     varpi  = np.array(varpi)
 
@@ -214,9 +232,8 @@ class CodeGenerator(object):
     r"""Fully un-rolled smoothness indicator kernel for uniform
     grids.
 
-    The smoothness indicator kernel computes the smoothness
-    indicators *sigma* determined by the coefficients in *beta*.
-    That is:
+    The smoothness indicator kernel computes the smoothness indicators
+    *sigma* determined by the coefficients in *beta*.  That is:
     
     .. math::
     
@@ -224,8 +241,6 @@ class CodeGenerator(object):
                      \sum_{n=1}^{2k-1}
                          \beta_{r,m,n}\, \overline{f}_{i-k+m}\,
                                          \overline{f}_{i-k+n}.
-
-    Returns: C-like source code (as a string).
 
     """
 
@@ -287,8 +302,6 @@ class CodeGenerator(object):
     the smoothness coefficients *sigma* (which have already been
     computed).
     
-    Returns: C-like source code (as a string).
-        
     """
 
     n = self.n
@@ -377,8 +390,6 @@ class CodeGenerator(object):
     The reconstruction kernel computes the WENO reconstruction
     based on the weights *omega* (which have already been
     computed) and the reconstruction coefficients *coeffs*.
-    
-    Returns: OpenCL source code (as a string).
     
     """
     
