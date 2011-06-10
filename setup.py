@@ -4,7 +4,8 @@ import glob
 import os
 import re
 
-import setuptools
+from distutils.core import setup
+from distutils.extension import Extension as extension
 
 import numpy as np
 
@@ -51,31 +52,30 @@ f.close()
 ######################################################################
 # setup!
 
-setuptools.setup(
+setup(
 
     name = "PyWENO",
     version = version,
     packages = ['pyweno'],
-    zip_safe = False,
 
-    test_suite = 'nose.collector',
+    # XXX
+    requires = [],
 
     ext_modules = [
-        setuptools.Extension('pyweno.cstencil',
-                             sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
-                             include_dirs=[np.get_include()]
-                             ),
-        setuptools.Extension('pyweno.cweno',
-                             sources = ['src/cweno.c'],
-                             include_dirs=[np.get_include()]
-                             ),
-        setuptools.Extension('pyweno.csmoothness',
-                             sources = ['src/csmoothness.c'],
-                             include_dirs=[np.get_include()]
-                             )],
+        extension('pyweno.cstencil',
+                  sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
+                  include_dirs=[np.get_include()]
+                  ),
+        extension('pyweno.cweno',
+                  sources = ['src/cweno.c'],
+                  include_dirs=[np.get_include()]
+                  ),
+        extension('pyweno.csmoothness',
+                  sources = ['src/csmoothness.c'],
+                  include_dirs=[np.get_include()]
+                  )],
 
     package_data = {'': ['__version__.py', '__git_version__.py']},
-    exclude_package_data = {'': ['.gitignore']},
 
     author = "Matthew Emmett",
     author_email = "memmett@unc.edu",
