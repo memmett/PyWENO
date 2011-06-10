@@ -354,7 +354,7 @@ class CodeGenerator(object):
               omega = omega,
               scale = self.scale[l][s],
               epsilon = epsilon,
-              varpi = _to_string(self.varpi[l,r]),
+              varpi = _to_string(self.varpi[l,r][s]),
               sigma = self.sigma(r, lang, local)))
 
             kernel.append(templates[lang]['acc_incr'].format(
@@ -374,7 +374,7 @@ class CodeGenerator(object):
 
     if wrapper:
       self.wrappers.append(wrapper)
-      src += templates[lang]['smoothness_wrapper'].format(
+      src += templates[lang]['weights_wrapper'].format(
         wrapper=wrapper[0],
         function=wrapper[1])
 
@@ -466,7 +466,7 @@ class CodeGenerator(object):
 
     if wrapper:
       self.wrappers.append(wrapper)
-      src += templates[lang]['smoothness_wrapper'].format(
+      src += templates[lang]['reconstruct_wrapper'].format(
         wrapper=wrapper[0],
         function=wrapper[1])
 
@@ -545,7 +545,7 @@ templates = {
     'footer': '''
       static PyMethodDef {module}methods[] = {{
       {wrappers},
-      {{NULL, NULL, 0, NULL}}}}
+      {{NULL, NULL, 0, NULL}}}};
 
       PyMODINIT_FUNC
       init{module}(void)

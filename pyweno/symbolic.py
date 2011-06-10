@@ -5,7 +5,6 @@ import warnings
 import numpy as np
 import sympy
 
-
 ######################################################################
 
 def polynomial_interpolator(x, y):
@@ -69,6 +68,8 @@ def _xi_pts(xi):
 
     if xi == 'gauss_quad3':
         return 3
+    elif xi == 'gauss_quad3_half_half':
+        return 6
 
     return 1
 
@@ -115,6 +116,14 @@ def reconstruction_coefficients(k, xi, uniform=True):
         xi = [ _quad_pts(xs[i], xs[i+1], -sympy.sqrt(15)/5),
                _quad_pts(xs[i], xs[i+1], 0),
                _quad_pts(xs[i], xs[i+1], sympy.sqrt(15)/5) ]
+    elif xi == 'gauss_quad3_half_half':
+        half = (xs[i] + xs[i+1])*sympy.sympify('1/2')
+        xi = [ _quad_pts(xs[i], half, -sympy.sqrt(15)/5),
+               _quad_pts(xs[i], half, 0),
+               _quad_pts(xs[i], half, sympy.sqrt(15)/5),
+               _quad_pts(half, xs[i+1], -sympy.sqrt(15)/5),
+               _quad_pts(half, xs[i+1], 0),
+               _quad_pts(half, xs[i+1], sympy.sqrt(15)/5) ]
     else:
         raise ValueError, "reconstruction point '%s' not understood." % str(xi)
 
@@ -124,8 +133,8 @@ def reconstruction_coefficients(k, xi, uniform=True):
     for l in range(n):
         for r in range(0, k):
             p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
-
             for j in range(0, k):
+                p = p.expand()
                 c[l,r,j] = p.subs(x, xi[l]).coeff(fs[i-r+j])
 
     if n == 1:
@@ -263,10 +272,11 @@ def jiang_shu_smoothness_coefficients(k, uniform=True, boundaries=None):
             pp = (sympy.diff(p, xi, j))**2
             pp = pp.as_poly(x)
             pp = pp.integrate(x)
-            pp = pp.as_basic()
             pp = (xs[i+1] - xs[i])**(2*j-1) * (
                 pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
             s = s + pp
+
+        s = s.expand()
 
         # pick out coefficients
         for m in range(2*k-1):
