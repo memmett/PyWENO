@@ -1,5 +1,5 @@
-PyWENO Examples
-===============
+Examples
+========
 
 The following are a few selected examples from the ``examples``
 directory of PyWENO.

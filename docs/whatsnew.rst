@@ -1,5 +1,9 @@
-What's new in PyWENO
-====================
+What's new
+===========
+
+**New in v0.7.1:**
+
+* Major overhaul.  
 
 **New in v0.5.11:**
 

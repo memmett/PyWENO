@@ -18,9 +18,13 @@ master_doc     = 'index'
 pygments_style = 'sphinx'
 html_theme     = 'default'
 
+html_sidebars = {
+    '**': ['globaltoc.html', 'searchbox.html'],
+    }
+
 # project information
 project   = 'PyWENO'
-copyright = '2009, Matthew Emmett'
+copyright = '2009, 2010, 2011, Matthew Emmett'
 
 execfile('../version.py')               # this sets 'version'
 release = version

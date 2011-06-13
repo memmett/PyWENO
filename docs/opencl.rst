@@ -1,5 +1,5 @@
-PyWENO OpenCL toolkit
-=====================
+OpenCL
+======
 
 PyWENO contains an OpenCL module to help authors develop their own
 specialized WENO methods on GPUs by generating WENO code.  Below are a

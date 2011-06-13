@@ -219,6 +219,7 @@ def jiang_shu_smoothness_coefficients(k):
         s = 0
         for j in range(1, k):
             pp = (sympy.diff(p, xi, j))**2
+            pp = pp.as_poly(x)
             pp = pp.integrate(x)
             pp = (xs[i+1] - xs[i])**(2*j-1) * (
                 pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
