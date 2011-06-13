@@ -5,7 +5,7 @@ import os
 import re
 
 from distutils.core import setup
-from distutils.extension import Extension as extension
+from distutils.extension import Extension
 
 import numpy as np
 
@@ -54,31 +54,60 @@ f.close()
 
 setup(
 
-    name = "PyWENO",
-    version = version,
-    packages = ['pyweno'],
+    name         = "PyWENO",
+    packages     = ['pyweno', 'scikits.weno'],
+    version      = version,
+    author       = "Matthew Emmett",
+    author_email = "matthew@emmett.ca",
+    description  = "Weighted Essentially Non-oscillatory (WENO) reconstructions.",
+    license      = "BSD",
+    keywords     = "scikit, weno, interpolate, interpolation, finite, volume",
+    url          = "http://memmett.github.com/PyWENO/",
 
     # XXX
-    requires = [],
+#    requires = [],
 
     ext_modules = [
-        extension('pyweno.ccoeffs',
+        Extension('pyweno.ccoeffs',
                   sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
                   include_dirs=[np.get_include()]
                   ),
-        extension('pyweno.cweno',
+        Extension('pyweno.cweno',
                   sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
                   include_dirs=[np.get_include()],
                   extra_compile_args = ['-std=c99'],                  
                   )],
 
-    package_data = {'': ['__version__.py', '__git_version__.py']},
+    long_description = '''
+PyWENO (aka scikits.weno) is a Python module for computing high-order
+Weighted Essentially Non-oscillatory (WENO) reconstructions of
+cell-averaged data arrays.
 
-    author = "Matthew Emmett",
-    author_email = "memmett@unc.edu",
-    description = "Weighted Essentially Non-oscillatory (WENO) approximation.",
-    license = "BSD",
-    keywords = "weno",
-    url = "http://memmett.github.com/PyWENO/"
+The basic interface provides a simple routine to compute 1D
+reconstructions at various points within each grid cell.  The points
+at which the basic interface can reconstruct the original function at
+include: left edge, right edge, Gauss-Legendre quadrature points,
+Gauss-Lobatto quadrature points, and Guass-Radau quadrature points.
 
+PyWENO can also be used as a code generator to build custom WENO
+reconstructors in C, Fortran, and OpenCL.
+''',
+
+    #package_data = {'': ['__version__.py', '__git_version__.py']},
+
+    classifiers = [
+        'Development Status :: 4 - Beta',
+#        'Development Status :: 5 - Production/Stable',
+#        'Development Status :: 6 - Mature',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python ',
+        'Programming Language :: C',
+        'Programming Language :: Fortran',
+        'Programming Language :: OpenCL',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        ],
+    
     )
