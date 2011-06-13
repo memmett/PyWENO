@@ -9,20 +9,20 @@ import pyweno.wrappers
 
 #### config
 
-K        = range(3, 5)
+K        = range(3, 10)
 generate = [ 'left',
              'right',
+             'middle',
              'gauss_legendre',
              'gauss_lobatto',
              'gauss_radau' ]
-
 
 #### generate
 
 wrappers = []                           # collect wrapper names
 for k in K:
 
-  print 'generating k:', k
+  print 'k:', k
 
   kernel  = pyweno.kernels.KernelGenerator('c')
   wrapper = pyweno.wrappers.WrapperGenerator(kernel)
@@ -40,33 +40,49 @@ for k in K:
 
   for g in generate:
 
-    kernel  = pyweno.kernels.KernelGenerator('c')
-    wrapper = pyweno.wrappers.WrapperGenerator(kernel)
-    kernel.set_smoothness(beta)    
-
-    print '  generating:', g
+    print '  point:', g
 
     if g == 'left':
-      xi = [ -1 ]
+      func = lambda n: [ -1 ]
+      N    = [ 1 ]
     elif g == 'right':
-      xi = [ 1 ]
+      func = lambda n: [ 1 ]
+      N    = [ 1 ]
+    elif g == 'middle':
+      func = lambda n: [ 0 ]
+      N    = [ 1 ]
     else:
       func = getattr(pyweno.points, g)
-      xi   = func(k)
+      N    = range(2, k+1)
+      xi   = func
 
-    (varpi, split) = pyweno.symbolic.optimal_weights(k, xi)
-    coeffs = pyweno.symbolic.reconstruction_coefficients(k, xi)
+    for n in N:
 
-    kernel.set_optimal_weights(varpi, split)
-    kernel.set_reconstruction_coefficients(coeffs)
+      kernel  = pyweno.kernels.KernelGenerator('c')
+      wrapper = pyweno.wrappers.WrapperGenerator(kernel)
+      kernel.set_smoothness(beta)    
+      
+      xi = func(n)
 
-    base = g + '%03d' % k 
-    with open('weno_' + base + '.c', 'w') as f:
-      f.write('#include <Python.h>\n')
-      f.write('#include <numpy/ndarrayobject.h>\n')
-      f.write(wrapper.reconstruction(base, local_weights=True, wrapper=True))
+      print '    n:', n
 
-    wrappers += wrapper.wrappers
+      try:
+        (varpi, split) = pyweno.symbolic.optimal_weights(k, xi)
+        coeffs = pyweno.symbolic.reconstruction_coefficients(k, xi)
+      except ValueError:
+        print '      - skipped'
+        continue
+
+      kernel.set_optimal_weights(varpi, split)
+      kernel.set_reconstruction_coefficients(coeffs)
+
+      base = g + '%03d%03d' % (k, n)
+      with open('weno_' + base + '.c', 'w') as f:
+        f.write('#include <Python.h>\n')
+        f.write('#include <numpy/ndarrayobject.h>\n')
+        f.write(wrapper.reconstruction(base, local_weights=True, wrapper=True))
+
+      wrappers += wrapper.wrappers
 
 
 #### python extension module

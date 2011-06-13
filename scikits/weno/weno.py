@@ -6,17 +6,19 @@ import numpy as np
 import cweno
 
 valid_k = (5, 17)
-valid_points = [ 'left', 'right',
-                 'gauss', 'gauss_legendre' ]
+valid_points = [ 'left', 'right', 'middle', '+/-',
+                 'gauss', 'gauss_legendre',
+                 'gauss_lobatto',
+                 'gauss_radau' ]
 
 
-def weno(q, k, points,
-         n=None,
-         smoothness=None,
-         weights=None,
-         return_smoothness=False,
-         return_weights=False,
-         squeeze=True):
+def reconstruct(q, k, points,
+                n=None,
+                smoothness=None,
+                weights=None,
+                return_smoothness=False,
+                return_weights=False,
+                squeeze=True):
   """Perform WENO reconstruction of q.
 
   :param q: cell-averaged unknown to reconstruct
@@ -46,10 +48,13 @@ def weno(q, k, points,
 
   # validate n
 
-  if points in ['left', 'right']:
+  if points in [ 'left', 'right', 'middle' ]:
     n = 1
   elif n is None:
     n = k
+
+  if points in [ '+/-' ]:
+    n = 2
 
   assert(n > 0)
 
@@ -75,8 +80,15 @@ def weno(q, k, points,
 
     else:
       qr = np.zeros((N,n))
+
+      if points == '+/-':
+        raise NotImplementedError, '+/- not implemented yet'  
       
-      func = getattr(cweno, points + '%03d' % k)
+      try:
+        func = getattr(cweno, points + '%03d%03d' % (k, n))
+      except AttributeError:
+        raise ValueError, 'weno reconstruction not found, unsupported combination of k and n'
+    
       func(q, smoothness, qr)
 
   else:
@@ -104,7 +116,8 @@ def weno(q, k, points,
 
 
 
-def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
+# XXX: move this to another file...
+def reconstruction_coeffs(xi, i, r, k, x, c):
   """Numerically compute the reconstruction coefficients *c_j* and
   store the results in *c* (indexed as ``c[j]``).
 
@@ -125,7 +138,6 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
   * *i* - cell index (ie, index of the cell that containts *xi*)
   * *r* - left shift
   * *k* - order
-  * *d* - order of derivative (defaults to 0)
   * *x* - cell boundaries
   * *c* - computed reconstruction coefficients (returned)
 
@@ -134,7 +146,9 @@ def reconstruction_coeffs(xi, i, r, k, x, c, d=0):
 
   """
 
+  import ccoeffs
+
   try:
-    pyweno.cstencil.reconstruction_coeffs(xi, i, r, k, d, x, c)
+    ccoeffs.reconstruction_coeffs(xi, i, r, k, x, c)
   except:
     raise NotImplementedError, "reconstruction coeffs for k = %d not implemented yet" % (k)

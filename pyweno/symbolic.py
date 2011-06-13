@@ -96,7 +96,7 @@ def reconstruction_coefficients(k, xi):
     n = len(xi)
 
     # compute reconstruction coefficients for each left shift r
-    c = np.zeros((n,k,k), dtype=np.dtype(object))
+    c = np.zeros((n,k,k), dtype=np.object)
 
     for l in range(n):
         for r in range(0, k):
@@ -105,6 +105,8 @@ def reconstruction_coefficients(k, xi):
                 p = p.expand()
                 z = _pt(xs[i], xs[i+1], xi[l])
                 c[l,r,j] = p.subs(x, z).coeff(fs[i-r+j])
+                if c[l,r,j] is None:
+                    raise ValueError, 'obtained a zero coefficient'
 
     return c
 
@@ -133,8 +135,8 @@ def optimal_weights(k, xi):
     for r in range(k):
         omega.append(sympy.var('omega%d' % r))
 
-    varpi = []
-    split = []
+    varpi = np.zeros((n,k), dtype=np.object)
+    split = np.zeros(n, dtype=np.object)
     for l in range(n):
         eqns = []
 
@@ -163,23 +165,18 @@ def optimal_weights(k, xi):
         sol = sympy.solve(eqns, omega)
 
         if min(sol.values()) < 0:
-            split.append(True)
-        else:
-            split.append(False)
+            split[l] = True
 
         for r in range(k):
-            if split[-1]:
+            if split[l]:
                 w  = sol[omega[r]]
                 wp = (w + 3*abs(w))/2
                 wm = wp - w
-                varpi.append((wp, wm))
+                varpi[l,r] = (wp, wm)
             else:
-                varpi.append(sol[omega[r]])
+                varpi[l,r] = sol[omega[r]]
 
-    varpi = np.array(varpi, dtype=object)
-    split = np.array(split)
-
-    return (np.reshape(varpi, (n, k)), split)
+    return (varpi, split)
 
 
 

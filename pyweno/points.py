@@ -103,7 +103,7 @@ def gauss_lobatto(n):
   p = legendre_poly(n-1).diff(x)
   r = find_roots(p)
   r = [mpmath.mpf('-1.0'), mpmath.mpf('1.0')] + r
-  return r
+  return sorted(r)
   
 
 def gauss_radau(n):
