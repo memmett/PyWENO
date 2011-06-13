@@ -81,6 +81,8 @@ class WrapperGenerator(object):
 
     t = self.tmpl
 
+    self.module = module
+
     return t['header'].format(module=module)
 
 

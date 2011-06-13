@@ -7,7 +7,9 @@ import pyweno.symbolic
 import pyweno.kernels
 import pyweno.wrappers
 
-K = range(3, 5)
+#### config
+
+K        = range(3, 5)
 generate = [ 'left',
              'right',
              'gauss_legendre',
@@ -15,6 +17,9 @@ generate = [ 'left',
              'gauss_radau' ]
 
 
+#### generate
+
+wrappers = []                           # collect wrapper names
 for k in K:
 
   print 'generating k:', k
@@ -49,4 +54,30 @@ for k in K:
 
     base = g + '%03d' % k 
     with open(base + '.c', 'w') as f:
+      f.write('#include <Python.h>\n')
+      f.write('#include <numpy/ndarrayobject.h>\n')
       f.write(wrapper.reconstruction(base, local_weights=True, wrapper=True))
+
+    wrappers += wrapper.wrappers
+
+
+#### python extension module
+
+# create new wrapper, and set 'wrappers' manually
+kernel  = pyweno.kernels.KernelGenerator('c')
+wrapper = pyweno.wrappers.WrapperGenerator(kernel)
+
+wrapper.wrappers = wrappers
+with open('cweno.c', 'w') as f:
+  # c includes etc
+  f.write(wrapper.header(module='cweno'))
+
+  # prototypes
+  for w in wrappers:
+    f.write('PyObject *{wrapper}(PyObject *self, PyObject *args);\n'.format(
+      wrapper=w[0]))
+
+  # python module definition
+  f.write(wrapper.footer())
+
+      
