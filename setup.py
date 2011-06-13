@@ -1,4 +1,4 @@
-"""PyWENO setup script."""
+'''PyWENO setup script.'''
 
 import glob
 import os
@@ -9,12 +9,16 @@ from distutils.extension import Extension
 
 import numpy as np
 
-######################################################################
+
+###############################################################################
 # version
 execfile('version.py')                  # this sets 'version'
 
+with open('README', 'r') as file:
+    long_description = file.read()
 
-######################################################################
+
+###############################################################################
 # save git version to 'pyweno/__git_version__.py'
 
 try:
@@ -39,7 +43,7 @@ f.write("version = '%s'\n" % (git_version))
 f.close()
 
 
-######################################################################
+###############################################################################
 # save version to 'pyweno/__version__.py'
 
 version_file = os.path.join(os.path.dirname(__file__),
@@ -49,7 +53,7 @@ f.write("version = '%s'\n" % (version))
 f.close()
 
 
-######################################################################
+###############################################################################
 # setup!
 
 setup(
@@ -78,22 +82,7 @@ setup(
                   extra_compile_args = ['-std=c99'],                  
                   )],
 
-    long_description = '''
-PyWENO (aka scikits.weno) is a Python module for computing high-order
-Weighted Essentially Non-oscillatory (WENO) reconstructions of
-cell-averaged data arrays.
-
-The basic interface provides a simple routine to compute 1D
-reconstructions at various points within each grid cell.  The points
-at which the basic interface can reconstruct the original function at
-include: left edge, right edge, Gauss-Legendre quadrature points,
-Gauss-Lobatto quadrature points, and Guass-Radau quadrature points.
-
-PyWENO can also be used as a code generator to build custom WENO
-reconstructors in C, Fortran, and OpenCL.
-''',
-
-    #package_data = {'': ['__version__.py', '__git_version__.py']},
+    long_description = long_description,
 
     classifiers = [
         'Development Status :: 4 - Beta',

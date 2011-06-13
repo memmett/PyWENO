@@ -1,9 +1,18 @@
 PyWENO
 ======
 
-PyWENO is a Python implementation of one-dimensional Weighted
-Essentially Non-oscillatory (WENO) approximations over non-uniform
-grids.
+PyWENO (aka scikits.weno) is a Python module for computing high-order
+Weighted Essentially Non-oscillatory (WENO) reconstructions of
+cell-averaged data arrays.
+
+The basic interface provides a simple routine to compute 1D
+reconstructions at various points within each grid cell.  The points
+at which the basic interface can reconstruct the original function at
+include: left edge, right edge, Gauss-Legendre quadrature points,
+Gauss-Lobatto quadrature points, and Guass-Radau quadrature points.
+
+PyWENO can also be used as a code generator to build custom WENO
+reconstructors in C, Fortran, and OpenCL.
 
 Please see
 
@@ -12,39 +21,21 @@ Please see
 for more information.
 
 
+Important links
+---------------
+
+  * Official project page: https://github.com/memmett/PyWENO
+  * Documentation: http://memmett.github.com/PyWENO/
+
+
 Prerequisites
 -------------
 
 To install PyWENO, you need:
 
   * NumPy
-  * SciPy
-  * H5PY
   * SymPy    (optional if you avoid pyweno.symbolic)
   * PyOpenCL (optional if you avoid pyweno.opencl)
-
-Many distributions include packaged versions of these Python modules.
-If you are running Debian or Ubuntu, you can install the prerequisites
-(except PyOpenCL), the Python development files, and setuptools
-(required in order to build PyWENO) by running:
-
-$ sudo apt-get install python-scipy python-sympy python-h5py python-setuptools python-dev
-
-
-Installing PyWENO
------------------
-
-PyWENO uses the 'setuptools' package to automate building and
-installing PyWENO.  Once you have installed setuptools, you can
-install PyWENO by running:
-
-$ sudo python setup.py install
-
-If you plan on modifying PyWENO you can install PyWENO into your
-PYHTONPATH in development mode by running, eg,
-
-$ export PYTHONPATH=~/opt/python:$PYTHONPATH
-$ python setup.py develop -d ~/opt/python
 
 
 License
