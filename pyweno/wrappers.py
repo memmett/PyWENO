@@ -231,9 +231,11 @@ class WrapperGenerator(object):
       template  = t['reconstruct_local_weights_and_smoothness']
       variables += self.kernel.sigmas.values()
       variables += self.kernel.omegas.values()
+      variables += [ 'accumulator' ]
     elif local_weights:
       template  = t['reconstruct_local_weights']
       variables += self.kernel.omegas.values()
+      variables += [ 'accumulator' ]
     else:
       template  = t['reconstruct']
 
@@ -521,6 +523,67 @@ templates = {
         }}
 
         {function}(f, n, fsi, omega, wsi, wsl, wsr, fr, frsi, frsl);
+
+        Py_INCREF(Py_None);
+        return Py_None;
+      }}
+      ''',
+
+    'reconstruct_local_weights_wrapper': '''
+      PyObject *
+      {wrapper}(PyObject *self, PyObject *args)
+      {{
+        double *f, *sigma, *fr;
+        PyArrayObject *f_py, *sigma_py, *fr_py;
+
+        long int n;
+        int fsi, frsi, frsl, ssi, ssr;
+
+        /* parse options */
+
+        if (! PyArg_ParseTuple(args, "OOO", &f_py, &sigma_py, &fr_py))
+          return NULL;
+
+        if (f_py->nd != 1 || f_py->descr->type_num != PyArray_DOUBLE) {{
+          PyErr_SetString(PyExc_ValueError, "f must be one-dimensional and of type float");
+          return NULL;
+        }}
+
+        if (fr_py->descr->type_num != PyArray_DOUBLE) {{
+          PyErr_SetString(PyExc_ValueError, "fr must be of type float");
+          return NULL;
+        }}
+
+        if (! (fr_py->nd == 1 || fr_py->nd == 2)) {{
+          PyErr_SetString(PyExc_ValueError, "fr must be one or two dimensional");
+          return NULL;
+        }}
+
+        if (sigma_py->nd != 2 || sigma_py->descr->type_num != PyArray_DOUBLE) {{
+          PyErr_SetString(PyExc_ValueError, "sigma must be two-dimensional and of type float");
+          return NULL;
+        }}
+
+        /* get data, n, strides */
+        f     = (double *) PyArray_DATA(f_py);
+        fr    = (double *) PyArray_DATA(fr_py);
+        sigma = (double *) PyArray_DATA(sigma_py);
+
+        n = PyArray_DIM(f_py, 0);
+
+        fsi  =  f_py->strides[0] / sizeof(double);
+        frsi = fr_py->strides[0] / sizeof(double);
+
+        if (n == 1) {{
+          frsl = 0;
+        }} else {{
+          frsl = fr_py->strides[1] / sizeof(double);
+        }}
+
+        ssi = sigma_py->strides[0] / sizeof(double);
+        ssr = sigma_py->strides[1] / sizeof(double);
+
+        {function}(f, n, fsi, sigma, ssi, ssr, fr, frsi, frsl);
 
         Py_INCREF(Py_None);
         return Py_None;

@@ -338,7 +338,7 @@ class KernelGenerator(object):
             fsi  = self.strides['f']))
 
         kernel.append(t['fr='].format(
-          recon=        self.fs[(r,l)],
+          recon       = self.fs[(l,r)],
           sum_weighted= ' '.join(sum_coeff)))
           
           
