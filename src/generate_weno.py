@@ -31,10 +31,18 @@ for k in K:
   kernel.set_smoothness(beta)
 
   base = 'smoothness%03d' % k
-  with open(base + '.c', 'w') as f:
-    f.write(wrapper.smoothness(base))
+  with open('weno_' + base + '.c', 'w') as f:
+    f.write('#include <Python.h>\n')
+    f.write('#include <numpy/ndarrayobject.h>\n')
+    f.write(wrapper.smoothness(base, wrapper=True))
+
+  wrappers += wrapper.wrappers
 
   for g in generate:
+
+    kernel  = pyweno.kernels.KernelGenerator('c')
+    wrapper = pyweno.wrappers.WrapperGenerator(kernel)
+    kernel.set_smoothness(beta)    
 
     print '  generating:', g
 
@@ -53,7 +61,7 @@ for k in K:
     kernel.set_reconstruction_coefficients(coeffs)
 
     base = g + '%03d' % k 
-    with open(base + '.c', 'w') as f:
+    with open('weno_' + base + '.c', 'w') as f:
       f.write('#include <Python.h>\n')
       f.write('#include <numpy/ndarrayobject.h>\n')
       f.write(wrapper.reconstruction(base, local_weights=True, wrapper=True))

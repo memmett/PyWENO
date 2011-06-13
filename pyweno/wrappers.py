@@ -236,6 +236,7 @@ class WrapperGenerator(object):
       variables += [ 'accumulator' ]
     elif local_weights:
       template  = t['reconstruct_local_weights']
+      variables += self.kernel.sigmas.values()      
       variables += self.kernel.omegas.values()
       variables += [ 'accumulator' ]
     else:
@@ -317,7 +318,7 @@ templates = {
 
     'reconstruct_local_weights': """
       void {function}(const double *restrict f, int n, int fsi,
-                      const doubfle *restrict sigma, int ssi, int ssr,
+                      const double *restrict sigma, int ssi, int ssr,
                       double *restrict fr, int frsi, int frsl)
       {{
         int i;

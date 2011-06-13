@@ -62,17 +62,14 @@ setup(
     requires = [],
 
     ext_modules = [
-        extension('pyweno.cstencil',
-                  sources = ['src/cstencil.c'] + glob.glob('src/reconstruction*.c'),
+        extension('pyweno.ccoeffs',
+                  sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
                   include_dirs=[np.get_include()]
                   ),
         extension('pyweno.cweno',
-                  sources = ['src/cweno.c'],
-                  include_dirs=[np.get_include()]
-                  ),
-        extension('pyweno.csmoothness',
-                  sources = ['src/csmoothness.c'],
-                  include_dirs=[np.get_include()]
+                  sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
+                  include_dirs=[np.get_include()],
+                  extra_compile_args = ['-std=c99'],                  
                   )],
 
     package_data = {'': ['__version__.py', '__git_version__.py']},
