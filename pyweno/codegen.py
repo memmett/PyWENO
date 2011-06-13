@@ -8,6 +8,7 @@
 import numpy as np
 
 
+
 ######################################################################
 # helpers
 
@@ -70,7 +71,8 @@ class CodeGenerator(object):
     self.n = None
     self.k = None
 
-    self.lang = lang
+    self.lang = lang.lower()
+    self.tmpl = templates[self.lang]
     self.wrappers = []
 
     self.strides = {
@@ -88,7 +90,7 @@ class CodeGenerator(object):
       }
 
 
-  def omega(self, r, l, s, lang, local):
+  def omega(self, r, l, s, lang):
     '''Return *omega* (weight) variable name.'''
 
     n = self.n
@@ -96,65 +98,66 @@ class CodeGenerator(object):
 
     pm = ['p', 'm']
 
-    if local:
-      if self.split[l]:
-        return self.basenames['omega'].replace('X', str(k*l+r) + pm[s])
-      else:
-        return self.basenames['omega'].replace('X', str(k*l+r))
+    if self.split[l]:
+      return self.basenames['omega'].replace('X', str(k*l+r) + pm[s])
+    else:
+      return self.basenames['omega'].replace('X', str(k*l+r))
 
-    return templates[lang]['omega_idx'].format(
-      r = r, l = l, s = s, 
-      wsi = self.strides['omega'][0],
-      wsl = self.strides['omega'][1],
-      wsr = self.strides['omega'][2])
+#     return t['omega'].format(
+#       r = r, l = l, s = s, 
+#       wsi = self.strides['omega'][0],
+#       wsl = self.strides['omega'][1],
+#       wsr = self.strides['omega'][2])
 
 
-  def sigma(self, r, lang, local):
+  def sigma(self, r, lang):
     '''Return *sigma* (smoothness indicator) variable name.'''
 
-    if local:
-      return self.basenames['sigma'].replace('X', str(r))
+    return self.basenames['sigma'].replace('X', str(r))
 
-    return templates[lang]['sigma_idx'].format(
-      r=r,
-      ssi=self.strides['sigma'][0],
-      ssr=self.strides['sigma'][1])
+#     return t['sigma'].format(
+#       r=r,
+#       ssi=self.strides['sigma'][0],
+#       ssr=self.strides['sigma'][1])
 
 
-  def recon(self, l, lang, local):
+  def recon(self, l, lang):
     '''Return *recon* (reconstruction) variable name.'''
 
-    if local:
-      return self.basenames['recon'].replace('X', str(l))
+    return self.basenames['recon'].replace('X', str(l))
 
-    return templates[lang]['recon_idx'].format(
-      l=l,
-      frsi=self.strides['recon'][0],
-      frsl=self.strides['recon'][1])
-
-
-  def header(self, module=''):
-    '''Return C Python extension module header.'''
-
-    self.module = module
-
-    return templates[self.lang]['header'].format(
-      module=module)
+#     return t['recon'].format(
+#       l=l,
+#       frsi=self.strides['recon'][0],
+#       frsl=self.strides['recon'][1])
 
 
-  def footer(self):
-    '''Return C Python extension module footer.'''
+#   def header(self, module=''):
+#     '''Return C Python extension module header.'''
 
-    if self.wrappers:
+#     t = self.tmpl
 
-      wrappers = [ templates[self.lang]['wrapper'].format(
-        pyfunc = wrapper[0],
-        func = wrapper[1]) for wrapper in self.wrappers ]
+#     self.module = module
 
-      return templates[self.lang]['footer'].format(
-        module=self.module, wrappers=',\n'.join(wrappers))
+#     return templates[self.lang]['header'].format(
+#       module=module)
 
-    return ''
+
+#   def footer(self):
+#     '''Return C Python extension module footer.'''
+
+#     t = self.tmpl
+
+#     if self.wrappers:
+
+#       wrappers = [ templates[self.lang]['wrapper'].format(
+#         pyfunc = wrapper[0],
+#         func = wrapper[1]) for wrapper in self.wrappers ]
+
+#       return templates[self.lang]['footer'].format(
+#         module=self.module, wrappers=',\n'.join(wrappers))
+
+#     return ''
 
 
   ##################################################################
@@ -244,6 +247,7 @@ class CodeGenerator(object):
 
     """
 
+    t    = self.tmpl
     k    = self.k
     lang = self.lang
     
@@ -263,34 +267,31 @@ class CodeGenerator(object):
           pm = -(k-1) + m
           pn = -(k-1) + n
 
-          sum_beta.append(templates[lang]['beta'].format(
+          sum_beta.append(t['beta*fm*fn'].format(
             fsi  = self.strides['f'],
             pm   = pm,
             pn   = pn,
             beta = _to_string(self.beta[r,m,n])
             ))
 
-      kernel.append(templates[lang]['sigma'].format(
+      kernel.append(t['set_sigma'].format(
         sigma    = self.sigma(r, lang, local),
         sum_beta = ' '.join(sum_beta)))
 
     if local:
       return '\n'.join(kernel)
     
-    src = templates[lang]['smoothness'].format(
+    src = t['smoothness'].format(
       function=function, k=k, rmax=n-1,
       kernel='\n'.join(kernel))
 
     if wrapper:
       self.wrappers.append(wrapper)
-      src += templates[lang]['smoothness_wrapper'].format(
+      src += t['smoothness_wrapper'].format(
         wrapper=wrapper[0],
         function=wrapper[1])
 
     return src
-
-  
-      
       
 
   ######################################################################
@@ -301,9 +302,13 @@ class CodeGenerator(object):
     The weights kernel computes the weights *omega* determined by
     the smoothness coefficients *sigma* (which have already been
     computed).
+
+    XXX: have epsilon passed to function
+    XXX: pass power...
     
     """
 
+    t = self.tmpl
     n = self.n
     k = self.k
 
@@ -321,60 +326,60 @@ class CodeGenerator(object):
     for l in range(n):
 
       if not self.split[l]:
-        kernel.append(templates[lang]['acc_zero'])
+        kernel.append(t['acc_zero'])
         
         for r in range(0, k):
           omega = self.omega(r, l, 0, lang, local)
           sigma = self.sigma(r, lang, local)
           
-          kernel.append(templates[lang]['omega'].format(
+          kernel.append(t['set_omega'].format(
             omega = omega,
             epsilon = epsilon,
             varpi = _to_string(self.varpi[l,r]),
             sigma = self.sigma(r, lang, local)))
 
-          kernel.append(templates[lang]['acc_incr'].format(
+          kernel.append(t['acc_incr'].format(
             omega = omega))
 
         for r in range(0, k):
           omega = self.omega(r, l, 0, lang, local)
-          kernel.append(templates[lang]['omega_norm'].format(
+          kernel.append(t['omega_norm'].format(
             omega = omega))
 
       else:
 
         for s, pm in enumerate(('p', 'm')):
-          kernel.append(templates[lang]['acc_zero'])
+          kernel.append(t['acc_zero'])
 
           for r in range(0, k):
             omega = self.omega(r, l, s, lang, local)
             sigma = self.sigma(r, lang, local)
 
-            kernel.append(templates[lang]['omega_scale'].format(
+            kernel.append(t['omega_scale'].format(
               omega = omega,
               scale = self.scale[l][s],
               epsilon = epsilon,
               varpi = _to_string(self.varpi[l,r][s]),
               sigma = self.sigma(r, lang, local)))
 
-            kernel.append(templates[lang]['acc_incr'].format(
+            kernel.append(t['acc_incr'].format(
               omega = omega))
 
           for r in range(0, k):
             omega = self.omega(r, l, s, lang, local)
-            kernel.append(templates[lang]['omega_norm'].format(
+            kernel.append(t['omega_norm'].format(
               omega = omega))
 
     if local:
       return '\n'.join(kernel)
     
-    src= templates[lang]['weights'].format(
+    src = t['weights'].format(
       function=function, k=k, rmax=n-1,
       kernel='\n'.join(kernel))
 
     if wrapper:
       self.wrappers.append(wrapper)
-      src += templates[lang]['weights_wrapper'].format(
+      src += t['weights_wrapper'].format(
         wrapper=wrapper[0],
         function=wrapper[1])
 
@@ -384,7 +389,7 @@ class CodeGenerator(object):
 
   ######################################################################
 
-  def reconstruction(self, function=False, wrapper=False):
+  def reconstruction(self, function=False, combined=False, wrapper=False):
     r"""Fully un-rolled reconstruction kernel for uniform grids.
     
     The reconstruction kernel computes the WENO reconstruction
@@ -393,6 +398,7 @@ class CodeGenerator(object):
     
     """
     
+    t = self.tmpl
     n = self.n
     k = self.k
 
@@ -413,12 +419,12 @@ class CodeGenerator(object):
 
         sum_coeff = []
         for j in range(k):
-          sum_coeff.append(templates[lang]['coeff'].format(
+          sum_coeff.append(t['c*f'].format(
             coeff  = _to_string(self.coeffs[l,r,j]),
             shift  = -r+j,
             fsi = self.strides['f']))
 
-        kernel.append(templates[lang]['recon'].format(
+        kernel.append(t['set_fr'].format(
           recon = self.fr[l*k+r],
           sum_weighted = ' '.join(sum_coeff)))
           
@@ -429,11 +435,11 @@ class CodeGenerator(object):
 
         sum_weighted = []
         for r in range(k):
-          sum_weighted.append(templates[lang]['weighted'].format(
+          sum_weighted.append(t['omega*fr'].format(
             fr = self.fr[l*k+r],
             omega = self.omega(r, l, 0, lang, local)))
 
-        kernel.append(templates[lang]['recon'].format(
+        kernel.append(t['set_fr'].format(
           recon = self.recon(l, lang, local),
           sum_weighted = ' + '.join(sum_weighted)))
 
@@ -444,29 +450,29 @@ class CodeGenerator(object):
 
           pm_weighted = []
           for r in range(k):
-            pm_weighted.append(templates[lang]['weighted'].format(
+            pm_weighted.append(t['omega*fr'].format(
               fr = self.fr[l*k+r],
               omega = self.omega(r, l, s, lang, local)))
 
-          sum_weighted.append(templates[lang]['scale'].format(
+          sum_weighted.append(t['scale'].format(
             scale = self.scale[l][s],
             pm_weighted = ' + '.join(pm_weighted)))
 
-        kernel.append(templates[lang]['recon'].format(
+        kernel.append(t['set_fr'].format(
           recon = self.recon(l, lang, local),
           sum_weighted = ' - '.join(sum_weighted)))
 
     if local:
       return '\n'.join(kernel)
     
-    src = templates[lang]['reconstruct'].format(
+    src = t['reconstruct'].format(
       function=function, k=k, n=n, rmax=n-1,
       frs = ', '.join(self.fr),
       kernel='\n'.join(kernel))
 
     if wrapper:
       self.wrappers.append(wrapper)
-      src += templates[lang]['reconstruct_wrapper'].format(
+      src += t['reconstruct_wrapper'].format(
         wrapper=wrapper[0],
         function=wrapper[1])
 
@@ -480,9 +486,9 @@ templates = {
     'acc_zero':  'accumulator = 0.0;',
     'acc_incr':  'accumulator += {omega};',
 
-    'sigma_idx': 'sigma[i*{ssi}+{r}*{ssr}]',
-    'sigma':     '{sigma} = {sum_beta};',
-    'beta':      '{beta} * f[(i{pm:+d})*{fsi}] * f[(i{pn:+d})*{fsi}]',
+    'sigma':     'sigma[i*{ssi}+{r}*{ssr}]',
+    'set_sigma': '{sigma} = {sum_beta};',
+    'beta*fm*fn':      '{beta} * f[(i{pm:+d})*{fsi}] * f[(i{pn:+d})*{fsi}]',
 
     'smoothness': """
       void {function}(const double *restrict f, int n, int fsi,
@@ -495,8 +501,8 @@ templates = {
       }}
       """,
 
-    'omega_idx': 'omega[i*{wsi}+{l}*wsl+{r}*{wsr}+{s}]',
-    'omega': '{omega} = {varpi} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',
+    'omega': 'omega[i*{wsi}+{l}*wsl+{r}*{wsr}+{s}]',
+    'set_omega': '{omega} = {varpi} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',
     'omega_scale': '{omega} = {varpi} / {scale} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',    
     'omega_norm': '{omega} /= accumulator;',
     
@@ -512,13 +518,12 @@ templates = {
       }}  
       """,
     
-    'fr': '{fr} = {sum_coeff};',
-    'coeff': '{coeff} * f[(i{shift:+d})*{fsi}]',
-    'weighted': '{fr} * {omega}',
-    'recon': '{recon} = {sum_weighted};',
+    'c*f': '{coeff} * f[(i{shift:+d})*{fsi}]',
+    'omega*fr': '{fr} * {omega}',
+    'set_fr': '{recon} = {sum_weighted};',
     'scale': '{scale} * ({pm_weighted})',
 
-    'recon_idx': 'fr[i*{frsi}+{l}*{frsl}]',
+    'recon': 'fr[i*{frsi}+{l}*{frsl}]',
 
     'reconstruct': """
       void {function}(const double *restrict f, int n, int fsi,
@@ -533,6 +538,19 @@ templates = {
       }}
       """,
 
+    'reconstruct_combined': """
+      void {function}(const double *restrict f, int n, int fsi,
+                      double *restrict fr, int frsi, int frsl)
+      {{
+        int i;
+        double {frs};
+        double {omegas};
+        for (i={k}; i<n-{k}; i++) {{
+          {kernel}
+        }}
+      }}
+      """,
+
     'header': """
       #define PY_ARRAY_UNIQUE_SYMBOL {module}_ARRAY_API
       #include <stdio.h>
@@ -540,7 +558,7 @@ templates = {
       #include <numpy/ndarrayobject.h>
     """,
 
-    'wrapper': '{{"{pyfunc}", {func}, METH_VARARGS, ""}}',
+    'wrapper': '{{"{func}", {pyfunc}, METH_VARARGS, ""}}',
     
     'footer': '''
       static PyMethodDef {module}methods[] = {{
@@ -722,6 +740,58 @@ templates = {
         Py_INCREF(Py_None);
         return Py_None;
       }}
+      ''',
+
+    'reconstruct_combined_wrapper': '''
+      PyObject *
+      {wrapper}(PyObject *self, PyObject *args)
+      {{
+        double *f, *fr;
+        PyArrayObject *f_py, *fr_py;
+
+        long int n;
+        int fsi, frsi, frsl;
+
+        /* parse options */
+
+        if (! PyArg_ParseTuple(args, "OO", &f_py, &fr_py))
+          return NULL;
+
+        if (f_py->nd != 1 || f_py->descr->type_num != PyArray_DOUBLE) {{
+          PyErr_SetString(PyExc_ValueError, "f must be one-dimensional and of type float");
+          return NULL;
+        }}
+
+        if (fr_py->descr->type_num != PyArray_DOUBLE) {{
+          PyErr_SetString(PyExc_ValueError, "fr must be of type float");
+          return NULL;
+        }}
+
+        if (! (fr_py->nd == 1 || fr_py->nd == 2)) {{
+          PyErr_SetString(PyExc_ValueError, "fr must be one or two dimensional");
+          return NULL;
+        }}
+
+        /* get data, n, strides */
+        f     = (double *) PyArray_DATA(f_py);
+        fr    = (double *) PyArray_DATA(fr_py);
+
+        n = PyArray_DIM(f_py, 0);
+
+        fsi  =  f_py->strides[0] / sizeof(double);
+        frsi = fr_py->strides[0] / sizeof(double);
+
+        if (n == 1) {{
+          frsl = 0;
+        }} else {{
+          frsl = fr_py->strides[1] / sizeof(double);
+        }}
+
+        {function}(f, n, fsi, fr, frsi, frsl);
+
+        Py_INCREF(Py_None);
+        return Py_None;
+      }}
       '''
     },
   
@@ -730,9 +800,9 @@ templates = {
     'acc_zero':  'accumulator = 0.0;',
     'acc_incr':  'accumulator += {omega};',
 
-    'sigma_idx': 'sigma[i*{ssi}+{r}*{ssr}]',
-    'sigma':     '{sigma} = {sum_beta};',
-    'beta':      '{beta} * f[(i{pm:+d})*{fsi}] * f[(i{pn:+d})*{fsi}]',
+    'sigma': 'sigma[i*{ssi}+{r}*{ssr}]',
+    'set_sigma':     '{sigma} = {sum_beta};',
+    'beta*fm*fn':      '{beta} * f[(i{pm:+d})*{fsi}] * f[(i{pn:+d})*{fsi}]',
 
     'smoothness': """
       __kernel void {function}(__global const float *f, int fsi,
@@ -743,8 +813,8 @@ templates = {
       }}
       """,
 
-    'omega_idx': 'omega[i*{wsi}+{l}*wsl+{r}*{wsr}+{s}]',
-    'omega': '{omega} = {varpi} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',
+    'omega': 'omega[i*{wsi}+{l}*wsl+{r}*{wsr}+{s}]',
+    'set_omega': '{omega} = {varpi} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',
     'omega_scale': '{omega} = {varpi} / {scale} / ({epsilon} + {sigma}) / ({epsilon} + {sigma});',    
     'omega_norm': '{omega} /= accumulator;',
     
@@ -757,13 +827,12 @@ templates = {
       }}
       """,  
     
-    'fr': '{fr} = {sum_coeff};',
-    'coeff': '{coeff} * f[(i{shift:+d})*{fsi}]',
-    'weighted': '{fr} * {omega}',
-    'recon': '{recon} = {sum_weighted};',
+    'c*f': '{coeff} * f[(i{shift:+d})*{fsi}]',
+    'omega*fr': '{fr} * {omega}',
+    'set_fr': '{recon} = {sum_weighted};',
     'scale': '{scale} * ({pm_weighted})',
 
-    'recon_idx': 'fr[i*{frsi}+{l}*{frsl}]',
+    'recon': 'fr[i*{frsi}+{l}*{frsl}]',
 
     'reconstruct': """
       __kernel void {function}(__global const float *f, int fsi,
@@ -789,9 +858,9 @@ templates = {
     'acc_zero':  'accumulator = 0.0',
     'acc_incr':  'accumulator = accumulator + {omega};',
 
-    'sigma_idx': 'sigma(i,{r})',
-    'sigma':     '{sigma} = {sum_beta}',
-    'beta':      '{beta} * f(i{pm:+d}) * f(i{pn:+d})',
+    'sigma': 'sigma(i,{r})',
+    'set_sigma': '{sigma} = {sum_beta}',
+    'beta*fm*fn':      '{beta} * f(i{pm:+d}) * f(i{pn:+d})',
 
     'smoothness': """
       subroutine {function}(f, n, sigma)
@@ -809,8 +878,8 @@ templates = {
       end subroutine
       """,
 
-    'omega_idx': 'omega(i,{l},{r},{s})',
-    'omega': '{omega} = {varpi} / ({epsilon} + {sigma})**2',
+    'omega': 'omega(i,{l},{r},{s})',
+    'set_omega': '{omega} = {varpi} / ({epsilon} + {sigma})**2',
     'omega_scale': '{omega} = {varpi} / {scale} / ({epsilon} + {sigma})**2',
     'omega_norm': '{omega} = {omega} / accumulator;',
     
@@ -831,13 +900,12 @@ templates = {
       end subroutine  
       """,
     
-    'fr': '{fr} = {sum_coeff}',
-    'coeff': '{coeff} * f(i{shift:+d})',
-    'weighted': '{fr} * {omega}',
-    'recon': '{recon} = {sum_weighted}',
+    'c*f': '{coeff} * f(i{shift:+d})',
+    'omega*fr': '{fr} * {omega}',
+    'set_fr': '{recon} = {sum_weighted}',
     'scale': '{scale} * ({pm_weighted})',
 
-    'recon_idx': 'fr(i,{l})',
+    'recon': 'fr(i,{l})',
 
     'reconstruct': """
        subroutine {function}(f, n, omega, fr)
