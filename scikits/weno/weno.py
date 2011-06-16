@@ -21,14 +21,14 @@ def reconstruct(q, k, points,
                 squeeze=True):
   """Perform WENO reconstruction of q.
 
-  :param q: cell-averaged unknown to reconstruct
-  :param k: order of reconstruction (5 to 17)
+  :param q:      cell-averaged unknown to reconstruct
+  :param k:      order of reconstruction (5 to 17)
   :param points: reconstruction points (see below)
-  :param n: number of reconstruction points (see below)
+  :param n:      number of reconstruction points (see below)
   :param smoothness: use as smoothness indicators
-  :param weights: use as non-linear weights
+  :param weights:    use as non-linear weights
   :param return_smoothness: return smoothness indicators?
-  :param return_weights: return weights?
+  :param return_weights:    return weights?
   """
 
   if (k % 2) == 0:
@@ -113,42 +113,3 @@ def reconstruct(q, k, points,
     return (qr, weights)
 
   return qr
-
-
-
-# XXX: move this to another file...
-def reconstruction_coeffs(xi, i, r, k, x, c):
-  """Numerically compute the reconstruction coefficients *c_j* and
-  store the results in *c* (indexed as ``c[j]``).
-
-  The reconstruction coefficients *c_j* are used to approximate the
-  *d*'th derivative of a function *f* given its cell averages *f_j*
-  according to
-
-  .. math::
-
-    f^{(d)}(\\xi) \\approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}.
-
-  This function wraps a fast C implementation, and is especially
-  useful for non-uniform grids.
-
-  Arguments:
-
-  * *xi* - reconstruction point
-  * *i* - cell index (ie, index of the cell that containts *xi*)
-  * *r* - left shift
-  * *k* - order
-  * *x* - cell boundaries
-  * *c* - computed reconstruction coefficients (returned)
-
-  Return: the reconstruction coefficients are destructively stored
-  in *c*.
-
-  """
-
-  import ccoeffs
-
-  try:
-    ccoeffs.reconstruction_coeffs(xi, i, r, k, x, c)
-  except:
-    raise NotImplementedError, "reconstruction coeffs for k = %d not implemented yet" % (k)
