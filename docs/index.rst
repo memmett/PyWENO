@@ -1,24 +1,20 @@
 PyWENO
 ======
 
-The PyWENO project provides a set of open sources tools for
+The PyWENO project provides a set of open source tools for
 constructing high-order Weighted Essentially Non-oscillatory (WENO)
 methods and performing high-order WENO reconstructions.
 
-The project consists of four main parts:
+The project consists of three main parts:
 
-#. A set of :doc:`symbolic tools <symbolic>` for exploring and
-   constructing WENO methods;
+* :doc:`Symbolics <symbolic>` - tools for exploring and constructing
+  WENO methods.
 
-#. A C, Fortran, and OpenCL :doc:`code generator <codegen>` to build WENO
-   reconstruction routines; 
+* :doc:`Code generation <codegen>` - tools for generating custom C, Fortran,
+  and OpenCL WENO routines.
 
-#. An easy to use :doc:`interface <tutorial>` to compute WENO
-   reconstructions; and
-
-#. Various other WENO related tools, including: a routine for
-   computing high-order finite-volume interpolation coefficients for
-   non-uniform grids.
+* :doc:`WENO SciKit <tutorial>` - an easy to use module to compute
+  WENO reconstructions in Python.
 
 **News**
 
@@ -37,7 +33,7 @@ Documentation
 
 **Main parts of the documentation**
 
-* :doc:`WENO SciKit Tutorial <tutorial>` - basic WENO reconstructions.
+* :doc:`WENO SciKit tutorial <tutorial>` - basic WENO reconstructions.
 * :doc:`Symbolics <symbolic>` - the symbolic tool kit.
 * :doc:`Code generation <codegen>` - the code generation tool kit.
 * :doc:`Reference <reference>` - reference documentation.

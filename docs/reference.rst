@@ -4,34 +4,36 @@ Reference
 WENO SciKit
 -----------
 
-.. automodule:: scikits.weno
-   :members:
+.. autofunction:: scikits.weno.reconstruction
+
+.. autofunction:: scikits.weno.coeffs
 
 
-Symbolic tool kit
------------------
+Symbolics
+---------
 
 .. automodule:: pyweno.symbolic
    :members:
 
 
-Code generation tool kit
-------------------------
+Code generation
+---------------
+
+Kernels
+^^^^^^^
 
 .. automodule:: pyweno.kernels
    :members:
+
+
+Wrappers
+^^^^^^^^
 
 .. automodule:: pyweno.wrappers
    :members:
 
 
-Fast stencil routines
-^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: pyweno.stencil.reconstruction_coeffs
-
-
-Version information
--------------------
+Version
+-------
 
 .. automodule:: pyweno.version
