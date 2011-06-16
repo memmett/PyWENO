@@ -1,17 +1,4 @@
-"""Construct the C files that comprise the ccoeffs extension module.
-
-   The purpose of the ccoeffs extension module is to speed up the
-   computation of the reconstruction coefficients.
-
-   This file generates fully un-rolled C functions.
-
-   First, for each k, we generate two C files to compute reconstruct
-   coefficients for a function (d0) and its derivative (d1).
-
-   Next, we generate a C file that defines a Python callable
-   dispatcher and the ccoeffs extension module.
-
-   """
+'''Generate the ccoeffs extension module.'''
 
 from textwrap import dedent
 

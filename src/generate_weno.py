@@ -1,29 +1,26 @@
-'''Generate variou WENO routines in C.  These are wrapped and
-accessible through :func:`pyweno.weno.weno`.'''
+"""Generate the cweno extension module.
 
+An easy to use interface this module can be found in
+scikits.weno.reconstruct.
+
+"""
 
 import pyweno.points
 import pyweno.symbolic
 import pyweno.kernels
 import pyweno.wrappers
 
-#### config
-
-K        = range(3, 10)
-generate = [ 'left',
-             'right',
-             'middle',
-             'gauss_legendre',
-             'gauss_lobatto',
-             'gauss_radau' ]
 
 #### generate
 
-wrappers = []                           # collect wrapper names
-for k in K:
+wrappers = []
+
+for k in range(3, 10):
 
   print 'k:', k
 
+  ## smoothness
+  
   kernel  = pyweno.kernels.KernelGenerator('c')
   wrapper = pyweno.wrappers.WrapperGenerator(kernel)
 
@@ -38,21 +35,28 @@ for k in K:
 
   wrappers += wrapper.wrappers
 
-  for g in generate:
+  ## reconstructors
 
-    print '  point:', g
+  for pts in [ 'left',
+               'right',
+               'middle',
+               'gauss_legendre',
+               'gauss_lobatto',
+               'gauss_radau' ]:
 
-    if g == 'left':
+    print '  point:', pts
+
+    if pts == 'left':
       func = lambda n: [ -1 ]
       N    = [ 1 ]
-    elif g == 'right':
+    elif pts == 'right':
       func = lambda n: [ 1 ]
       N    = [ 1 ]
-    elif g == 'middle':
+    elif pts == 'middle':
       func = lambda n: [ 0 ]
       N    = [ 1 ]
     else:
-      func = getattr(pyweno.points, g)
+      func = getattr(pyweno.points, pts)
       N    = range(2, k+1)
       xi   = func
 
@@ -76,7 +80,7 @@ for k in K:
       kernel.set_optimal_weights(varpi, split)
       kernel.set_reconstruction_coefficients(coeffs)
 
-      base = g + '%03d%03d' % (k, n)
+      base = pts + '%03d%03d' % (k, n)
       with open('weno_' + base + '.c', 'w') as f:
         f.write('#include <Python.h>\n')
         f.write('#include <numpy/ndarrayobject.h>\n')
