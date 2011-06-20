@@ -141,32 +141,18 @@ class KernelGenerator(object):
     self.n = varpi['n']
     self.k = varpi['k']
     self.varpi = self.to_string(varpi)
+    self.split = split
 
-    if split is not None:
-      self.split = split
-    else:
-      self.split = np.array(self.n*[False])
-
-    del self.split['n']
-
-    # XXX: this varpi/scale stuff can probably be tightened up
     scale = {}
-    if any(self.split):
+    if any(self.split.values()):
       for l in range(self.n):
         if self.split[l]:
-
           for s in (0, 1):
             scale[l,s] = 0
             for r in range(0, self.k):
               scale[l,s] += varpi[l,r][s]
 
     self.scale = self.to_string(scale)
-
-#           self.scale[l] = [mstr(''), mstr('')]
-#           for s in (0, 1):
-#             for r in range(0, self.k):
-#               self.scale[l][s] += self.varpi[l,r][s]
-
 
     self.omega = {}
     pm = ['p', 'm']
