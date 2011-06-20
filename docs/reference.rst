@@ -12,8 +12,15 @@ WENO SciKit
 Symbolics
 ---------
 
-.. automodule:: pyweno.symbolic
-   :members:
+.. autofunction:: pyweno.symbolic.polynomial_interpolator
+
+.. autofunction:: pyweno.symbolic.primitive_polynomial_interpolator
+
+.. autofunction:: pyweno.symbolic.reconstruction_coefficients
+
+.. autofunction:: pyweno.symbolic.optimal_weights
+
+.. autofunctoin:: pyweno.symbolic.jiang_shu_smoothness_coefficients
 
 
 Code generation

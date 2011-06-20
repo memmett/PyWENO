@@ -8,7 +8,9 @@ import sys, os
 sys.path.append(os.path.abspath('..'))
 
 # extentions
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.jsmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.jsmath']
+jsmath_path = 'http://www.unc.edu/~mwemmett/jsmath/easy/load.js'
 
 # general configuration
 source_suffix  = '.rst'

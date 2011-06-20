@@ -13,7 +13,7 @@ class WrapperGenerator(kernels.KernelGenerator):
   for a specific WENO operation: computing smoothness indicators,
   non-linear weights, and reconstructions.
 
-  :param kernel: pyweno.kernels.KernelGenerator
+  :param lang: ``'c'``, ``'opencl'``, or ``'fortran'``
 
   """
 
