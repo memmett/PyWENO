@@ -14,7 +14,7 @@ import pyweno.wrappers
 
 wrappers = []
 
-for k in range(3, 5):
+for k in range(3, 7):
 
   print 'k:', k
 
@@ -37,7 +37,7 @@ for k in range(3, 5):
 
   for pts in [ 'left',
                'right',
-#               'middle',
+               'middle',
                'gauss_legendre',
                'gauss_lobatto',
                'gauss_radau' ]:
