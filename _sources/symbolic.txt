@@ -1,5 +1,5 @@
-PyWENO symbolic toolkit
-=======================
+Symbolics
+=========
 
 PyWENO contains a symbolic module to help authors develop their own
 WENO methods and/or explore the basics of WENO methods.  Below are a

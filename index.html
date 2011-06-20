@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,22 +7,24 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO &mdash; PyWENO v0.5.11 documentation</title>
+    <title>PyWENO &mdash; PyWENO v0.7.1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
-        VERSION:     '0.5.11',
-        COLLAPSE_MODINDEX: false,
+        URL_ROOT:    '',
+        VERSION:     '0.7.1',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.11 documentation" href="#" />
-    <link rel="next" title="PyWENO Tutorial" href="tutorial.html" /> 
+    <script type="text/javascript" src="http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.7.1 documentation" href="#" />
+    <link rel="next" title="WENO SciKit" href="tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -30,12 +34,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="tutorial.html" title="WENO SciKit"
              accesskey="N">next</a> |</li>
-        <li><a href="#">PyWENO v0.5.11 documentation</a> &raquo;</li> 
+        <li><a href="#">PyWENO v0.7.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -46,87 +50,45 @@
             
   <div class="section" id="pyweno">
 <h1>PyWENO<a class="headerlink" href="#pyweno" title="Permalink to this headline">¶</a></h1>
-<p>PyWENO is a Python implementation of one-dimensional Weighted
-Essentially Non-oscillatory (WENO) approximations over non-uniform
-grids.</p>
+<p>The PyWENO project provides a set of open source tools for
+constructing high-order Weighted Essentially Non-oscillatory (WENO)
+methods and performing high-order WENO reconstructions.</p>
+<p>The project consists of three main parts:</p>
+<ul class="simple">
+<li><a class="reference internal" href="symbolic.html"><em>Symbolics</em></a> - tools for exploring and constructing
+WENO methods.</li>
+<li><a class="reference internal" href="codegen.html"><em>Code generation</em></a> - tools for generating custom C, Fortran,
+and OpenCL WENO routines.</li>
+<li><a class="reference internal" href="tutorial.html"><em>WENO SciKit</em></a> - an easy to use module to compute
+WENO reconstructions in Python.</li>
+</ul>
 <p><strong>News</strong></p>
 <ul class="simple">
-<li>January 20 2011: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.5.11</a> released (see <a class="reference external" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
-<li>November 27 2010: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.5.9</a> released (see <a class="reference external" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
-<li>November 19 2010: PyWENO now has preliminary support for OpenCL (GPUs).</li>
-<li>October 17 2010: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.5.7</a> released (see <a class="reference external" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
-<li>February 22 2010: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.5.0</a> released (see <a class="reference external" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
-<li>January 29 2010: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.4.0</a> released (see <a class="reference external" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
-<li>January 29 2010: PyWENO now uses <a class="reference external" href="http://semver.org/">semantic versioning</a>.</li>
+<li>June 13 2011: A new <a class="reference external" href="XXX">WENO SciKit</a> built using PyWENO is now available.</li>
+<li>June 13 2011: PyWENO has been significantly refactored and
+simplified.  A lot of code was removed in favour of focusing on code
+generation and an easy to use WENO SciKit.</li>
+<li>January 20 2011: <a class="reference external" href="http://github.com/memmett/PyWENO/downloads">PyWENO 0.5.11</a> released (see <a class="reference internal" href="whatsnew.html"><em>what&#8217;s new</em></a>).</li>
 </ul>
-<p>PyWENO is useful for:</p>
-<ul class="simple">
-<li>Numerically reconstructing an unknown function based on its cell
-averages over uniform or non-uniform grids.</li>
-<li>Exploring WENO methods symbolically.</li>
-<li>Building custom high-performance OpenCL based WENO codes.</li>
-</ul>
-<p>If you are interested in using PyWENO to solve systems of hyperbolic
-PDEs, check out the <a class="reference external" href="http://memmett.github.com/PyBLAW">Python Balance LAW</a> package <a class="reference external" href="http://memmett.github.com/PyBLAW">PyBLAW</a>.</p>
 <p>Please check out the documentation (below) or the <a class="reference external" href="http://github.com/memmett/PyWENO">PyWENO project
 page</a> for more information about using and contributing to PyWENO.</p>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p><strong>Main parts of the documentation</strong></p>
 <ul class="simple">
-<li><a class="reference external" href="tutorial.html"><em>Tutorial</em></a> - basic numerical usage.</li>
-<li><a class="reference external" href="symbolic.html"><em>Symbolic</em></a> - the symbolic toolkit.</li>
-<li><a class="reference external" href="opencl.html"><em>OpenCL</em></a> - the OpenCL code generator.</li>
-<li><a class="reference external" href="examples.html"><em>Examples</em></a> - some examples.</li>
-<li><a class="reference external" href="reference.html"><em>Reference</em></a> - reference documentation.</li>
-<li><a href="_downloads/weno.pdf"><strong class="xref">Maths</strong></a> (PDF) - the maths behind WENO approximations.</li>
+<li><a class="reference internal" href="tutorial.html"><em>WENO SciKit tutorial</em></a> - basic WENO reconstructions.</li>
+<li><a class="reference internal" href="symbolic.html"><em>Symbolics</em></a> - the symbolic tool kit.</li>
+<li><a class="reference internal" href="codegen.html"><em>Code generation</em></a> - the code generation tool kit.</li>
+<li><a class="reference internal" href="reference.html"><em>Reference</em></a> - reference documentation.</li>
+<li><a class="reference internal" href="download.html"><em>Download</em></a> - download and installation instructions.</li>
 </ul>
-<p><strong>Features</strong></p>
-<p>PyWENO is designed to:</p>
-<ul class="simple">
-<li>Work on non-uniform and uniform grids.</li>
-<li>Reconstruct at arbitrary points within each grid cell.  For
-example, we can reconstruct a function at the left edge, right
-edge, or at various quadrature points within each cell.</li>
-<li>Be fast (except for pre-computing); time sensitive routines are
-implemented in C.  Some specialized routines are also implemented in
-OpenCL.</li>
-<li>Provide a set of symbolic tools to help authors develop specialized
-WENO methods.</li>
-<li>Provide a set of OpenCL kernels and OpenCL code generation tools to
-help authors develop specialized WENO methods.</li>
-<li>Be easy to use.</li>
-<li>For non-uniform grids, cache the reconstruction coefficients,
-optimal weights, and smoothness indicator coefficients for a given
-grid (for future runs).</li>
-</ul>
-<p><strong>Known issues</strong></p>
-<p>PyWENO has a few known issues:</p>
-<ul class="simple">
-<li>Pre-computing the optimal weights on non-uniform grids is slow.</li>
-<li>Pre-computing the smoothness indicator coefficients on non-uniform
-grids is slow.</li>
-</ul>
-<p><strong>Related projects</strong></p>
-<p>Adrian Townsend (University of Washington) is working on a Python
-implementation of WENO interpolations and reconstructions as well.</p>
-<p>David Ketcheson (KAUST) wrote WENOCLAW, which uses WENO methods to
-solve conservation laws, and is based on the CLAWPACK software of
-R.J. LeVeque.</p>
-<p><strong>Using PyWENO to solve PDEs</strong>: if you are interested in using PyWENO
-to solve PDEs, check out the <a class="reference external" href="http://memmett.github.com/PyBLAW">Python Balance LAW</a> package <a class="reference external" href="http://memmett.github.com/PyBLAW">PyBLAW</a>.</p>
-</div>
-<div class="section" id="download">
-<h2>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h2>
-<p>Check out the <a class="reference external" href="download.html"><em>download page</em></a> for instructions on
-obtaining and installing PyWENO.</p>
 </div>
 <div class="section" id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
 <p>Contributions are welcome!  Please send comments, suggestions, and/or
 patches to the primary author (<a class="reference external" href="http://www.math.ualberta.ca/~memmett/">Matthew Emmett</a>).  You will be credited.</p>
-<p>If you plan to extend or modify PyWENO in a more substantial way,
-please see the <a class="reference external" href="http://github.com/memmett/PyWENO">PyWENO project page</a>.</p>
+<div class="toctree-wrapper compound">
+</div>
 </div>
 </div>
 
@@ -136,39 +98,30 @@ please see the <a class="reference external" href="http://github.com/memmett/PyW
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="#">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">PyWENO</a><ul>
-<li><a class="reference external" href="#documentation">Documentation</a></li>
-<li><a class="reference external" href="#download">Download</a></li>
-<li><a class="reference external" href="#contributing">Contributing</a><ul>
-</ul>
-</li>
-</ul>
-</li>
+<h3><a href="#">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">PyWENO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">WENO SciKit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="symbolic.html">Symbolics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">Code generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">What&#8217;s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Downloading and installing</a></li>
 </ul>
 
-            <h4>Next topic</h4>
-            <p class="topless"><a href="tutorial.html"
-                                  title="next chapter">PyWENO Tutorial</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/index.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -180,17 +133,17 @@ please see the <a class="reference external" href="http://github.com/memmett/PyW
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="tutorial.html" title="WENO SciKit"
              >next</a> |</li>
-        <li><a href="#">PyWENO v0.5.11 documentation</a> &raquo;</li> 
+        <li><a href="#">PyWENO v0.7.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+        &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

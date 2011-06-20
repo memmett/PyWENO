@@ -1,5 +1,5 @@
-PyWENO OpenCL toolkit
-=====================
+OpenCL
+======
 
 PyWENO contains an OpenCL module to help authors develop their own
 specialized WENO methods on GPUs by generating WENO code.  Below are a
@@ -68,8 +68,8 @@ smoothness indicators ``sigma0``, ``sigma1``, and ``sigma2``::
 Next, we'll compute the weights for reconstructing at the side of each
 cell::
 
-  >>> varpi    = pyweno.symbolic.optimal_weights(3, 'left')
-  >>> weights  = pyweno.opencl.uniform_weights_kernel(3, varpi, function=False)
+  >>> (varpi, split) = pyweno.symbolic.optimal_weights(3, 'left')
+  >>> weights = pyweno.opencl.uniform_weights_kernel(3, varpi, split, function=False)
   >>> src.append(weights)
   >>> print weights
   accumulator = 0.0;
@@ -90,7 +90,7 @@ Next, we reconstruct the function on the left side of each cell, and
 store the result in the ``f_plus`` array::
 
   >>> coeffs = pyweno.symbolic.reconstruction_coefficients(3, 'left')
-  >>> reconstruct = pyweno.opencl.uniform_reconstruction_kernel(3, coeffs, rf='f_plus[i]', function=False)
+  >>> reconstruct = pyweno.opencl.uniform_reconstruction_kernel(3, coeffs, split, rf='f_plus[i]', function=False)
   >>> src.append(reconstruct)
   >>> print reconstruct
   f0 = 1.83333333333333 * f[i+0] + -1.16666666666667 * f[i+1] + 0.333333333333333 * f[i+2];

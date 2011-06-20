@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,23 +7,25 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO symbolic toolkit &mdash; PyWENO v0.5.11 documentation</title>
+    <title>Symbolics &mdash; PyWENO v0.7.1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '#',
-        VERSION:     '0.5.11',
-        COLLAPSE_MODINDEX: false,
+        URL_ROOT:    '',
+        VERSION:     '0.7.1',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.11 documentation" href="index.html" />
-    <link rel="next" title="PyWENO OpenCL toolkit" href="opencl.html" />
-    <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
+    <script type="text/javascript" src="http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.7.1 documentation" href="index.html" />
+    <link rel="next" title="Code generation" href="codegen.html" />
+    <link rel="prev" title="WENO SciKit" href="tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -31,15 +35,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
-          <a href="opencl.html" title="PyWENO OpenCL toolkit"
+          <a href="codegen.html" title="Code generation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="tutorial.html" title="WENO SciKit"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,8 +52,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pyweno-symbolic-toolkit">
-<h1>PyWENO symbolic toolkit<a class="headerlink" href="#pyweno-symbolic-toolkit" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="symbolics">
+<h1>Symbolics<a class="headerlink" href="#symbolics" title="Permalink to this headline">¶</a></h1>
 <p>PyWENO contains a symbolic module to help authors develop their own
 WENO methods and/or explore the basics of WENO methods.  Below are a
 few quick examples demonstrating how the symbolic routines of PyWENO
@@ -79,8 +83,8 @@ are used.</p>
 <p>The polynomial that interpolates the primitive function of <em>f</em> such
 that</p>
 <div class="math">
-<p><img src="_images/math/2655c5cf80e37b1a2deedc9d204ac128414c5f38.png" alt="f(x_i) = \sum_j y_j (x_{j+1} - x_{j})" /></p>
-</div><p>is given by:</p>
+f(x_i) = \sum_j y_j (x_{j+1} - x_{j})</div>
+<p>is given by:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">symbolic</span><span class="o">.</span><span class="n">primitive_polynomial_interpolator</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">P</span>
 <span class="go">y1*(x - x0)*(x - x2)/(x1 - x2) + (x - x0)*(x - x1)*(y1*(x1 - x0) + y2*(x2 - x1))/((x2 - x0)*(x2 - x1))</span>
@@ -150,41 +154,36 @@ for details).</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="#">PyWENO symbolic toolkit</a><ul>
-<li><a class="reference external" href="#interpolating-polynomials">Interpolating polynomials</a></li>
-<li><a class="reference external" href="#reconstruction-coefficients">Reconstruction coefficients</a></li>
-<li><a class="reference external" href="#optimal-weights">Optimal weights</a></li>
-<li><a class="reference external" href="#smoothness-coefficients">Smoothness coefficients</a></li>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">PyWENO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">WENO SciKit</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Symbolics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#interpolating-polynomials">Interpolating polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reconstruction-coefficients">Reconstruction coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimal-weights">Optimal weights</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#smoothness-coefficients">Smoothness coefficients</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">Code generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">What&#8217;s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Downloading and installing</a></li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="tutorial.html"
-                                  title="previous chapter">PyWENO Tutorial</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="opencl.html"
-                                  title="next chapter">PyWENO OpenCL toolkit</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/symbolic.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -196,20 +195,20 @@ for details).</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="opencl.html" title="PyWENO OpenCL toolkit"
+          <a href="codegen.html" title="Code generation"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="tutorial.html" title="WENO SciKit"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.11 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.5.
+        &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
