@@ -1,22 +1,19 @@
 WENO SciKit
 ===========
 
-Below are a few quick examples demonstrating how to use the WENO
-SciKit to compute WENO reconstructions.
+WENO reconstructions
+--------------------
 
+High-order WENO reconstructions for 1d arrays of cell-average
+quantities can be computed with the ``scikits.weno`` module.
 
-Basic usage
------------
-
-Given an array *f* with cell-averaged quantities, various WENO
-reconstructions can be computed with the WENO SciKit ``scikits.weno``.
 For example, to reconstruct *sin(x)* at the left edge of each cell to
 fifth order accuracy::
 
+  >>> import numpy as np
+  >>> import scikits.weno
   >>> x = np.linspace(0.0, 2*np.pi, 21)
   >>> f = np.cos(x[1:]) - np.cos(x[:-1])
-  >>>
-  >>> import scikits.weno
   >>> q = scikits.weno.reconstruct(f, 5, 'left')
 
 Please see the :doc:`reference documentation <reference>` for more
@@ -24,6 +21,15 @@ information.
 
 .. ::
    XXX: another example with a plot would be nice
+
+
+Non-uniform reconstruction coefficients
+---------------------------------------
+
+Reconstruction coefficients for arbitrary points within a non-uniform
+grid can be computed with the ``scikits.weno`` as well.
+
+For example, XXX
 
 
 Version information

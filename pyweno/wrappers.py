@@ -22,6 +22,7 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     self.wrappers = []
 
+
   def header(self, module=''):
     """Return C Python extension module header."""
 
@@ -51,12 +52,14 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     return ''
 
+
   def variable_join(self, l):
 
     if self.lang == 'fortran':
       return ', &\n'.join(l)
 
     return ', '.join(l)
+
 
   def set_smoothness(self, *args):
 
@@ -67,6 +70,7 @@ class WrapperGenerator(kernels.KernelGenerator):
     self.gsigma = {}
     for r in range(0, self.k):
       self.gsigma[r] = mstr(t['sigma'].format(r=r))
+
 
   def set_optimal_weights(self, *args):
 
@@ -89,11 +93,10 @@ class WrapperGenerator(kernels.KernelGenerator):
 
   def set_vars(self, dest, source):
     src = []
-    for k in source.keys():
+    for k in sorted(source.keys()):
       if isinstance(k, tuple) or isinstance(k, int):
         src.append(dest[k].assign(source[k]))
     return '\n'.join(src)
-
 
 
   #############################################################################
@@ -124,51 +127,42 @@ class WrapperGenerator(kernels.KernelGenerator):
 
   #############################################################################
                     
-#   def weights(self, function='weights', wrapper=False):
-#     """Weights function."""
+  def weights(self, function='weights', wrapper=False):
+    """Weights function."""
 
-#     t = templates[self.lang]
-#     k = self.k
-#     n = self.n
+    t = templates[self.lang]
+    k = self.k
+    n = self.n
 
-#     kernel = []
+    kernel = []
+    kernel.append(self.set_vars(self.sigma, self.gsigma))
+    kernel.append(super(WrapperGenerator, self).weights())
+    kernel.append(self.set_vars(self.gomega, self.omega))
 
-#     for l in range(n):
-#       if not self.kernel.split[l]:
-#         for r in range(0, k):
-#           kernel.append(t['set'].format(
-#             arg  = self.omega(r,l,0),
-#             local= self.kernel.omegas[(r,l)]))
+    variables = [ 'acc' ]
+    variables += self.sigma.values()
+    variables += self.omega.values()    
 
-#       else:
-#         for s, pm in enumerate(('p', 'm')):
-#           for r in range(0, k):
-#             kernel.append(t['set'].format(
-#               arg  = self.omega(r,l,s),
-#               local= self.kernel.omegas[(r,l,s)]))
+    src = t['weights'].format(
+      function = function, k=k, rmax=n-1, n=n,
+      variables= ', '.join(variables),
+      kernel   = '\n'.join(kernel))
 
-#     kernel = [ super(WrapperGenerator, self).weights() ]
+    if wrapper:
+      wrapper = ('py_' + function, function)
+      self.wrappers.append(wrapper)
+      src += t['weights_wrapper'].format(
+        wrapper=wrapper[0],
+        function=wrapper[1])
 
-#     src = t['weights'].format(
-#       function = function, k=k, rmax=n-1,
-#       variables= ', '.join(self.kernel.omegas.values()),
-#       kernel   = '\n'.join(kernel))
-
-#     if wrapper:
-#       wrapper = ('py_' + function, function)
-#       self.wrappers.append(wrapper)
-#       src += t['weights_wrapper'].format(
-#         wrapper=wrapper[0],
-#         function=wrapper[1])
-
-#     return src
+    return src
 
 
   #############################################################################
 
   def reconstruction(self, function='reconstruct',
-                     local_smoothness=False,
-                     local_weights=False,
+                     compute_smoothness=False,
+                     compute_weights=False,
                      wrapper=False):
     """Recontruction function."""
     
@@ -178,12 +172,10 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     kernel = []
 
-    if local_smoothness:
+    if compute_smoothness:
       kernel.append(super(WrapperGenerator, self).smoothness())
-    else:
-      kernel.append(self.set_vars(self.sigma, self.gsigma))
 
-    if local_weights:
+    if compute_weights:
       kernel.append(super(WrapperGenerator, self).weights())
     else:
       kernel.append(self.set_vars(self.omega, self.gomega))      
@@ -197,18 +189,19 @@ class WrapperGenerator(kernels.KernelGenerator):
     kernel.append(self.set_vars(self.gfs, self.fs))
 
     variables = []
-    if local_smoothness:
-      template  = t['reconstruct_local_weights_and_smoothness']
+    if compute_smoothness:
+      template  = t['reconstruct_compute_smoothness']
       variables += [ 'acc' ]
       variables += self.sigma.values()
       variables += self.omega.values()
-    elif local_weights:
-      template  = t['reconstruct_local_weights']
+    elif compute_weights:
+      template  = t['reconstruct_compute_weights']
       variables += [ 'acc' ]
-      variables += self.sigma.values()      
       variables += self.omega.values()
     else:
       template  = t['reconstruct']
+      variables += self.omega.values()
+      
 
     variables += self.fs.values()
     variables += self.fr.values()
@@ -222,10 +215,10 @@ class WrapperGenerator(kernels.KernelGenerator):
       wrapper = ('py_' + function, function)
       self.wrappers.append(wrapper)
 
-      if local_smoothness:
-        template = t['reconstruct_local_weights_and_smoothness_wrapper']
-      elif local_weights:
-        template = t['reconstruct_local_weights_wrapper']
+      if compute_smoothness:
+        template = t['reconstruct_compute_smoothness_wrapper']
+      elif compute_weights:
+        template = t['reconstruct_compute_weights_wrapper']
       else:
         template = t['reconstruct_wrapper']
 
@@ -284,7 +277,7 @@ templates = {
       }}
       ''',
 
-    'reconstruct_local_weights': '''
+    'reconstruct_compute_weights': '''
       void {function}(const double *restrict f, int n, int fsi,
                       const double *restrict sigma, int ssi, int ssr,
                       double *restrict fr, int frsi, int frsl)
@@ -297,7 +290,7 @@ templates = {
       }}
       ''',
 
-    'reconstruct_local_weights_and_smoothness': '''
+    'reconstruct_compute_smoothness': '''
       void {function}(const double *restrict f, int n, int fsi,
                       double *restrict fr, int frsi, int frsl)
       {{
@@ -500,7 +493,7 @@ templates = {
       }}
       ''',
 
-    'reconstruct_local_weights_wrapper': '''
+    'reconstruct_compute_weights_wrapper': '''
       PyObject *
       {wrapper}(PyObject *self, PyObject *args)
       {{
@@ -561,7 +554,7 @@ templates = {
       }}
       ''',
 
-    'reconstruct_wrapper_local_weights_and_smoothness': '''
+    'reconstruct_wrapper_compute_smoothness': '''
       PyObject *
       {wrapper}(PyObject *self, PyObject *args)
       {{
@@ -625,6 +618,7 @@ templates = {
                                __global const double *sigma, int ssi, int ssr)
       {{
         int i = get_global_id(0);
+        double {variables};
         {kernel}
       }}
       ''',
@@ -635,6 +629,7 @@ templates = {
                                __global const double *omega, int wsi, int wsl, int wsr)
       {{
         int i = get_global_id(0);
+        double {variables};
         {kernel}
       }}
       ''',  
@@ -646,10 +641,32 @@ templates = {
                                __global double *fr, int frsi, int frsl)
       {{
         int i = get_global_id(0);
-        double {frs};
+        double {variables};
         {kernel}
       }}
       ''',
+
+    'reconstruct_compute_weights': '''
+      __kernel void {function}(__global const double *f, int fsi,
+                               __global const double *sigma, int ssi, int ssr,
+                               __global double *fr, int frsi, int frsl)
+      {{
+        int i = get_global_id(0);
+        double {variables};
+        {kernel}
+      }}
+      ''',
+
+    'reconstruct_compute_smoothness': '''
+      __kernel void {function}(__global const double *f, int fsi,
+                               __global double *fr, int frsi, int frsl)
+      {{
+        int i = get_global_id(0);
+        double {variables};
+        {kernel}
+      }}
+      ''',
+
 
     },
   
@@ -711,7 +728,7 @@ templates = {
        end subroutine
        ''',
     
-    'reconstruct_local_weights': '''
+    'reconstruct_compute_weights': '''
        subroutine {function}(f, n, sigma, fr)
 
          implicit none
@@ -729,6 +746,24 @@ templates = {
        end subroutine
        ''',
     
+    'reconstruct_compute_smoothness': '''
+       subroutine {function}(f, n, fr)
+
+         implicit none
+            
+         real(kind=8), intent(in) :: f(n)
+         integer, intent(in) :: n
+         real(kind=8), intent(out) :: fr(n,0:{n}-1)              
+         integer :: i
+         real(kind=8) :: {variables}
+
+         do i={k}, n-{k}
+           {kernel}
+         end do
+       end subroutine
+       ''',
+    
+
     'header': '''
     module {module}
     contains

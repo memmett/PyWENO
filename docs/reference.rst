@@ -4,7 +4,7 @@ Reference
 WENO SciKit
 -----------
 
-.. autofunction:: scikits.weno.reconstruction
+.. autofunction:: scikits.weno.reconstruct
 
 .. autofunction:: scikits.weno.coeffs
 

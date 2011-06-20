@@ -7,7 +7,6 @@ scikits.weno.reconstruct.
 
 import pyweno.points
 import pyweno.symbolic
-import pyweno.kernels
 import pyweno.wrappers
 
 
@@ -15,17 +14,16 @@ import pyweno.wrappers
 
 wrappers = []
 
-for k in range(3, 10):
+for k in range(3, 5):
 
   print 'k:', k
 
   ## smoothness
   
-  kernel  = pyweno.kernels.KernelGenerator('c')
-  wrapper = pyweno.wrappers.WrapperGenerator(kernel)
+  wrapper = pyweno.wrappers.WrapperGenerator('c')
 
   beta = pyweno.symbolic.jiang_shu_smoothness_coefficients(k)
-  kernel.set_smoothness(beta)
+  wrapper.set_smoothness(beta)
 
   base = 'smoothness%03d' % k
   with open('weno_' + base + '.c', 'w') as f:
@@ -39,7 +37,7 @@ for k in range(3, 10):
 
   for pts in [ 'left',
                'right',
-               'middle',
+#               'middle',
                'gauss_legendre',
                'gauss_lobatto',
                'gauss_radau' ]:
@@ -62,9 +60,8 @@ for k in range(3, 10):
 
     for n in N:
 
-      kernel  = pyweno.kernels.KernelGenerator('c')
-      wrapper = pyweno.wrappers.WrapperGenerator(kernel)
-      kernel.set_smoothness(beta)    
+      wrapper = pyweno.wrappers.WrapperGenerator('c')
+      wrapper.set_smoothness(beta)    
       
       xi = func(n)
 
@@ -77,14 +74,15 @@ for k in range(3, 10):
         print '      - skipped'
         continue
 
-      kernel.set_optimal_weights(varpi, split)
-      kernel.set_reconstruction_coefficients(coeffs)
+      wrapper.set_optimal_weights(varpi, split)
+      wrapper.set_reconstruction_coefficients(coeffs)
 
       base = pts + '%03d%03d' % (k, n)
       with open('weno_' + base + '.c', 'w') as f:
         f.write('#include <Python.h>\n')
         f.write('#include <numpy/ndarrayobject.h>\n')
-        f.write(wrapper.reconstruction(base, local_weights=True, wrapper=True))
+        f.write(wrapper.weights('weights_' + base, wrapper=True))
+        f.write(wrapper.reconstruction('reconstruct_' + base, wrapper=True))
 
       wrappers += wrapper.wrappers
 
@@ -92,8 +90,7 @@ for k in range(3, 10):
 #### python extension module
 
 # create new wrapper, and set 'wrappers' manually
-kernel  = pyweno.kernels.KernelGenerator('c')
-wrapper = pyweno.wrappers.WrapperGenerator(kernel)
+wrapper = pyweno.wrappers.WrapperGenerator('c')
 
 wrapper.wrappers = wrappers
 with open('cweno.c', 'w') as f:
@@ -107,5 +104,3 @@ with open('cweno.c', 'w') as f:
 
   # python module definition
   f.write(wrapper.footer())
-
-      

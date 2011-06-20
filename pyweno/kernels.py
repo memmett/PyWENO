@@ -268,7 +268,6 @@ class KernelGenerator(object):
         for s, pm in enumerate(('p', 'm')):
           kernel.append(acc.assign('0.0'))
 
-          # XXX: this varpi/scale stuff can probably be tightened up
           for r in range(0, k):
             kernel.append(omega[l,r,s].assign(
               varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**2))

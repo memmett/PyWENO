@@ -228,12 +228,12 @@ def jiang_shu_smoothness_coefficients(k):
   beta = { 'k': k }
   for r in range(0, k):
     p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1],
-                        fs[i-r:i-r+k]).diff(x)
+                                          fs[i-r:i-r+k]).diff(x)
     # sum of L^2 norms of derivatives
     s = 0
     for j in range(1, k):
       pp = (sympy.diff(p, xi, j))**2
-      pp = pp.as_poly(x)
+      #pp = pp.as_poly(x)
       pp = pp.integrate(x)
       pp = (xs[i+1] - xs[i])**(2*j-1) * (
         pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
