@@ -20,7 +20,7 @@ Symbolics
 
 .. autofunction:: pyweno.symbolic.optimal_weights
 
-.. autofunctoin:: pyweno.symbolic.jiang_shu_smoothness_coefficients
+.. autofunction:: pyweno.symbolic.jiang_shu_smoothness_coefficients
 
 
 Code generation

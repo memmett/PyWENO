@@ -94,7 +94,6 @@ setup(
         'Programming Language :: Python ',
         'Programming Language :: C',
         'Programming Language :: Fortran',
-        'Programming Language :: OpenCL',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         ],
