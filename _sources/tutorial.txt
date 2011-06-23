@@ -1,68 +1,54 @@
-PyWENO Tutorial
-===============
+WENO SciKit
+===========
 
-Below are a few quick examples demonstrating how PyWENO is used.  More
-detailed examples can be found on the :doc:`examples <examples>` page.
+WENO reconstructions
+--------------------
 
+High-order WENO reconstructions for 1d arrays of cell-average
+quantities can be computed with the ``scikits.weno`` module.
 
-Basic usage
------------
+For example, to reconstruct *sin(x)* at the left edge of each cell to
+fifth order accuracy::
 
-Briefly, to use PyWENO to reconstruct a function given its cell
-averages, we first define the grid::
+  >>> import numpy as np
+  >>> import scikits.weno
+  >>> x = np.linspace(0.0, 2*np.pi, 21)
+  >>> f = (np.cos(x[1:]) - np.cos(x[:-1])) / (x[1] - x[0])
+  >>> q = scikits.weno.reconstruct(f, 5, 'left')
 
-  >>> x = np.linspace(-10.0, 10.0, 21)
-  >>> grid = pyweno.grid.Grid(boundaries=x)
+Please see the :doc:`reference documentation <reference>` for more
+information.
 
-Next, we define a WENO reconstructor and tell it to pre-compute
-everything needed to reconstruct a function at the left side of each
-cell::
+Smooth reconstruction
+^^^^^^^^^^^^^^^^^^^^^
 
-  >>> weno5 = pyweno.weno.WENO(grid=grid, order=3)
-  >>> weno5.precompute_reconstruction('left')
+Here we reconstruct *sin(x)* at the left and right edges of each cell
+to fifth order accuracy and plot the results:
 
-Finally, given the cell averages ``f_avg`` of an unkown function *f*,
-we can reconstruct *f* at the left side of each cell::
+.. image:: ../examples/smooth.png
 
-  >>> f_left = np.zeros(grid.size)
-  >>> weno5.smoothness(f_avg)
-  >>> weno5.reconstruct(f_avg, 'left', f_left)
-
-The reconstructed values are stored in ``f_left``, which should be a
-NumPy array.  **Please note** that the reconstructed values are not
-returned in a new NumPy array, but are destructively stored in
-``f_left``.
+The code to generate the above is in :download:`smooth.py <../examples/smooth.py>`.
 
 
-More reconstructions and caching
---------------------------------
+Discontinuous reconstruction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Here we use PyWENO to reconstruct a function at the left and right
-edges of each cell, and take advantage of PyWENOs caching features.
+Here we reconstruct a discontinuous function (*sin(x)* for *x<0*,
+*cos(x)* for *x>0*) at the left and right edges of each cell to fifth
+order accuracy and plot the results:
 
-If the cache file doesn't exist we define the grid, pre-compute
-everything we need to reconstruct, and cache the results for future
-runs::
+.. image:: ../examples/discontinuous.png
 
-  >>> k = 3
-  >>> cache = 'grid_k%d.mat' % (k)
-  >>> if not os.access(cache, os.F_OK):
-  >>>     grid = pyweno.grid.Grid(x)
-  >>>     weno = pyweno.weno.WENO(grid=grid, order=k)
-  >>>
-  >>>     weno.precompute_reconstruction('left')
-  >>>     weno.precompute_reconstruction('right')
-  >>>     weno.cache(cache)
+The code to generate the above is in :download:`discontinuous.py <../examples/discontinuous.py>`.
 
-Next, we load from the cache::
 
-  >>> weno = pyweno.weno.WENO(order=k, cache=cache)
+Non-uniform reconstruction coefficients
+---------------------------------------
 
-Finally, we compute the smoothness of ``f_avg`` and reconstruct::
+Reconstruction coefficients for arbitrary points within a non-uniform
+grid can be computed with the ``scikits.weno`` as well.
 
-  >>> weno.smoothness(f_avg)
-  >>> weno.reconstrct(f_avg, 'left', f_left)
-  >>> weno.reconstrct(f_avg, 'right', f_right)
+For example, XXX
 
 
 Version information

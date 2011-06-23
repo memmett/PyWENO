@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Reference &mdash; PyWENO v0.5.7 documentation</title>
+    <title>Reference &mdash; PyWENO v0.7.2 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.7',
+        VERSION:     '0.7.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,9 +19,10 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.7 documentation" href="index.html" />
-    <link rel="next" title="PyWENO Examples" href="examples.html" />
-    <link rel="prev" title="PyWENO Tutorial" href="tutorial.html" /> 
+    <script type="text/javascript" src="_static/http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.7.2 documentation" href="index.html" />
+    <link rel="next" title="What’s new" href="whatsnew.html" />
+    <link rel="prev" title="Code generation" href="codegen.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,12 +35,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="PyWENO Examples"
+          <a href="whatsnew.html" title="What’s new"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="codegen.html" title="Code generation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,435 +49,268 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pyweno-reference">
-<h1>PyWENO Reference<a class="headerlink" href="#pyweno-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="weno-class">
-<h2>WENO class<a class="headerlink" href="#weno-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pyweno.weno.WENO">
-<em class="property">
-class </em><tt class="descclassname">pyweno.weno.</tt><tt class="descname">WENO</tt><big>(</big><em>order=3</em>, <em>cache=None</em>, <em>format='mat'</em>, <em>smoothness='jiang_shu'</em>, <em>grid=None</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO" title="Permalink to this definition">¶</a></dt>
-<dd><p>Weighted Essentially Non-Oscillatory reconstruction class.</p>
-<p><strong>Basic usage</strong></p>
-<p>From scratch:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>From a cache:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Pre-compute reconstruction coefficients and optimal weights at the
-left and right boundaries:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Given the cell averages <tt class="docutils literal"><span class="pre">f_avg</span></tt> of an unkown function <em>f</em>,
-reconstruct <em>f</em> at the left side of each cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Cache to a MATLAB file (through SciPy):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Cache to an HDF5 file (through H5PY):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;h5py&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Instance variables</strong></p>
-<ul class="simple">
-<li><em>grid</em>  - spatial grid</li>
-<li><em>order</em> - order of stencil approximations</li>
-<li><em>beta</em>  - smoothness indicator coefficients</li>
-<li><em>c</em>     - dictionary of reconstruction coefficients</li>
-<li><em>w</em>     - dictionary of optimal weights</li>
-</ul>
-<p><strong>Keyword arguments (without cache)</strong></p>
-<ul class="simple">
-<li><em>grid</em>       - spatial grid (<tt class="docutils literal"><span class="pre">pyweno.grid.Grid</span></tt>)</li>
-<li><em>order</em>      - order of approximation</li>
-<li><em>smoothness</em> - type of smoothness indicator to use</li>
-</ul>
-<p><strong>Keyword arguments (with cache)</strong></p>
-<ul class="simple">
-<li><em>cache</em>  - cache file</li>
-<li><em>order</em>  - order of stencil approximation</li>
-<li><em>format</em> - format of cache file (default is <tt class="docutils literal"><span class="pre">'mat'</span></tt>)</li>
-</ul>
-<p><strong>Methods</strong></p>
-<dl class="method">
-<dt id="pyweno.weno.WENO.cache">
-<tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store grid, all reconstruction coefficients, all optimal
-weights, and smoothness indicator coefficients in the cache
-file <em>output</em>.</p>
-<p>Supported formats are:</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'mat'</span></tt> - MATLAB compatible matrix file (through SciPy)</li>
-<li><tt class="docutils literal"><span class="pre">'h5py'</span></tt> - HDF5 file (through H5PY)</li>
-</ul>
-<p>The reconstruction coefficients, optimal weights, and
-smoothness indicator coefficients are <em>appended</em> to the
-cache file.  That is, they are overwritten if they
-previously existed (for <em>k</em>), but all other contents are
-preserved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.weno.WENO.precompute_reconstruction">
-<tt class="descname">precompute_reconstruction</tt><big>(</big><em>key</em>, <em>xi=None</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.precompute_reconstruction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Precompute reconstruction coefficients and optimal weights.</p>
-<p><strong>Arguments:</strong></p>
-<ul class="simple">
-<li><em>key</em> - see pyweno.stencil.reconstruction_coeffs</li>
-<li><em>xi</em> - see pyweno.stencil.reconstruction_coeffs</li>
-</ul>
-<p>In this function, s is the biasing parameter.  If s &gt; 0 the
-reconstruction will be left-biased and cells with r &lt; s
-will be ignored.  If s &lt; 0 the reconstruction will be
-right-biased and cells with r &gt; k - <a href="#id1"><span class="problematic" id="id2">|s|</span></a> - 1 will be
-ignored.</p>
-<p>Intuitively: if s &gt; 0, then s is also the number of cells
-to exlude from the right; if s &lt; 0, then <a href="#id3"><span class="problematic" id="id4">|s|</span></a> is also the
-number of cells to exlude from the left.</p>
-<p>The biasing parameter s takes values from -(k-1) to (k-1).
-There are 2k-1 possible values of s.  An index of 0 for s
-corresponds to a values of -(k-1) for s (ie, s_value =
-s_index - (k-1)).</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.weno.WENO.reconstruct">
-<tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>key</em>, <em>qs</em>, <em>imin=0</em>, <em>imax=-1</em>, <em>s=0</em>, <em>compute_weights=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.reconstruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct <em>q</em> at the points specified by <em>key</em> and store
-result in <em>qs</em>.</p>
-<p><strong>Arguments:</strong></p>
-<ul class="simple">
-<li><em>q</em> - cell averages of function to reconstruct</li>
-<li><em>key</em> -</li>
-<li><em>qs</em> - store results here</li>
-<li><em>s</em> - biasing (defaults to no biasing)</li>
-<li><em>imin</em> - left-most cell to reconstruct within</li>
-<li><em>imax</em> - right-most cell to reconstruct within</li>
-<li><em>compute_weights</em> -</li>
-</ul>
-<p>Use the weights corresponding to the key <em>weights</em>.  If
-<em>compute_weights</em> is True, compute the weights associated
-with they key <em>key</em> and use them.  Otherwise, we assume
-that the weights have been computed explicity already.</p>
-<p>NOTE: if you are reconstructing near a domain boundary, and
-you have constructed your own weights (ie,
-compute_weights=False), then the weights that you have
-computed should be appropriately biased near the boundary.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.weno.WENO.smoothness">
-<tt class="descname">smoothness</tt><big>(</big><em>q</em>, <em>imin=0</em>, <em>imax=-1</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.smoothness" title="Permalink to this definition">¶</a></dt>
-<dd>Compute smoothness indicators of <em>q</em>.</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.weno.WENO.weights">
-<tt class="descname">weights</tt><big>(</big><em>key</em>, <em>imin=0</em>, <em>imax=-1</em>, <em>s=0</em><big>)</big><a class="headerlink" href="#pyweno.weno.WENO.weights" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute weights associated with <em>key</em> using the last set of
-smoothness indicators computed.</p>
-<p><strong>Arguments</strong></p>
-<ul class="simple">
-<li><em>key</em> -</li>
-<li><em>imin</em> - minimum cell index</li>
-<li><em>imax</em> - maximum cell index</li>
-<li><em>s</em> - biasing</li>
-</ul>
-<p>The default values of <em>imin</em> and <em>imax</em> are taken to be the
-full domain excluding cells near the edges.</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="grid-class">
-<h2>Grid class<a class="headerlink" href="#grid-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pyweno.grid.Grid">
-<em class="property">
-class </em><tt class="descclassname">pyweno.grid.</tt><tt class="descname">Grid</tt><big>(</big><em>boundaries=None</em>, <em>cache=None</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.grid.Grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Non-uniform spatial grid (discretisation).</p>
-<p><strong>Basic usage</strong></p>
-<p>From scratch:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>From a cache:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Averaging a function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">**</span><span class="mf">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f_avg</span> <span class="o">=</span> <span class="n">grid</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Cache to a MATLAB file (through SciPy):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Cache to an HDF5 file (through H5PY):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;h5py&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Instance variables</strong></p>
-<ul class="simple">
-<li><em>size</em> - number of cells (also <em>N</em>)</li>
-<li><em>x</em>    - grid boundaries</li>
-</ul>
-<p>The constructor precomputes the cell centres and sizes from the
-cell boundaries.</p>
-<p><strong>Keyword arguments (without cache)</strong></p>
-<ul class="simple">
-<li><em>boundaries</em> - list of grid cell boundaries, eg,
-<tt class="docutils literal"><span class="pre">numpy.linspace(-1.0,</span> <span class="pre">1.0,</span> <span class="pre">20+1)</span></tt></li>
-</ul>
-<p>The cell boundaries do <strong>not</strong> have to be uniform.</p>
-<p><strong>Keyword arguments (with cache)</strong></p>
-<ul class="simple">
-<li><em>cache</em>  - cache filename</li>
-<li><em>format</em> - cache format (default is &#8216;mat&#8217;)</li>
-</ul>
-<p><strong>Methods</strong></p>
-<dl class="method">
-<dt id="pyweno.grid.Grid.average">
-<tt class="descname">average</tt><big>(</big><em>f</em><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.average" title="Permalink to this definition">¶</a></dt>
-<dd>Return cell averages of <em>f</em>.</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.grid.Grid.boundaries">
-<tt class="descname">boundaries</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.boundaries" title="Permalink to this definition">¶</a></dt>
-<dd>Return array of <em>N+1</em> cell boundaries.</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.grid.Grid.cache">
-<tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format='mat'</em><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store cell boundaries in the cache file <em>output</em>.</p>
-<p>Supported formats are:</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'mat'</span></tt> - MATLAB compatible matrix file (through SciPy)</li>
-<li><tt class="docutils literal"><span class="pre">'h5py'</span></tt> - HDF5 file (through H5PY)</li>
-</ul>
-<p>The cell boundaries are <em>appended</em> to the cache file.  That
-is, they are overwritten if they previously existed, but
-all other contents are preserved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.grid.Grid.centers">
-<tt class="descname">centers</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.centers" title="Permalink to this definition">¶</a></dt>
-<dd>Return array of <em>N</em> cell centers.</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.grid.Grid.centres">
-<tt class="descname">centres</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.centres" title="Permalink to this definition">¶</a></dt>
-<dd>Return array of <em>N</em> cell centres.</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.grid.Grid.sizes">
-<tt class="descname">sizes</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.grid.Grid.sizes" title="Permalink to this definition">¶</a></dt>
-<dd>Return array of <em>N</em> cell sizes.</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="stencil-class">
-<h2>Stencil class<a class="headerlink" href="#stencil-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pyweno.stencil.Stencil">
-<em class="property">
-class </em><tt class="descclassname">pyweno.stencil.</tt><tt class="descname">Stencil</tt><big>(</big><em>grid=None</em>, <em>order=None</em>, <em>shift=None</em>, <em>cache=None</em>, <em>format=None</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil" title="Permalink to this definition">¶</a></dt>
-<dd><p>Polynomial approximation stencil.</p>
-<p>The Stencil class is usually used the WENO class, but can be used
-by itself too.</p>
-<p>The cell averages <em>f_j</em> of a function <em>f</em> can be used to
-approximate the value of <em>f</em> (and its derivatives) according to</p>
-<div class="math">
-<p><img src="_images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
-</div></p><p>where the coefficients <em>c_j</em> are the <em>reconstruction
-coefficients</em>.  The Stencil class is used to precompute various
-sets of reconstruction coefficients and cache them.</p>
-<p><strong>Basic usage</strong></p>
-<p>From scratch:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">stencil</span><span class="o">.</span><span class="n">Stencil</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>From a cache:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">stencil</span><span class="o">.</span><span class="n">Stencil</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">r</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Pre-compute reconstruction coefficients at the left and right boundaries:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">reconstruction_coeffs</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">reconstruction_coeffs</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Reconstruct a function at the left boundaries:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">,</span><span class="mf">0</span><span class="p">,:]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">v_left</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v_avg</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="n">r</span><span class="p">:</span><span class="n">i</span><span class="o">-</span><span class="n">r</span><span class="o">+</span><span class="n">k</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Cache to a MATLAB file (through SciPy):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.mat&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Cache to an HDF5 file (through H5PY):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>or (more explicitly):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="s">&#39;mycache.h5&#39;</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;h5py&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p><strong>Instance variables</strong></p>
-<ul class="simple">
-<li><em>grid</em>  - spatial grid (<tt class="docutils literal"><span class="pre">pyweno.grid.Grid</span></tt>)</li>
-<li><em>order</em> - order of approximation (also <em>k</em>)</li>
-<li><em>shift</em> - left shift (also <em>r</em>)</li>
-<li><em>c</em>     - dictionary of reconstruction coefficients</li>
-</ul>
-<p>Each entry of the <em>c</em> dictionary is indexed as:</p>
-<div class="highlight-python"><pre>* c[j]: uniform grid, one reconstruction point per cell
-* c[l,j] - uniform grid, multiple reconstruction points per cell
-* c[i,j] - non-uniform grid, one reconstruction point per cell
-* c[i,l,j] - non-uniform grid, multiple reconstruction points per cell</pre>
-</div>
-<p><strong>Keyword arguments (without cache)</strong></p>
-<ul class="simple">
-<li><em>order</em> - order of approximation</li>
-<li><em>shift</em> - left shift of the stencil or <tt class="xref docutils literal"><span class="pre">None</span></tt></li>
-<li><em>grid</em>  - spatial grid</li>
-</ul>
-<p>The default shift (computed when <em>shift</em> is <tt class="xref docutils literal"><span class="pre">None</span></tt>) is a
-centered difference shift (ie, <tt class="docutils literal"><span class="pre">shift</span> <span class="pre">=</span> <span class="pre">order/2</span> <span class="pre">+</span> <span class="pre">order%2</span></tt>).</p>
-<p>The left shift <em>shift</em> can take values from 0 to <em>order</em>-1.</p>
-<p><strong>Keyword arguments (with cache)</strong></p>
-<ul class="simple">
-<li><em>order</em>  - order of approximation</li>
-<li><em>shift</em>  - left shift of the stencil or <tt class="xref docutils literal"><span class="pre">None</span></tt></li>
-<li><em>cache</em>  - cache filename</li>
-<li><em>format</em> - cache format (default is <tt class="docutils literal"><span class="pre">'mat'</span></tt>)</li>
-</ul>
-<p><strong>Methods</strong></p>
-<dl class="method">
-<dt id="pyweno.stencil.Stencil.cache">
-<tt class="descname">cache</tt><big>(</big><em>output</em>, <em>format=None</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil.cache" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store all reconstruction coefficients in the cache file <em>output</em>.</p>
-<p>Supported formats are:</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'mat'</span></tt> - MATLAB compatible matrix file (through SciPy)</li>
-<li><tt class="docutils literal"><span class="pre">'h5py'</span></tt> - HDF5 file (through H5PY)</li>
-</ul>
-<p>The reconstruction coefficients are <em>appended</em> to the cache
-file.  That is, they are overwritten if they previously
-existed (for <em>k</em> and <em>r</em>), but all other contents are
-preserved.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyweno.stencil.Stencil.reconstruction_coeffs">
-<tt class="descname">reconstruction_coeffs</tt><big>(</big><em>key</em>, <em>xi=None</em><big>)</big><a class="headerlink" href="#pyweno.stencil.Stencil.reconstruction_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pre-compute reconstruction coefficients.</p>
-<p>The reconstruction coeffs <em>c_j</em> are computed and stored in
-the instance dictionary <em>c</em>.</p>
-<p><strong>Arguments:</strong></p>
-<ul class="simple">
-<li><em>key</em> - key used to store this set of reconstruction coeffs</li>
-<li><em>xi</em> - callable which returns an array of points within
-each cell at which to compute the reconstruction
-coefficients (called as <tt class="docutils literal"><span class="pre">xi(i)</span></tt>)</li>
-</ul>
-<p>Preceeding the key with <tt class="docutils literal"><span class="pre">d|</span></tt> will compute the
-reconstruction coefficients to approximate the first
-derivative at the reconstruction points.</p>
-<p>There are several predefined keys:</p>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'left'</span></tt> - the left edge of each cell</li>
-<li><tt class="docutils literal"><span class="pre">'right'</span></tt> - the right edge of each cell</li>
-<li><tt class="docutils literal"><span class="pre">'gauss_quad3'</span></tt> - the Gaussian 3-point quadrature points</li>
-</ul>
-<p>For example, to compute the reconstruction coeffs used to
-reconstruct the derivative of a function f at the left edge
-of each grid cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">reconstruction_ceoffs</span><span class="p">(</span><span class="s">&#39;d|left&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&#39;d|left&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>As another example, to compute the reconstruction coeffs
-used to reconstruct the value of a function at some other
-point(s) within each cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">xi_mypts</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">grid</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mf">1</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stencil</span><span class="o">.</span><span class="n">reconstruction_ceoffs</span><span class="p">(</span><span class="s">&#39;mypts&#39;</span><span class="p">,</span> <span class="n">xi_mypts</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">stencil</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="s">&#39;mypts&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<div class="section" id="fast-stencil-routines">
-<h3>Fast stencil routines<a class="headerlink" href="#fast-stencil-routines" title="Permalink to this headline">¶</a></h3>
+  <div class="section" id="reference">
+<h1>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="weno-scikit">
+<h2>WENO SciKit<a class="headerlink" href="#weno-scikit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="pyweno.stencil.reconstruction_coeffs">
-<tt class="descclassname">pyweno.stencil.</tt><tt class="descname">reconstruction_coeffs</tt><big>(</big><em>xi</em>, <em>i</em>, <em>r</em>, <em>k</em>, <em>x</em>, <em>c</em>, <em>d=0</em><big>)</big><a class="headerlink" href="#pyweno.stencil.reconstruction_coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the reconstruction coefficients <em>c_j</em> and store the
-results in <em>c</em> (indexed as <tt class="docutils literal"><span class="pre">c[j]</span></tt>).</p>
+<dt id="scikits.weno.reconstruct">
+<tt class="descclassname">scikits.weno.</tt><tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>k</em>, <em>points</em>, <em>n=None</em>, <em>smoothness=None</em>, <em>weights=None</em>, <em>return_smoothness=False</em>, <em>return_weights=False</em>, <em>squeeze=True</em><big>)</big><a class="headerlink" href="#scikits.weno.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform WENO reconstruction of q.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>q</em> &#8211; cell-averaged unknown to reconstruct</li>
+<li><em>k</em> &#8211; order of reconstruction (odd values from 5 to 11)</li>
+<li><em>points</em> &#8211; reconstruction points (see below)</li>
+<li><em>n</em> &#8211; number of reconstruction points (see below, optional)</li>
+<li><em>smoothness</em> &#8211; use smoothness indicators <em>smoothness</em> (optional)</li>
+<li><em>weights</em> &#8211; use non-linear weights <em>weights</em> (optional)</li>
+<li><em>return_smoothness</em> &#8211; return smoothness indicators? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
+<li><em>return_weights</em> &#8211; return weights? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
+<li><em>squeeze</em> &#8211; squeeze the results? (defaults to <tt class="xref docutils literal"><span class="pre">True</span></tt>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Supported reconstruction points <em>points</em> are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">'left'</span></tt> - left edge of each cell</li>
+<li><tt class="docutils literal"><span class="pre">'right'</span></tt> - right edge of each cell</li>
+<li><tt class="docutils literal"><span class="pre">'middle'</span></tt> - the middle of each cell</li>
+<li><tt class="docutils literal"><span class="pre">'+/-'</span></tt> - returns two reconstructions per cell, both at the left
+edge of each cell; the first is considered as a limit from the
+left (-), the second is considered as a limit from the right (+).</li>
+<li><tt class="docutils literal"><span class="pre">'gauss'</span></tt> or <tt class="docutils literal"><span class="pre">'gauss_legendre'</span></tt> - <em>n</em> point Gauss-Legendre
+quadrature points</li>
+<li><tt class="docutils literal"><span class="pre">'gauss_lobatto'</span></tt> - <em>n</em> point Gauss-Lobatto quadrature points</li>
+<li><tt class="docutils literal"><span class="pre">'gauss_radau'</span></tt> - <em>n</em> point Gauss-Radau quadrature points</li>
+</ul>
+<p>This function wraps several complied WENO kernels which were
+generated by PyWENO.  If you need WENO reconstructions at points not
+supported by this wrapper, please checkout <a class="reference external" href="http://memmett.github.com/PyWENO/">PyWENO</a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scikits.weno.coeffs">
+<tt class="descclassname">scikits.weno.</tt><tt class="descname">coeffs</tt><big>(</big><em>xi</em>, <em>i</em>, <em>r</em>, <em>k</em>, <em>x</em>, <em>c</em><big>)</big><a class="headerlink" href="#scikits.weno.coeffs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numerically compute the reconstruction coefficients.</p>
 <p>The reconstruction coefficients <em>c_j</em> are used to approximate the
-<em>d</em>&#8216;th derivative of a function <em>f</em> given its cell averages <em>f_j</em>
-according to</p>
+function <em>f</em> given its cell averages <em>f_j</em> according to</p>
 <div class="math">
-<p><img src="_images/math/9b17efd6f3f44b9ada4440dd4a36f1fffbd7b876.png" alt="f^{(d)}(\xi) \approx \sum_{j=0}^k c_j\, \overline{f}_{i-r+j}." />
-</div></p><p>This function wraps a fast C implementation.</p>
-<p>Arguments:</p>
-<ul class="simple">
-<li><em>xi</em> - reconstruction point</li>
-<li><em>i</em> - cell index (ie, index of the cell that containts <em>xi</em>)</li>
-<li><em>r</em> - left shift</li>
-<li><em>k</em> - order</li>
-<li><em>d</em> - order of derivative (defaults to 0)</li>
-<li><em>x</em> - cell boundaries</li>
-<li><em>c</em> - computed reconstruction coefficients (returned)</li>
+f(\xi) \approx \sum_{j=0}^{k-1} c_j\, \overline{f}_{i-r+j}.</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><em>xi</em> &#8211; reconstruction point</li>
+<li><em>i</em> &#8211; cell index (ie, index of the cell that containts <em>xi</em>)</li>
+<li><em>r</em> &#8211; left shift</li>
+<li><em>k</em> &#8211; order</li>
+<li><em>x</em> &#8211; cell boundaries</li>
 </ul>
-<p>Return: the reconstruction coefficients are destructively stored
-in <em>c</em>.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
-</div>
-<div class="section" id="module-pyweno.smoothness">
-<h2>Smoothness indicators<a class="headerlink" href="#module-pyweno.smoothness" title="Permalink to this headline">¶</a></h2>
-<p>PyWENO smoothness indicators.</p>
+<div class="section" id="symbolics">
+<h2>Symbolics<a class="headerlink" href="#symbolics" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="pyweno.smoothness.beta">
-<tt class="descclassname">pyweno.smoothness.</tt><tt class="descname">beta</tt><big>(</big><em>smoothness</em>, <em>grid</em>, <em>k</em>, <em>beta</em><big>)</big><a class="headerlink" href="#pyweno.smoothness.beta" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute smoothness indicator coefficients and store result in
-<em>beta</em>.</p>
-<p>This function is usually called by the WENO class.</p>
-<p>In general, the smoothness indicator <em>sigma</em> for the cell <em>i</em>
-and stencil with left shift <em>r</em> is of the form</p>
-<div class="math">
-<p><img src="_images/math/a61c300ca3b4bdba287e83cf781c8271ddcc548b.png" alt="\sigma_r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1} \beta_{i,r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}." />
-</div></p><p>There is currently only one smoothness indicator type
-implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></tt>).</p>
-<p><strong>Arguments</strong></p>
-<ul class="simple">
-<li><em>smoothness</em> - smoothness indicator type</li>
-<li><em>grid</em> - grid (can be unstructured)</li>
-<li><em>k</em> - order</li>
-</ul>
+<dt id="pyweno.symbolic.polynomial_interpolator">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a symbolic polynomial that interpolates the points (x_i, y_i).</p>
+<p>The returned polynomial is a function of the SymPy variable x.</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="pyweno.symbolic.primitive_polynomial_interpolator">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">primitive_polynomial_interpolator</tt><big>(</big><em>x</em>, <em>y</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.primitive_polynomial_interpolator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a symbolic polynomial that approximates the primitive
+function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).</p>
+<p>The returned polynomial is a function of the SymPy variable &#8216;x&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.symbolic.reconstruction_coefficients">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">reconstruction_coefficients</tt><big>(</big><em>k</em>, <em>xi</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the reconstruction coefficients for a 2k-1 order WENO
+scheme corresponding to the reconstruction points in <em>xi</em>.</p>
+<p>The reconstruction points in <em>xi</em> should in <span class="math">[-1, 1]</span>.  This
+interval is then mapped to the cell <span class="math">[x_{i-1/2}, x_{i+1/2}]</span>.</p>
+<p>The returned coefficients are stored as SymPy variables in an
+ndarray indexed according to <tt class="docutils literal"><span class="pre">c[l,r,j]</span></tt>.  That is</p>
+<div class="math">
+f^r(\xi_l) \approx \sum_j c^{l,r}_j \, f_{i-r+j}</div>
+<p>for each <span class="math">l</span> from 0 to <tt class="docutils literal"><span class="pre">len(xi)</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.symbolic.optimal_weights">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">optimal_weights</tt><big>(</big><em>k</em>, <em>xi</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.optimal_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the optimal weights for a 2k-1 order WENO scheme
+corresponding to the reconstruction points in <em>xi</em>.</p>
+<p>The coefficients are stored as SymPy variables in an ndarray
+indexed according to <tt class="docutils literal"><span class="pre">w[l,r]</span></tt>.  That is</p>
+<div class="math">
+f(\xi^l) \approx \sum_r w^r f^r</div>
+<p>for each <span class="math">l</span> from 0 to <tt class="docutils literal"><span class="pre">len(xi)</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.symbolic.jiang_shu_smoothness_coefficients">
+<tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">jiang_shu_smoothness_coefficients</tt><big>(</big><em>k</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.jiang_shu_smoothness_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
+WENO scheme.</p>
+<p>The coefficients are stored as SymPy variables in an array
+indexed according to <tt class="docutils literal"><span class="pre">beta[r,m,n]</span></tt>.  That is</p>
+<div class="math">
+\sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
+  \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.</div>
+</dd></dl>
+
+</div>
+<div class="section" id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-pyweno.kernels">
+<h3>Kernels<a class="headerlink" href="#module-pyweno.kernels" title="Permalink to this headline">¶</a></h3>
+<p>PyWENO code generation tool kit (kernels).</p>
+<dl class="class">
+<dt id="pyweno.kernels.KernelGenerator">
+<em class="property">
+class </em><tt class="descclassname">pyweno.kernels.</tt><tt class="descname">KernelGenerator</tt><big>(</big><em>lang</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate kernels for WENO reconstructions.</p>
+<p>Each method generates a &#8216;kernel&#8217; for a specific WENO operation:
+computing smoothness indicators, non-linear weights, and
+reconstructions.  These code snippets can, in-turn, be used to
+create seperate functions or larger kernels.</p>
+<p>The <em>basenames</em> dictionary is used to define naming conventions:</p>
+<ul class="simple">
+<li>smoothness indicators: <em>sigma</em>, default <tt class="docutils literal"><span class="pre">sigmaX</span></tt></li>
+<li>weights: <em>omega</em>, default <tt class="docutils literal"><span class="pre">omegaX</span></tt></li>
+<li>intermediate reconstructions: <em>fr</em>, default <tt class="docutils literal"><span class="pre">frX</span></tt>.</li>
+</ul>
+<p>For each of the above, the occurance of <tt class="docutils literal"><span class="pre">X</span></tt> is replaced by the
+left-shift <em>r</em>.  For example, for <tt class="docutils literal"><span class="pre">k=3</span></tt> and <tt class="docutils literal"><span class="pre">omega='omegaX'</span></tt>,
+the weights are stored in <tt class="docutils literal"><span class="pre">omega0</span></tt>, <tt class="docutils literal"><span class="pre">omega1</span></tt>, and <tt class="docutils literal"><span class="pre">omega2</span></tt>,
+each of which are assumed to be in scope.  In some routines the
+accumulator variable <tt class="docutils literal"><span class="pre">acc</span></tt> is also assumed to be in scope.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>lang</em> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.reconstruction">
+<tt class="descname">reconstruction</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.reconstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully un-rolled reconstruction kernel for uniform grids.</p>
+<p>The reconstruction kernel computes the WENO reconstruction
+based on the weights <em>omega</em> (which have already been
+computed) and the reconstruction coefficients <em>coeffs</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.set_optimal_weights">
+<tt class="descname">set_optimal_weights</tt><big>(</big><em>varpi</em>, <em>split</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_optimal_weights" title="Permalink to this definition">¶</a></dt>
+<dd>Set the optimal (linear) weights.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.set_reconstruction_coefficients">
+<tt class="descname">set_reconstruction_coefficients</tt><big>(</big><em>coeffs</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd>Set the reconstruction coefficients.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.set_smoothness">
+<tt class="descname">set_smoothness</tt><big>(</big><em>beta</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_smoothness" title="Permalink to this definition">¶</a></dt>
+<dd>Set the smoothness indicator coefficients.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.smoothness">
+<tt class="descname">smoothness</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.smoothness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully un-rolled smoothness indicator kernel for uniform
+grids.</p>
+<p>The smoothness indicator kernel computes the smoothness indicators
+<em>sigma</em> determined by the coefficients in <em>beta</em>.  That is:</p>
+<div class="math">
+\sigma_r = \sum_{m=1}^{2k-1}
+               \sum_{n=1}^{2k-1}
+                   \beta_{r,m,n}\, \overline{f}_{i-k+m}\,
+                                   \overline{f}_{i-k+n}.</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.kernels.KernelGenerator.weights">
+<tt class="descname">weights</tt><big>(</big><em>epsilon='1.0e-6'</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully un-rolled weights kernel for uniform grids.</p>
+<p>The weights kernel computes the weights <em>omega</em> determined by
+the smoothness coefficients <em>sigma</em> (which have already been
+computed).</p>
+<p>XXX: have epsilon passed to function
+XXX: pass power...</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyweno.wrappers">
+<h3>Wrappers<a class="headerlink" href="#module-pyweno.wrappers" title="Permalink to this headline">¶</a></h3>
+<p>PyWENO code generation module (wrappers).</p>
+<dl class="class">
+<dt id="pyweno.wrappers.WrapperGenerator">
+<em class="property">
+class </em><tt class="descclassname">pyweno.wrappers.</tt><tt class="descname">WrapperGenerator</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate kernals and wrappers for WENO reconstructions.</p>
+<p>Each method generates a function (and optionallly a Python wrapper)
+for a specific WENO operation: computing smoothness indicators,
+non-linear weights, and reconstructions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>lang</em> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="pyweno.wrappers.WrapperGenerator.footer">
+<tt class="descname">footer</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.footer" title="Permalink to this definition">¶</a></dt>
+<dd>Return C Python extension module footer.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.wrappers.WrapperGenerator.header">
+<tt class="descname">header</tt><big>(</big><em>module=''</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.header" title="Permalink to this definition">¶</a></dt>
+<dd>Return C Python extension module header.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.wrappers.WrapperGenerator.reconstruction">
+<tt class="descname">reconstruction</tt><big>(</big><em>function='reconstruct'</em>, <em>compute_smoothness=False</em>, <em>compute_weights=False</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.reconstruction" title="Permalink to this definition">¶</a></dt>
+<dd>Recontruction function.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.wrappers.WrapperGenerator.smoothness">
+<tt class="descname">smoothness</tt><big>(</big><em>function='smoothness'</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.smoothness" title="Permalink to this definition">¶</a></dt>
+<dd>Smoothness function.</dd></dl>
+
+<dl class="method">
+<dt id="pyweno.wrappers.WrapperGenerator.weights">
+<tt class="descname">weights</tt><big>(</big><em>function='weights'</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.weights" title="Permalink to this definition">¶</a></dt>
+<dd>Weights function.</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 <div class="section" id="module-pyweno.version">
-<h2>Version information<a class="headerlink" href="#module-pyweno.version" title="Permalink to this headline">¶</a></h2>
+<h2>Version<a class="headerlink" href="#module-pyweno.version" title="Permalink to this headline">¶</a></h2>
 <p>PyWENO version information.</p>
 <p>To obtain the version of PyWENO:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyweno.version</span>
@@ -495,25 +329,25 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">PyWENO Reference</a><ul>
-<li><a class="reference external" href="#weno-class">WENO class</a></li>
-<li><a class="reference external" href="#grid-class">Grid class</a></li>
-<li><a class="reference external" href="#stencil-class">Stencil class</a><ul>
-<li><a class="reference external" href="#fast-stencil-routines">Fast stencil routines</a></li>
+<li><a class="reference external" href="">Reference</a><ul>
+<li><a class="reference external" href="#weno-scikit">WENO SciKit</a></li>
+<li><a class="reference external" href="#symbolics">Symbolics</a></li>
+<li><a class="reference external" href="#code-generation">Code generation</a><ul>
+<li><a class="reference external" href="#module-pyweno.kernels">Kernels</a></li>
+<li><a class="reference external" href="#module-pyweno.wrappers">Wrappers</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#module-pyweno.smoothness">Smoothness indicators</a></li>
-<li><a class="reference external" href="#module-pyweno.version">Version information</a></li>
+<li><a class="reference external" href="#module-pyweno.version">Version</a></li>
 </ul>
 </li>
 </ul>
 
             <h4>Previous topic</h4>
-            <p class="topless"><a href="tutorial.html"
-                                  title="previous chapter">PyWENO Tutorial</a></p>
+            <p class="topless"><a href="codegen.html"
+                                  title="previous chapter">Code generation</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="examples.html"
-                                  title="next chapter">PyWENO Examples</a></p>
+            <p class="topless"><a href="whatsnew.html"
+                                  title="next chapter">What&#8217;s new</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/reference.txt"
@@ -546,16 +380,16 @@ implemented (<tt class="docutils literal"><span class="pre">'jiang_shu'</span></
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="PyWENO Examples"
+          <a href="whatsnew.html" title="What’s new"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="PyWENO Tutorial"
+          <a href="codegen.html" title="Code generation"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, Matthew Emmett.
+      &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
     </div>
   </body>

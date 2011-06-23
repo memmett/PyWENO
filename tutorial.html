@@ -5,13 +5,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>PyWENO Tutorial &mdash; PyWENO v0.5.7 documentation</title>
+    <title>WENO SciKit &mdash; PyWENO v0.7.2 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.7',
+        VERSION:     '0.7.2',
         COLLAPSE_MODINDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -19,8 +19,9 @@
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="PyWENO v0.5.7 documentation" href="index.html" />
-    <link rel="next" title="PyWENO Reference" href="reference.html" />
+    <script type="text/javascript" src="_static/http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.7.2 documentation" href="index.html" />
+    <link rel="next" title="Symbolics" href="symbolic.html" />
     <link rel="prev" title="PyWENO" href="index.html" /> 
   </head>
   <body>
@@ -34,12 +35,12 @@
           <a href="modindex.html" title="Global Module Index"
              accesskey="M">modules</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="PyWENO Reference"
+          <a href="symbolic.html" title="Symbolics"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="PyWENO"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -48,65 +49,44 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="pyweno-tutorial">
-<h1>PyWENO Tutorial<a class="headerlink" href="#pyweno-tutorial" title="Permalink to this headline">¶</a></h1>
-<p>Below are a few quick examples demonstrating how PyWENO is used.  More
-detailed examples can be found on the <a class="reference external" href="examples.html"><em>examples</em></a> page.</p>
-<div class="section" id="basic-usage">
-<h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
-<p>Briefly, to use PyWENO to reconstruct a function given its cell
-averages, we first define the grid:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">boundaries</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+  <div class="section" id="weno-scikit">
+<h1>WENO SciKit<a class="headerlink" href="#weno-scikit" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="weno-reconstructions">
+<h2>WENO reconstructions<a class="headerlink" href="#weno-reconstructions" title="Permalink to this headline">¶</a></h2>
+<p>High-order WENO reconstructions for 1d arrays of cell-average
+quantities can be computed with the <tt class="docutils literal"><span class="pre">scikits.weno</span></tt> module.</p>
+<p>For example, to reconstruct <em>sin(x)</em> at the left edge of each cell to
+fifth order accuracy:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scikits.weno</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1</span><span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mf">1</span><span class="p">]))</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mf">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">scikits</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Next, we define a WENO reconstructor and tell it to pre-compute
-everything needed to reconstruct a function at the left side of each
-cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mf">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
-</pre></div>
+<p>Please see the <a class="reference external" href="reference.html"><em>reference documentation</em></a> for more
+information.</p>
+<div class="section" id="smooth-reconstruction">
+<h3>Smooth reconstruction<a class="headerlink" href="#smooth-reconstruction" title="Permalink to this headline">¶</a></h3>
+<p>Here we reconstruct <em>sin(x)</em> at the left and right edges of each cell
+to fifth order accuracy and plot the results:</p>
+<img alt="_images/smooth1.png" src="_images/smooth1.png" />
+<p>The code to generate the above is in <a href="_downloads/smooth.py"><strong class="xref">smooth.py</strong></a>.</p>
 </div>
-<p>Finally, given the cell averages <tt class="docutils literal"><span class="pre">f_avg</span></tt> of an unkown function <em>f</em>,
-we can reconstruct <em>f</em> at the left side of each cell:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">f_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno5</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
-</pre></div>
+<div class="section" id="discontinuous-reconstruction">
+<h3>Discontinuous reconstruction<a class="headerlink" href="#discontinuous-reconstruction" title="Permalink to this headline">¶</a></h3>
+<p>Here we reconstruct a discontinuous function (<em>sin(x)</em> for <em>x&lt;0</em>,
+<em>cos(x)</em> for <em>x&gt;0</em>) at the left and right edges of each cell to fifth
+order accuracy and plot the results:</p>
+<img alt="_images/discontinuous1.png" src="_images/discontinuous1.png" />
+<p>The code to generate the above is in <a href="_downloads/discontinuous.py"><strong class="xref">discontinuous.py</strong></a>.</p>
 </div>
-<p>The reconstructed values are stored in <tt class="docutils literal"><span class="pre">f_left</span></tt>, which should be a
-NumPy array.  <strong>Please note</strong> that the reconstructed values are not
-returned in a new NumPy array, but are destructively stored in
-<tt class="docutils literal"><span class="pre">f_left</span></tt>.</p>
 </div>
-<div class="section" id="more-reconstructions-and-caching">
-<h2>More reconstructions and caching<a class="headerlink" href="#more-reconstructions-and-caching" title="Permalink to this headline">¶</a></h2>
-<p>Here we use PyWENO to reconstruct a function at the left and right
-edges of each cell, and take advantage of PyWENOs caching features.</p>
-<p>If the cache file doesn&#8217;t exist we define the grid, pre-compute
-everything we need to reconstruct, and cache the results for future
-runs:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="mf">3</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cache</span> <span class="o">=</span> <span class="s">&#39;grid_k</span><span class="si">%d</span><span class="s">.mat&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">grid</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">precompute_reconstruction</span><span class="p">(</span><span class="s">&#39;right&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">weno</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Next, we load from the cache:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">WENO</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Finally, we compute the smoothness of <tt class="docutils literal"><span class="pre">f_avg</span></tt> and reconstruct:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">smoothness</span><span class="p">(</span><span class="n">f_avg</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstrct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">f_left</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">weno</span><span class="o">.</span><span class="n">reconstrct</span><span class="p">(</span><span class="n">f_avg</span><span class="p">,</span> <span class="s">&#39;right&#39;</span><span class="p">,</span> <span class="n">f_right</span><span class="p">)</span>
-</pre></div>
-</div>
+<div class="section" id="non-uniform-reconstruction-coefficients">
+<h2>Non-uniform reconstruction coefficients<a class="headerlink" href="#non-uniform-reconstruction-coefficients" title="Permalink to this headline">¶</a></h2>
+<p>Reconstruction coefficients for arbitrary points within a non-uniform
+grid can be computed with the <tt class="docutils literal"><span class="pre">scikits.weno</span></tt> as well.</p>
+<p>For example, XXX</p>
 </div>
 <div class="section" id="version-information">
 <h2>Version information<a class="headerlink" href="#version-information" title="Permalink to this headline">¶</a></h2>
@@ -127,9 +107,13 @@ runs:</p>
         <div class="sphinxsidebarwrapper">
             <h3><a href="index.html">Table Of Contents</a></h3>
             <ul>
-<li><a class="reference external" href="">PyWENO Tutorial</a><ul>
-<li><a class="reference external" href="#basic-usage">Basic usage</a></li>
-<li><a class="reference external" href="#more-reconstructions-and-caching">More reconstructions and caching</a></li>
+<li><a class="reference external" href="">WENO SciKit</a><ul>
+<li><a class="reference external" href="#weno-reconstructions">WENO reconstructions</a><ul>
+<li><a class="reference external" href="#smooth-reconstruction">Smooth reconstruction</a></li>
+<li><a class="reference external" href="#discontinuous-reconstruction">Discontinuous reconstruction</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#non-uniform-reconstruction-coefficients">Non-uniform reconstruction coefficients</a></li>
 <li><a class="reference external" href="#version-information">Version information</a></li>
 </ul>
 </li>
@@ -139,8 +123,8 @@ runs:</p>
             <p class="topless"><a href="index.html"
                                   title="previous chapter">PyWENO</a></p>
             <h4>Next topic</h4>
-            <p class="topless"><a href="reference.html"
-                                  title="next chapter">PyWENO Reference</a></p>
+            <p class="topless"><a href="symbolic.html"
+                                  title="next chapter">Symbolics</a></p>
             <h3>This Page</h3>
             <ul class="this-page-menu">
               <li><a href="_sources/tutorial.txt"
@@ -173,16 +157,16 @@ runs:</p>
           <a href="modindex.html" title="Global Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="PyWENO Reference"
+          <a href="symbolic.html" title="Symbolics"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="PyWENO"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.5.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, Matthew Emmett.
+      &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
     </div>
   </body>

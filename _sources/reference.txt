@@ -1,38 +1,46 @@
-PyWENO Reference
-================
+Reference
+=========
 
-WENO class
-----------
+WENO SciKit
+-----------
 
-.. autoclass:: pyweno.weno.WENO
+.. autofunction:: scikits.weno.reconstruct
+
+.. autofunction:: scikits.weno.coeffs
+
+
+Symbolics
+---------
+
+.. autofunction:: pyweno.symbolic.polynomial_interpolator
+
+.. autofunction:: pyweno.symbolic.primitive_polynomial_interpolator
+
+.. autofunction:: pyweno.symbolic.reconstruction_coefficients
+
+.. autofunction:: pyweno.symbolic.optimal_weights
+
+.. autofunction:: pyweno.symbolic.jiang_shu_smoothness_coefficients
+
+
+Code generation
+---------------
+
+Kernels
+^^^^^^^
+
+.. automodule:: pyweno.kernels
    :members:
 
-Grid class
-----------
 
-.. autoclass:: pyweno.grid.Grid
-   :members:
+Wrappers
+^^^^^^^^
 
-Stencil class
--------------
-
-.. autoclass:: pyweno.stencil.Stencil
-   :members:
-
-Fast stencil routines
-^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: pyweno.stencil.reconstruction_coeffs
-
-
-Smoothness indicators
----------------------
-
-.. automodule:: pyweno.smoothness
+.. automodule:: pyweno.wrappers
    :members:
 
 
-Version information
--------------------
+Version
+-------
 
 .. automodule:: pyweno.version
