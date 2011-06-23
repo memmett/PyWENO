@@ -1,66 +1,41 @@
 """PyWENO smooth reconstruction example."""
 
-import math
-import numpy
-import pyweno.grid
-import pyweno.weno
+import numpy as np
+import scikits.weno
 
-# explicitly define the function f that we will reconstruct ...
-def f(x):
-    return 1.0 - x + x*x
-
-# ... and it's derivative
-def fp(x):
-    return -1.0 + 2.0*x
-
-# load the weno reconstructor from the cache
-k = 3
-cache = 'gridk%d.h5' % (k)
-
-grid = pyweno.grid.Grid(cache=cache)
-weno = pyweno.weno.WENO(order=k, cache=cache)
-
-# average f
-f_avg = grid.average(f)
-
-# allocate arrays for reconstruction
-f_left = numpy.zeros(grid.N)
-f_right = numpy.zeros(grid.N)
-f_gauss = numpy.zeros((grid.N, 3))
-fp_gauss = numpy.zeros((grid.N, 3))
-
-# compute smoothness indicators
-weno.smoothness(f_avg)
-
-# reconstruct!
-weno.reconstruct(f_avg, 'left', f_left)
-weno.reconstruct(f_avg, 'right', f_right)
-
-# plot results
 import matplotlib
 matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
+
+f = np.cos
+F = np.sin
+
+x = np.linspace(0.0, 2*np.pi, 21)
+a = (F(x[1:]) - F(x[:-1]))/(x[1]-x[0])
+l, s = scikits.weno.reconstruct(a, 5, 'left', return_smoothness=True)
+r    = scikits.weno.reconstruct(a, 5, 'right')
+
+plt.title('scikits.weno reconstruction and smoothness indicators')
 
 plt.subplot(2,1,1)
 
-uf = numpy.frompyfunc(f, 1, 1)
-plt.plot(grid.x, uf(grid.x), '-k')
-plt.plot(grid.x[:-1], f_left, 'or')
-plt.plot(grid.x[1:], f_right, 'ob')
+plt.plot(x,   f(x), '-k')
+plt.plot(x[:-1], l, 'or')
+plt.plot(x[1:],  r, 'ob')
 
-plt.title('PyWENO reconstruction and smoothness indicators')
 plt.ylabel('f')
 plt.xlabel('x')
 plt.legend(['actual', 'left', 'right'])
 
 plt.subplot(2,1,2)
 
-plt.plot(grid.centers(), weno.sigma[:,0], 'or')
-plt.plot(grid.centers(), weno.sigma[:,1], 'ok')
-plt.plot(grid.centers(), weno.sigma[:,2], 'ob')
+c = 0.5*(x[1:] + x[:-1])
 
-plt.ylabel('sigma')
+plt.plot(c, s[:,0], 'or')
+plt.plot(c, s[:,1], 'ok')
+plt.plot(c, s[:,2], 'ob')
+
+plt.ylabel('smoothness')
 plt.xlabel('x')
 plt.legend(['r=0', 'r=1', 'r=2'])
 
