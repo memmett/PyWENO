@@ -203,7 +203,7 @@ class KernelGenerator(object):
           pm = -(k-1) + m
           pn = -(k-1) + n
 
-          acc += beta[r,m,n] * f[m] * f[n]
+          acc += beta[r,m,n] * f[pm] * f[pn]
 
       kernel.append(sigma[r].assign(acc))
 
