@@ -1,69 +1,62 @@
-"""PyWENO discontinuous reconstruction example."""
+"""PyWENO smooth reconstruction example."""
 
-import math
-import numpy
-import pyweno.grid
-import pyweno.weno
+import numpy as np
+import scikits.weno
 
-# explicitly define the function f that we will reconstruct ...
-def f(x):
-    if x < 0.0:
-        return math.sin(x)
-
-    return math.cos(x)
-
-# load the weno reconstructor from the cache
-k = 3
-cache = 'gridk%d.h5' % (k)
-
-grid = pyweno.grid.Grid(cache=cache)
-weno = pyweno.weno.WENO(order=k, cache=cache)
-
-# average f
-f_avg = grid.average(f)
-
-# allocate arrays for reconstruction
-f_left = numpy.zeros(grid.N)
-f_right = numpy.zeros(grid.N)
-f_left_x = numpy.zeros(grid.N)
-f_left_xx = numpy.zeros(grid.N)
-
-# compute smoothness indicators
-weno.smoothness(f_avg)
-
-# reconstruct!
-weno.reconstruct(f_avg, 'left', f_left)
-weno.reconstruct(f_avg, 'right', f_right)
-weno.reconstruct(f_avg, 'd|left', f_left_x)
-
-# plot results
 import matplotlib
 matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
+
+def f(x):
+    r = np.zeros(x.shape)
+
+    i = x > 0
+    r[i] = np.cos(x[i])
+
+    i = x <= 0
+    r[i] = np.sin(x[i])
+
+    return r
+
+def F(x):
+    r = np.zeros(x.shape)
+
+    i = x > 0
+    r[i] = np.sin(x[i])
+
+    i = x <= 0
+    r[i] = -np.cos(x[i])
+
+    return r
+
+x = np.linspace(-2*np.pi, 2*np.pi, 41)
+a = (F(x[1:]) - F(x[:-1]))/(x[1]-x[0])
+a[20:21] = (F(x[21:22]) - 0.0)/(x[1]-x[0]) # fix middle cell average
+l, s = scikits.weno.reconstruct(a, 5, 'left', return_smoothness=True)
+r    = scikits.weno.reconstruct(a, 5, 'right')
+
+plt.title('scikits.weno reconstruction and smoothness indicators')
 
 plt.subplot(2,1,1)
 
-x = numpy.linspace(-4.0, 4.0, 1001);
-uf = numpy.frompyfunc(f, 1, 1)
-plt.plot(x, uf(x), '-k')
+x2 = np.linspace(x[0], x[-1], 1001)
+plt.plot(x2, f(x2), '-k')
+plt.plot(x[:-1], l, 'or')
+plt.plot(x[1:],  r, 'ob')
 
-plt.plot(grid.x[:-1], f_left, 'or')
-plt.plot(grid.x[1:], f_right, 'ob')
-plt.plot(grid.x[:-1], f_left_x, 'xk')
-
-plt.title('PyWENO reconstruction and smoothness indicators')
 plt.ylabel('f')
 plt.xlabel('x')
-plt.legend(['actual', 'left', 'right', 'left_x'])
+plt.legend(['actual', 'left', 'right'])
 
 plt.subplot(2,1,2)
 
-plt.plot(grid.centers(), weno.sigma[:,0], 'or')
-plt.plot(grid.centers(), weno.sigma[:,1], 'ok')
-plt.plot(grid.centers(), weno.sigma[:,2], 'ob')
+c = 0.5*(x[1:] + x[:-1])
 
-plt.ylabel('sigma')
+plt.plot(c, s[:,0], 'or')
+plt.plot(c, s[:,1], 'ok')
+plt.plot(c, s[:,2], 'ob')
+
+plt.ylabel('smoothness')
 plt.xlabel('x')
 plt.legend(['r=0', 'r=1', 'r=2'])
 
