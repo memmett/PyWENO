@@ -176,6 +176,7 @@ class WrapperGenerator(kernels.KernelGenerator):
       kernel.append(super(WrapperGenerator, self).smoothness())
 
     if compute_weights:
+      kernel.append(self.set_vars(self.sigma, self.gsigma))            
       kernel.append(super(WrapperGenerator, self).weights())
     else:
       kernel.append(self.set_vars(self.omega, self.gomega))      
@@ -197,12 +198,12 @@ class WrapperGenerator(kernels.KernelGenerator):
     elif compute_weights:
       template  = t['reconstruct_compute_weights']
       variables += [ 'acc' ]
+      variables += self.sigma.values()      
       variables += self.omega.values()
     else:
       template  = t['reconstruct']
       variables += self.omega.values()
       
-
     variables += self.fs.values()
     variables += self.fr.values()
 
@@ -246,7 +247,7 @@ templates = {
       {{
         int i;
         double {variables};
-        for (i={k}; i<n-{k}; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
       }}
@@ -258,7 +259,7 @@ templates = {
       {{
         int i;
         double {variables};
-        for (i={k}; i<n-{k}; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
       }}  
@@ -271,7 +272,7 @@ templates = {
       {{
         int i;
         double {variables};
-        for (i={k}; i<n-{k}; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
       }}
@@ -284,7 +285,7 @@ templates = {
       {{
         int i;
         double {variables};
-        for (i={k}; i<n-{k}; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
       }}
@@ -296,7 +297,7 @@ templates = {
       {{
         int i;
         double {variables};
-        for (i={k}; i<n-{k}; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
       }}
