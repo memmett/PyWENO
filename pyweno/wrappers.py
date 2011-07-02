@@ -144,7 +144,7 @@ class WrapperGenerator(kernels.KernelGenerator):
     variables += self.omega.values()    
 
     src = t['weights'].format(
-      function = function, k=k, rmax=n-1, n=n,
+      function = function, k=k, rmax=k-1, n=n,
       variables= ', '.join(variables),
       kernel   = '\n'.join(kernel))
 
@@ -208,7 +208,7 @@ class WrapperGenerator(kernels.KernelGenerator):
     variables += self.fr.values()
 
     src = template.format(
-        function = function, k=k, n=n, rmax=n-1,
+        function = function, k=k, n=n, rmax=k-1,
         variables= self.variable_join(variables),
         kernel   = '\n'.join(kernel))
 
