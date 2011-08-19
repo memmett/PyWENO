@@ -91,6 +91,17 @@ class WrapperGenerator(kernels.KernelGenerator):
             self.gomega[l,r] = mstr(t['omega'].format(l=l, r=r, s=0))
 
 
+  def set_reconstruction_coefficients(self, *args):
+
+    t = templates[self.lang]
+
+    super(WrapperGenerator, self).set_reconstruction_coefficients(*args)
+
+    self.gfs = {}
+    for l in range(self.n):
+      self.gfs[l] = mstr(t['fs'].format(l=l))
+
+
   def set_vars(self, dest, source):
     src = []
     for k in sorted(source.keys()):
@@ -176,17 +187,13 @@ class WrapperGenerator(kernels.KernelGenerator):
       kernel.append(super(WrapperGenerator, self).smoothness())
 
     if compute_weights:
-      kernel.append(self.set_vars(self.sigma, self.gsigma))            
+      if not compute_smoothness:
+        kernel.append(self.set_vars(self.sigma, self.gsigma))            
       kernel.append(super(WrapperGenerator, self).weights())
     else:
       kernel.append(self.set_vars(self.omega, self.gomega))      
       
     kernel.append(super(WrapperGenerator, self).reconstruction())
-    
-    self.gfs = {}
-    for l in range(self.n):
-      self.gfs[l] = mstr(t['fs'].format(l=l))
-
     kernel.append(self.set_vars(self.gfs, self.fs))
 
     variables = []
