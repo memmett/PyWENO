@@ -1,5 +1,7 @@
 """Time various WENO reconstructions."""
 
+raise NotImplementedError
+
 import timeit
 
 import pyweno.clweno5

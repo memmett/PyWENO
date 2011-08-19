@@ -1,5 +1,11 @@
 """PyWENO discontinuous reconstruction example using OpenCL."""
 
+
+# XXX: this doesn't work right now...
+
+raise NotImplementedError
+
+
 import math
 import numpy
 import pyweno.grid
