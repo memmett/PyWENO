@@ -67,9 +67,9 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     super(WrapperGenerator, self).set_smoothness(*args)
 
-    self.gsigma = {}
+    self.global_sigma = {}
     for r in range(0, self.k):
-      self.gsigma[r] = mstr(t['sigma'].format(r=r))
+      self.global_sigma[r] = mstr(t['sigma'].format(r=r))
 
 
   def set_optimal_weights(self, *args):
@@ -78,17 +78,17 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     super(WrapperGenerator, self).set_optimal_weights(*args)
 
-    self.gomega = {}
+    self.global_omega = {}
     pm = ['p', 'm']
     for l in range(self.n):
       if self.split[l]:
         for r in range(self.k):
           for s in (0, 1):
-            self.gomega[l,r,s] = mstr(t['omega'].format(l=l, r=r, s=s))
+            self.global_omega[l,r,s] = mstr(t['omega'].format(l=l, r=r, s=s))
 
       else:
         for r in range(self.k):
-            self.gomega[l,r] = mstr(t['omega'].format(l=l, r=r, s=0))
+            self.global_omega[l,r] = mstr(t['omega'].format(l=l, r=r, s=0))
 
 
   def set_reconstruction_coefficients(self, *args):
@@ -97,16 +97,19 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     super(WrapperGenerator, self).set_reconstruction_coefficients(*args)
 
-    self.gfs = {}
+    self.global_f_star = {}
     for l in range(self.n):
-      self.gfs[l] = mstr(t['fs'].format(l=l))
+      self.global_f_star[l] = mstr(t['fs'].format(l=l))
 
 
   def set_vars(self, dest, source):
     src = []
     for k in sorted(source.keys()):
       if isinstance(k, tuple) or isinstance(k, int):
-        src.append(dest[k].assign(source[k]))
+        d = dest[k]
+        if not isinstance(dest[k], mstr):
+          d = mstr(dest[k])
+        src.append(d.assign(source[k]))
     return '\n'.join(src)
 
 
@@ -119,7 +122,7 @@ class WrapperGenerator(kernels.KernelGenerator):
     t = templates[self.lang]
 
     kernel = [ super(WrapperGenerator, self).smoothness() ]
-    kernel.append(self.set_vars(self.gsigma, self.sigma))
+    kernel.append(self.set_vars(self.global_sigma, self.sigma))
 
     src = t['smoothness'].format(
       function = function, k=self.k, rmax=self.k-1,
@@ -146,9 +149,9 @@ class WrapperGenerator(kernels.KernelGenerator):
     n = self.n
 
     kernel = []
-    kernel.append(self.set_vars(self.sigma, self.gsigma))
+    kernel.append(self.set_vars(self.sigma, self.global_sigma))
     kernel.append(super(WrapperGenerator, self).weights())
-    kernel.append(self.set_vars(self.gomega, self.omega))
+    kernel.append(self.set_vars(self.global_omega, self.omega))
 
     variables = [ 'acc' ]
     variables += self.sigma.values()
@@ -188,13 +191,13 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     if compute_weights:
       if not compute_smoothness:
-        kernel.append(self.set_vars(self.sigma, self.gsigma))            
+        kernel.append(self.set_vars(self.sigma, self.global_sigma))            
       kernel.append(super(WrapperGenerator, self).weights())
     else:
-      kernel.append(self.set_vars(self.omega, self.gomega))      
+      kernel.append(self.set_vars(self.omega, self.global_omega))      
       
     kernel.append(super(WrapperGenerator, self).reconstruction())
-    kernel.append(self.set_vars(self.gfs, self.fs))
+    kernel.append(self.set_vars(self.global_f_star, self.fs))
 
     variables = []
     if compute_smoothness:

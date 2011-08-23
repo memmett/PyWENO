@@ -21,21 +21,21 @@ def _to_string(coeff):
   
   except:
     pass
-  
+
   return str(coeff)
 
 
 ###############################################################################
 # CodeGenerator
 
-basenames = {
-  'sigma': 'sigmaX',
-  'omega': 'omegaX',
-  'fs':    'fsX',
-  'fr':    'frX',
+local_names = {
+  'sigma':  'sigmaX',
+  'omega':  'omegaX',
+  'f_star': 'fsX',
+  'f_r':    'frX',
   }
 
-templates = {
+global_names = {
   'c':       'f[(i{r:+d})*fsi]',
   'opencl':  'f[(i{r:+d})*fsi]',
   'fortran': 'f(i{r:+d})'
@@ -49,7 +49,7 @@ class KernelGenerator(object):
   reconstructions.  These code snippets can, in-turn, be used to
   create seperate functions or larger kernels.
 
-  The *basenames* dictionary is used to define naming conventions:
+  The *local_names* dictionary is used to define naming conventions:
 
   * smoothness indicators: *sigma*, default ``sigmaX``
   * weights: *omega*, default ``omegaX``
@@ -109,11 +109,11 @@ class KernelGenerator(object):
     self.sigma = {}
     for r in range(self.k):
       self.sigma[r] = mstr(
-        basenames['sigma'].replace('X', str(r)))
+        local_names['sigma'].replace('X', str(r)))
 
     self.f = {}
     for r in range(-2*self.k, 2*self.k+1):
-      self.f[r] = mstr(templates[self.lang].format(r=r))
+      self.f[r] = mstr(global_names[self.lang].format(r=r))
 
 
   def set_reconstruction_coefficients(self, coeffs):
@@ -127,12 +127,12 @@ class KernelGenerator(object):
     for l in range(self.n):
       for r in range(self.k):
         self.fr[l,r] = mstr(
-          basenames['fr'].replace('X', str(l*self.k+r)))
+          local_names['f_r'].replace('X', str(l*self.k+r)))
 
     self.fs = {}
     for l in range(self.n):
       self.fs[l] = mstr(
-            basenames['fs'].replace('X', str(l)))
+            local_names['f_star'].replace('X', str(l)))
 
 
   def set_optimal_weights(self, varpi, split):
@@ -161,11 +161,11 @@ class KernelGenerator(object):
         for r in range(self.k):
           for s in (0, 1):
             self.omega[l,r,s] = mstr(
-              basenames['omega'].replace('X', str(self.k*l+r) + pm[s]))
+              local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
       else:
         for r in range(self.k):
           self.omega[l,r] = mstr(
-            basenames['omega'].replace('X', str(self.k*l+r)))
+            local_names['omega'].replace('X', str(self.k*l+r)))
 
 
   #############################################################################
