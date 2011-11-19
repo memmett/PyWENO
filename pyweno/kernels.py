@@ -2,14 +2,9 @@
 
 from sympy import Symbol
 from code import FCodePrinter, CCodePrinter
-# from sympy.printing.fcode import FCodePrinter
-# from sympy.printing.ccode import CCodePrinter
 
-# TODO
-#
-#  * XXX: use sympy 'Symbol' and ccode/fcode instead of 'mstr'
-#  * XXX: change computation of 'acc': acc = 1.0/(sum of the omegas), then omegaX = acc * omegaX
-#
+symbol = lambda x: Symbol(x, real=True)
+
 
 ###############################################################################
 # CodeGenerator
@@ -73,35 +68,26 @@ class KernelGenerator(object):
   #############################################################################
   # set methods
 
-  # def to_string(self, x):
+  def assign(self, dest, value):
+    if isinstance(self.code, CCodePrinter):
+      return str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';'
 
-  #   convert = lambda x: mstr(_to_string(x))
-
-  #   d = {}
-  #   for k, v in x.items():
-  #     if isinstance(v, tuple):
-  #       d[k] = tuple(map(convert, list(v)))
-  #     else:
-  #       d[k] = convert(v)
-
-  #   return d
-
+    return str(dest) + ' = ' + self.code.doprint(value.evalf(35))
 
   def set_smoothness(self, beta):
     """Set the smoothness indicator coefficients."""
 
     self.k    = beta['k']
-    # self.beta = self.to_string(beta)
     self.beta = beta
 
     self.sigma = {}
     for r in range(self.k):
-      self.sigma[r] = Symbol(
+      self.sigma[r] = symbol(
         local_names['sigma'].replace('X', str(r)))
 
     self.f = {}
     for r in range(-2*self.k, 2*self.k+1):
-      self.f[r] = Symbol(global_names[self.lang].format(r=r))
+      self.f[r] = symbol(global_names[self.lang].format(r=r))
 
 
   def set_reconstruction_coefficients(self, coeffs):
@@ -109,17 +95,17 @@ class KernelGenerator(object):
 
     self.n = coeffs['n']
     self.k = coeffs['k']
-    # self.coeff = self.to_string(coeffs)
+    self.coeff = coeffs
 
     self.fr = {}
     for l in range(self.n):
       for r in range(self.k):
-        self.fr[l,r] = Symbol(
+        self.fr[l,r] = symbol(
           local_names['f_r'].replace('X', str(l*self.k+r)))
 
     self.fs = {}
     for l in range(self.n):
-      self.fs[l] = Symbol(
+      self.fs[l] = symbol(
             local_names['f_star'].replace('X', str(l)))
 
 
@@ -128,7 +114,7 @@ class KernelGenerator(object):
 
     self.n = varpi['n']
     self.k = varpi['k']
-    # self.varpi = self.to_string(varpi)
+    self.varpi = varpi
     self.split = split
 
     self.scale = {}
@@ -140,27 +126,22 @@ class KernelGenerator(object):
             for r in range(0, self.k):
               self.scale[l,s] += varpi[l,r][s]
 
-    # self.scale = self.to_string(scale)
-
     self.omega = {}
     pm = ['p', 'm']
     for l in range(self.n):
       if self.split[l]:
         for r in range(self.k):
           for s in (0, 1):
-            self.omega[l,r,s] = Symbol(
+            self.omega[l,r,s] = symbol(
               local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
       else:
         for r in range(self.k):
-          self.omega[l,r] = Symbol(
+          self.omega[l,r] = symbol(
             local_names['omega'].replace('X', str(self.k*l+r)))
 
 
   #############################################################################
   # kernels
-
-  def assign(self, dest, value):
-    return str(dest) + ' = ' + self.code.doprint(value)
 
   def smoothness(self):
     r"""Fully un-rolled smoothness indicator kernel for uniform
@@ -186,7 +167,6 @@ class KernelGenerator(object):
     kernel = []
     for r in range(0, k):
 
-      # acc = Symbol('')
       acc = 0
       for m in range(k-r-1, 2*k-r-1):
         for n in range(m, 2*k-r-1):
@@ -217,39 +197,45 @@ class KernelGenerator(object):
     n = self.n
     k = self.k
 
-    acc   = self.acc
     omega = self.omega
     sigma = self.sigma
     varpi = self.varpi
     scale = self.scale
 
+    epsilon = 1.0e-6
+
+    accsym = symbol('acc')
+
     kernel = []
     for l in range(n):
 
       if not self.split[l]:
-        kernel.append(acc.assign('0.0'))
-
+        acc = 0
         for r in range(0, k):
-          kernel.append(omega[l,r].assign(
-            varpi[l,r] / (sigma[r] + epsilon)**2))
+          kernel.append(self.assign(
+              omega[l,r], varpi[l,r] / (sigma[r] + epsilon)**2))
 
-          kernel.append(acc.assign(acc + omega[l,r]))
+          acc = omega[l,r] + acc
 
+        kernel.append(self.assign(accsym, acc))
         for r in range(0, k):
-          kernel.append(omega[l,r].assign(omega[l,r] / acc))
+          kernel.append(self.assign(
+              omega[l,r], omega[l,r] / accsym))
 
       else:
         for s, pm in enumerate(('p', 'm')):
-          kernel.append(acc.assign('0.0'))
+          acc = 0
 
           for r in range(0, k):
-            kernel.append(omega[l,r,s].assign(
-              varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**2))
+            kernel.append(self.assign(
+                omega[l,r,s], varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**2))
 
-            kernel.append(acc.assign(acc + omega[l,r,s]))
+            acc = omega[l,r,s] + acc
 
+          kernel.append(self.assign(accsym, acc))
           for r in range(0, k):
-            kernel.append(omega[l,r,s].assign(omega[l,r,s] / acc))
+            kernel.append(self.assign(
+                omega[l,r,s], omega[l,r,s] / accsym))
 
     return '\n'.join(kernel)
 
@@ -277,36 +263,32 @@ class KernelGenerator(object):
 
     kernel = []
 
-    Symbol.cont = True
-
     # reconstructions
     for l in range(n):
       for r in range(k):
-        acc = Symbol('')
+        acc = 0
         for j in range(k):
-          acc += coeff[l,r,j] * f[-r+j]
+          acc = coeff[l,r,j] * f[-r+j] + acc
 
-        kernel.append(fr[l,r].assign(acc))
+        kernel.append(self.assign(fr[l,r], acc))
 
     # weighted reconstruction
     for l in range(n):
-      acc = Symbol('')
+      acc = 0
 
       if not self.split[l]:
         for r in range(k):
-          acc += omega[l,r] * fr[l,r]
+          acc = omega[l,r] * fr[l,r] + acc
 
       else:
         for s, pm in enumerate(('p', 'm')):
-          acc0 = Symbol('')
+          acc0 = 0
           for r in range(k):
-            acc0 += omega[l,r,s] * fr[l,r]
+            acc0 = omega[l,r,s] * fr[l,r] + acc0
 
-          acc -= scale[l,s] * acc0
+          acc = acc - scale[l,s] * acc0
 
-      kernel.append(fs[l].assign(acc))
-
-    Symbol.cont = False
+      kernel.append(self.assign(fs[l], acc))
 
     return '\n'.join(kernel)
 

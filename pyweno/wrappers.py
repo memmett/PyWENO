@@ -1,7 +1,8 @@
 """PyWENO code generation module (wrappers)."""
 
+from sympy import Symbol
+
 import kernels
-from kernels import mstr
 
 ###############################################################################
 # WrapperGenerator
@@ -55,6 +56,8 @@ class WrapperGenerator(kernels.KernelGenerator):
 
   def variable_join(self, l):
 
+    l = map(lambda x: str(x), l)
+
     if self.lang == 'fortran':
       return ', &\n'.join(l)
 
@@ -69,7 +72,7 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     self.global_sigma = {}
     for r in range(0, self.k):
-      self.global_sigma[r] = mstr(t['sigma'].format(r=r))
+      self.global_sigma[r] = Symbol(t['sigma'].format(r=r))
 
 
   def set_optimal_weights(self, *args):
@@ -84,11 +87,11 @@ class WrapperGenerator(kernels.KernelGenerator):
       if self.split[l]:
         for r in range(self.k):
           for s in (0, 1):
-            self.global_omega[l,r,s] = mstr(t['omega'].format(l=l, r=r, s=s))
+            self.global_omega[l,r,s] = Symbol(t['omega'].format(l=l, r=r, s=s))
 
       else:
         for r in range(self.k):
-            self.global_omega[l,r] = mstr(t['omega'].format(l=l, r=r, s=0))
+            self.global_omega[l,r] = Symbol(t['omega'].format(l=l, r=r, s=0))
 
 
   def set_reconstruction_coefficients(self, *args):
@@ -99,7 +102,7 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     self.global_f_star = {}
     for l in range(self.n):
-      self.global_f_star[l] = mstr(t['fs'].format(l=l))
+      self.global_f_star[l] = Symbol(t['fs'].format(l=l))
 
 
   def set_vars(self, dest, source):
@@ -107,9 +110,9 @@ class WrapperGenerator(kernels.KernelGenerator):
     for k in sorted(source.keys()):
       if isinstance(k, tuple) or isinstance(k, int):
         d = dest[k]
-        if not isinstance(dest[k], mstr):
-          d = mstr(dest[k])
-        src.append(d.assign(source[k]))
+        if not isinstance(dest[k], Symbol):
+          d = Symbol(dest[k])
+        src.append(self.assign(d, source[k]))
     return '\n'.join(src)
 
 
@@ -137,10 +140,10 @@ class WrapperGenerator(kernels.KernelGenerator):
         function=wrapper[1])
 
     return src
-      
+
 
   #############################################################################
-                    
+
   def weights(self, function='weights', wrapper=False):
     """Weights function."""
 
@@ -155,11 +158,11 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     variables = [ 'acc' ]
     variables += self.sigma.values()
-    variables += self.omega.values()    
+    variables += self.omega.values()
 
     src = t['weights'].format(
       function = function, k=k, rmax=k-1, n=n,
-      variables= ', '.join(variables),
+      variables= ', '.join(map(lambda x: str(x), variables)),
       kernel   = '\n'.join(kernel))
 
     if wrapper:
@@ -179,7 +182,7 @@ class WrapperGenerator(kernels.KernelGenerator):
                      compute_weights=False,
                      wrapper=False):
     """Recontruction function."""
-    
+
     t = templates[self.lang]
     n = self.n
     k = self.k
@@ -191,11 +194,11 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     if compute_weights:
       if not compute_smoothness:
-        kernel.append(self.set_vars(self.sigma, self.global_sigma))            
+        kernel.append(self.set_vars(self.sigma, self.global_sigma))
       kernel.append(super(WrapperGenerator, self).weights())
     else:
-      kernel.append(self.set_vars(self.omega, self.global_omega))      
-      
+      kernel.append(self.set_vars(self.omega, self.global_omega))
+
     kernel.append(super(WrapperGenerator, self).reconstruction())
     kernel.append(self.set_vars(self.global_f_star, self.fs))
 
@@ -208,12 +211,12 @@ class WrapperGenerator(kernels.KernelGenerator):
     elif compute_weights:
       template  = t['reconstruct_compute_weights']
       variables += [ 'acc' ]
-      variables += self.sigma.values()      
+      variables += self.sigma.values()
       variables += self.omega.values()
     else:
       template  = t['reconstruct']
       variables += self.omega.values()
-      
+
     variables += self.fs.values()
     variables += self.fr.values()
 
@@ -262,7 +265,7 @@ templates = {
         }}
       }}
       ''',
-    
+
     'weights': '''
       void {function}(const double *restrict sigma, int n, int ssi, int ssr,
                       double *restrict omega, int wsi, int wsl, int wsr)
@@ -272,9 +275,9 @@ templates = {
         for (i={k}-1; i<n-{k}+1; i++) {{
           {kernel}
         }}
-      }}  
+      }}
       ''',
-    
+
     'reconstruct': '''
       void {function}(const double *restrict f, int n, int fsi,
                       const double *restrict omega, int wsi, int wsl, int wsr,
@@ -321,7 +324,7 @@ templates = {
     ''',
 
     'wrapper': '{{"{func}", {pyfunc}, METH_VARARGS, ""}}',
-    
+
     'footer': '''
       static PyMethodDef {module}methods[] = {{
       {wrappers},
@@ -332,7 +335,7 @@ templates = {
       {{
         (void) Py_InitModule("{module}", {module}methods);
         import_array();
-      }}      
+      }}
       ''',
 
     'smoothness_wrapper': '''
@@ -617,9 +620,9 @@ templates = {
       }}
       '''
     },
-  
+
   'opencl': {
-    
+
     'sigma': 'sigma[i*ssi+{r}*ssr]',
     'omega': 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]',
     'fs':    'fr[i*frsi+{l}*frsl]',
@@ -634,7 +637,7 @@ templates = {
       }}
       ''',
 
-    
+
     'weights': '''
       __kernel void {function}(__global const double *sigma, int ssi, int ssr,
                                __global const double *omega, int wsi, int wsl, int wsr)
@@ -643,8 +646,8 @@ templates = {
         double {variables};
         {kernel}
       }}
-      ''',  
-    
+      ''',
+
 
     'reconstruct': '''
       __kernel void {function}(__global const double *f, int fsi,
@@ -680,9 +683,9 @@ templates = {
 
 
     },
-  
+
   'fortran': {
-    
+
     'sigma': 'sigma(i,{r})',
     'omega': 'omega(i,{l},{r},{s})',
     'fs':    'fr(i,{l})',
@@ -691,7 +694,7 @@ templates = {
       subroutine {function}(f, n, sigma)
 
         implicit none
-            
+
         real(kind=8), intent(in) :: f(n)
         integer, intent(in) :: n
         real(kind=8), intent(out) :: sigma(n,0:{rmax})
@@ -713,23 +716,23 @@ templates = {
         integer, intent(in) :: n
         real(kind=8), intent(out) :: omega(n,{n},0:{rmax},2)
         integer :: i
-        real(kind=8) :: variables        
+        real(kind=8) :: variables
 
         do i={k}, n-{k}
           {kernel}
         end do
-      end subroutine  
+      end subroutine
       ''',
-    
+
     'reconstruct': '''
        subroutine {function}(f, n, omega, fr)
 
          implicit none
-            
+
          real(kind=8), intent(in) :: f(n)
          integer, intent(in) :: n
          real(kind=8), intent(in) :: omega(n,{n},0:{rmax},2)
-         real(kind=8), intent(out) :: fr(n,0:{n}-1)              
+         real(kind=8), intent(out) :: fr(n,0:{n}-1)
          integer :: i
          real(kind=8) :: {variables}
 
@@ -738,16 +741,16 @@ templates = {
          end do
        end subroutine
        ''',
-    
+
     'reconstruct_compute_weights': '''
        subroutine {function}(f, n, sigma, fr)
 
          implicit none
-            
+
          real(kind=8), intent(in) :: f(n)
          integer, intent(in) :: n
-         real(kind=8), intent(in) :: sigma(n,0:{rmax})         
-         real(kind=8), intent(out) :: fr(n,0:{n}-1)              
+         real(kind=8), intent(in) :: sigma(n,0:{rmax})
+         real(kind=8), intent(out) :: fr(n,0:{n}-1)
          integer :: i
          real(kind=8) :: {variables}
 
@@ -756,15 +759,15 @@ templates = {
          end do
        end subroutine
        ''',
-    
+
     'reconstruct_compute_smoothness': '''
        subroutine {function}(f, n, fr)
 
          implicit none
-            
+
          real(kind=8), intent(in) :: f(n)
          integer, intent(in) :: n
-         real(kind=8), intent(out) :: fr(n,0:{n}-1)              
+         real(kind=8), intent(out) :: fr(n,0:{n}-1)
          integer :: i
          real(kind=8) :: {variables}
 
@@ -773,7 +776,7 @@ templates = {
          end do
        end subroutine
        ''',
-    
+
 
     'header': '''
     module {module}
@@ -783,6 +786,6 @@ templates = {
     'footer': '''
     end module {module}
     '''
-    
+
     },
   }
