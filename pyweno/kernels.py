@@ -1,29 +1,15 @@
 """PyWENO code generation tool kit (kernels)."""
 
-import numpy as np
+from sympy import Symbol
+from code import FCodePrinter, CCodePrinter
+# from sympy.printing.fcode import FCodePrinter
+# from sympy.printing.ccode import CCodePrinter
 
-
-###############################################################################
-# helpers
-
-def _to_string(coeff):
-  """Return a string representation of *coeff*."""
-  
-  if isinstance(coeff, str):
-    return coeff
-  
-  if isinstance(coeff, float):
-    return "%+.15g" % coeff
-  
-  try:
-    coeff = coeff.evalf()
-    return "%+.15g" % coeff
-  
-  except:
-    pass
-
-  return str(coeff)
-
+# TODO
+#
+#  * XXX: use sympy 'Symbol' and ccode/fcode instead of 'mstr'
+#  * XXX: change computation of 'acc': acc = 1.0/(sum of the omegas), then omegaX = acc * omegaX
+#
 
 ###############################################################################
 # CodeGenerator
@@ -71,7 +57,6 @@ class KernelGenerator(object):
     self.k = None
 
     self.lang = lang.lower()
-    mstr.lang = self.lang
 
     self.sigma = {}
     self.omega = {}
@@ -79,41 +64,44 @@ class KernelGenerator(object):
     self.fs    = {}
     self.f     = {}
 
-    self.acc = mstr('acc')
-    
+    if self.lang == 'fortran':
+      self.code = FCodePrinter(settings={'source_format': 'free'})
+    else:
+      self.code = CCodePrinter()
+
 
   #############################################################################
   # set methods
 
-  def to_string(self, x):
+  # def to_string(self, x):
 
-    convert = lambda x: mstr(_to_string(x))
+  #   convert = lambda x: mstr(_to_string(x))
 
-    d = {}
-    for k, v in x.items():
-      if isinstance(v, tuple):
-        d[k] = tuple(map(convert, list(v)))
-      else:
-        d[k] = convert(v)
+  #   d = {}
+  #   for k, v in x.items():
+  #     if isinstance(v, tuple):
+  #       d[k] = tuple(map(convert, list(v)))
+  #     else:
+  #       d[k] = convert(v)
 
-    return d
-
+  #   return d
 
 
   def set_smoothness(self, beta):
     """Set the smoothness indicator coefficients."""
 
     self.k    = beta['k']
-    self.beta = self.to_string(beta)
+    # self.beta = self.to_string(beta)
+    self.beta = beta
 
     self.sigma = {}
     for r in range(self.k):
-      self.sigma[r] = mstr(
+      self.sigma[r] = Symbol(
         local_names['sigma'].replace('X', str(r)))
 
     self.f = {}
     for r in range(-2*self.k, 2*self.k+1):
-      self.f[r] = mstr(global_names[self.lang].format(r=r))
+      self.f[r] = Symbol(global_names[self.lang].format(r=r))
 
 
   def set_reconstruction_coefficients(self, coeffs):
@@ -121,17 +109,17 @@ class KernelGenerator(object):
 
     self.n = coeffs['n']
     self.k = coeffs['k']
-    self.coeff = self.to_string(coeffs)
+    # self.coeff = self.to_string(coeffs)
 
     self.fr = {}
     for l in range(self.n):
       for r in range(self.k):
-        self.fr[l,r] = mstr(
+        self.fr[l,r] = Symbol(
           local_names['f_r'].replace('X', str(l*self.k+r)))
 
     self.fs = {}
     for l in range(self.n):
-      self.fs[l] = mstr(
+      self.fs[l] = Symbol(
             local_names['f_star'].replace('X', str(l)))
 
 
@@ -140,19 +128,19 @@ class KernelGenerator(object):
 
     self.n = varpi['n']
     self.k = varpi['k']
-    self.varpi = self.to_string(varpi)
+    # self.varpi = self.to_string(varpi)
     self.split = split
 
-    scale = {}
+    self.scale = {}
     if any(self.split.values()):
       for l in range(self.n):
         if self.split[l]:
           for s in (0, 1):
-            scale[l,s] = 0
+            self.scale[l,s] = 0
             for r in range(0, self.k):
-              scale[l,s] += varpi[l,r][s]
+              self.scale[l,s] += varpi[l,r][s]
 
-    self.scale = self.to_string(scale)
+    # self.scale = self.to_string(scale)
 
     self.omega = {}
     pm = ['p', 'm']
@@ -160,16 +148,19 @@ class KernelGenerator(object):
       if self.split[l]:
         for r in range(self.k):
           for s in (0, 1):
-            self.omega[l,r,s] = mstr(
+            self.omega[l,r,s] = Symbol(
               local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
       else:
         for r in range(self.k):
-          self.omega[l,r] = mstr(
+          self.omega[l,r] = Symbol(
             local_names['omega'].replace('X', str(self.k*l+r)))
 
 
   #############################################################################
   # kernels
+
+  def assign(self, dest, value):
+    return str(dest) + ' = ' + self.code.doprint(value)
 
   def smoothness(self):
     r"""Fully un-rolled smoothness indicator kernel for uniform
@@ -177,9 +168,9 @@ class KernelGenerator(object):
 
     The smoothness indicator kernel computes the smoothness indicators
     *sigma* determined by the coefficients in *beta*.  That is:
-    
+
     .. math::
-    
+
       \sigma_r = \sum_{m=1}^{2k-1}
                      \sum_{n=1}^{2k-1}
                          \beta_{r,m,n}\, \overline{f}_{i-k+m}\,
@@ -187,30 +178,27 @@ class KernelGenerator(object):
 
     """
 
-    k    = self.k
-    f    = self.f
+    k = self.k
+    f = self.f
     beta = self.beta
     sigma = self.sigma
 
-    mstr.cont = True
-    
     kernel = []
     for r in range(0, k):
 
-      acc = mstr('')
+      # acc = Symbol('')
+      acc = 0
       for m in range(k-r-1, 2*k-r-1):
         for n in range(m, 2*k-r-1):
           pm = -(k-1) + m
           pn = -(k-1) + n
 
-          acc += beta[r,m,n] * f[pm] * f[pn]
+          acc = beta[r,m,n] * f[pm] * f[pn] + acc
 
-      kernel.append(sigma[r].assign(acc))
+      kernel.append(self.assign(sigma[r], acc))
 
-    mstr.cont = False
- 
     return '\n'.join(kernel)
-      
+
 
   #############################################################################
 
@@ -223,7 +211,7 @@ class KernelGenerator(object):
 
     XXX: have epsilon passed to function
     XXX: pass power...
-    
+
     """
 
     n = self.n
@@ -240,7 +228,7 @@ class KernelGenerator(object):
 
       if not self.split[l]:
         kernel.append(acc.assign('0.0'))
-        
+
         for r in range(0, k):
           kernel.append(omega[l,r].assign(
             varpi[l,r] / (sigma[r] + epsilon)**2))
@@ -261,7 +249,7 @@ class KernelGenerator(object):
             kernel.append(acc.assign(acc + omega[l,r,s]))
 
           for r in range(0, k):
-            kernel.append(omega[l,r,s].assign(omega[l,r,s] / acc))            
+            kernel.append(omega[l,r,s].assign(omega[l,r,s] / acc))
 
     return '\n'.join(kernel)
 
@@ -270,13 +258,13 @@ class KernelGenerator(object):
 
   def reconstruction(self):
     r"""Fully un-rolled reconstruction kernel for uniform grids.
-    
+
     The reconstruction kernel computes the WENO reconstruction
     based on the weights *omega* (which have already been
     computed) and the reconstruction coefficients *coeffs*.
-    
+
     """
-    
+
     n = self.n
     k = self.k
 
@@ -289,12 +277,12 @@ class KernelGenerator(object):
 
     kernel = []
 
-    mstr.cont = True
+    Symbol.cont = True
 
     # reconstructions
     for l in range(n):
       for r in range(k):
-        acc = mstr('')
+        acc = Symbol('')
         for j in range(k):
           acc += coeff[l,r,j] * f[-r+j]
 
@@ -302,15 +290,15 @@ class KernelGenerator(object):
 
     # weighted reconstruction
     for l in range(n):
-      acc = mstr('')
+      acc = Symbol('')
 
       if not self.split[l]:
         for r in range(k):
           acc += omega[l,r] * fr[l,r]
-          
+
       else:
         for s, pm in enumerate(('p', 'm')):
-          acc0 = mstr('')
+          acc0 = Symbol('')
           for r in range(k):
             acc0 += omega[l,r,s] * fr[l,r]
 
@@ -318,64 +306,7 @@ class KernelGenerator(object):
 
       kernel.append(fs[l].assign(acc))
 
-    mstr.cont = False
+    Symbol.cont = False
 
     return '\n'.join(kernel)
 
-
-###############################################################################
-# mstr
-
-class mstr(str):
-
-  lang = 'c'
-  cont = False
-
-  def __new__(cls, string):
-    return str.__new__(cls, string)
-
-  def __mul__(self, other):
-    return mstr.__new__(mstr, '(' + str(self) + ') * (' + str(other) + ')')
-
-  def __add__(self, other):
-    if len(str(self)) == 0:
-      return mstr.__new__(mstr, str(other))
-    if other is not None and len(str(other)) > 0:
-      if not self.cont:
-        return mstr.__new__(mstr, str(self) + ' + ' + str(other))
-      elif self.lang in ('fortran'):
-        return mstr.__new__(mstr, str(self) + ' &\n + ' + str(other))
-      else:
-        return mstr.__new__(mstr, str(self) + ' + ' + str(other))        
-    return self
-
-  def __sub__(self, other):
-    if len(str(self)) == 0:
-      return mstr.__new__(mstr, str(other))
-    if other is not None and len(str(other)) > 0:
-      return mstr.__new__(mstr, '(' + str(self) + ') - (' + str(other) + ')')
-    return self
-
-  def __div__(self, other):
-    return mstr.__new__(mstr, '(' + str(self) + ') / (' + str(other) + ')')
-
-  def __pow__(self, other):
-    if self.lang in ('c', 'opencl'):
-      if isinstance(other, int):
-        return mstr.__new__(mstr, '(' + ')*('.join(other * [str(self)]) + ')')
-      else:
-        return mstr.__new__(mstr, 'pow(' + str(self) + ', ' + str(other) + ')')
-    elif self.lang in ('fortran'):
-      return mstr.__new__(mstr, '(' + str(self) + ')**(' + str(other) + ')')
-
-  def assign_to(self, dest):
-    if self.lang in ('c', 'opencl'):
-      return str.__new__(str, str(dest) + ' = ' + str(self) + ';')
-    elif self.lang in ('fortran'):
-      return str.__new__(str, str(dest) + ' = ' + str(self))  
-
-  def assign(self, value):
-    if self.lang in ('c', 'opencl'):
-      return str.__new__(str, str(self) + ' = ' + str(value) + ';')
-    elif self.lang in ('fortran'):
-      return str.__new__(str, str(self) + ' = ' + str(value))
