@@ -1,0 +1,4 @@
+To compile C code and inspect the assembly: 
+
+  gcc -std=c99 -O3 -c -g -Wa,-ahl=test.s test.c
+
