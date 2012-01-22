@@ -9,8 +9,7 @@ import sympy
 def polynomial_interpolator(x, y):
   """Build a symbolic polynomial that interpolates the points (x_i, y_i).
 
-     The returned polynomial is a function of the SymPy variable x.
-
+  The returned polynomial is a function of the SymPy variable x.
   """
 
   xi = sympy.var('x')
@@ -40,10 +39,9 @@ def polynomial_interpolator(x, y):
 
 def primitive_polynomial_interpolator(x, y):
   """Build a symbolic polynomial that approximates the primitive
-     function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).
+  function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).
 
-     The returned polynomial is a function of the SymPy variable 'x'.
-
+  The returned polynomial is a function of the SymPy variable 'x'.
   """
 
   Y = [0]
@@ -68,20 +66,19 @@ def _pt(a, b, x):
 
 def reconstruction_coefficients(k, xi):
   r"""Compute the reconstruction coefficients for a 2k-1 order WENO
-    scheme corresponding to the reconstruction points in *xi*.
+  scheme corresponding to the reconstruction points in *xi*.
 
-    The reconstruction points in *xi* should in :math:`[-1, 1]`.  This
-    interval is then mapped to the cell :math:`[x_{i-1/2}, x_{i+1/2}]`.
+  The reconstruction points in *xi* should in :math:`[-1, 1]`.  This
+  interval is then mapped to the cell :math:`[x_{i-1/2}, x_{i+1/2}]`.
 
-    The returned coefficients are stored as SymPy variables in an
-    ndarray indexed according to ``c[l,r,j]``.  That is
+  The returned coefficients are stored as SymPy variables in a
+  dictionary indexed according to ``c[l,r,j]``.  That is
 
-    .. math::
+  .. math::
 
-      f^r(\xi_l) \approx \sum_j c^{l,r}_j \, f_{i-r+j}
+    f^r(\xi_l) \approx \sum_j c^{l,r}_j \, f_{i-r+j}
 
-    for each :math:`l` from 0 to ``len(xi)``.
-
+  for each :math:`l` from 0 to ``len(xi)``.
   """
 
   i = k-1
@@ -124,17 +121,16 @@ def reconstruction_coefficients(k, xi):
 
 def optimal_weights(k, xi):
   r"""Compute the optimal weights for a 2k-1 order WENO scheme
-    corresponding to the reconstruction points in *xi*.
+  corresponding to the reconstruction points in *xi*.
 
-    The coefficients are stored as SymPy variables in an ndarray
-    indexed according to ``w[l,r]``.  That is
+  The coefficients are stored as SymPy variables in an ndarray
+  indexed according to ``w[l,r]``.  That is
 
-    .. math::
+  .. math::
 
-      f(\xi^l) \approx \sum_r w^r f^r
+    f(\xi^l) \approx \sum_r w^r f^r
 
-    for each :math:`l` from 0 to ``len(xi)``.
-
+  for each :math:`l` from 0 to ``len(xi)``.
   """
 
   n = len(xi)
@@ -198,16 +194,15 @@ def optimal_weights(k, xi):
 
 def jiang_shu_smoothness_coefficients(k):
   r"""Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
-    WENO scheme.
+  WENO scheme.
 
-    The coefficients are stored as SymPy variables in an array
-    indexed according to ``beta[r,m,n]``.  That is
+  The coefficients are stored as SymPy variables in an array
+  indexed according to ``beta[r,m,n]``.  That is
 
-    .. math::
+  .. math::
 
-      \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
-        \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
-
+    \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
+      \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
   """
 
   i = k-1
