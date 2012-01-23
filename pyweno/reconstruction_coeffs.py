@@ -4,7 +4,7 @@ import numpy as np
 import pyweno.ccoeffs as ccoeffs
 
 
-def reconstruction_coeffs(xi, i, r, k, x, c):
+def reconstruction_coeffs(xi, i, r, k, x):
   """Numerically compute the reconstruction coefficients.
 
   The reconstruction coefficients *c_j* are used to approximate the
@@ -23,7 +23,7 @@ def reconstruction_coeffs(xi, i, r, k, x, c):
 
   """
 
-  c = numpy.empty(k)
+  c = np.empty(k)
 
   try:
     ccoeffs.reconstruction_coeffs(xi, i, r, k, x, c)

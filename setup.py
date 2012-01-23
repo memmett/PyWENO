@@ -59,13 +59,13 @@ f.close()
 setup(
 
     name         = "PyWENO",
-    packages     = ['pyweno', 'scikits.weno'],
+    packages     = [ 'pyweno' ],
     version      = version,
     author       = "Matthew Emmett",
     author_email = "matthew@emmett.ca",
     description  = "Weighted Essentially Non-oscillatory (WENO) reconstructions.",
     license      = "BSD",
-    keywords     = "scikit, weno, interpolate, interpolation, finite, volume",
+    keywords     = "weno, interpolate, interpolation, finite, volume",
     url          = "http://memmett.github.com/PyWENO/",
 
     # XXX
@@ -79,14 +79,14 @@ setup(
         Extension('pyweno.cweno',
                   sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
                   include_dirs=[np.get_include()],
-                  extra_compile_args = ['-std=c99'],                  
+                  extra_compile_args = ['-std=c99'],
                   )],
 
     long_description = long_description,
 
     classifiers = [
         'Development Status :: 4 - Beta',
-#        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 5 - Production/Stable',
 #        'Development Status :: 6 - Mature',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
@@ -97,5 +97,5 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         ],
-    
+
     )
