@@ -123,7 +123,7 @@ def optimal_weights(k, xi):
   r"""Compute the optimal weights for a 2k-1 order WENO scheme
   corresponding to the reconstruction points in *xi*.
 
-  The coefficients are stored as SymPy variables in an ndarray
+  The coefficients are stored as SymPy variables in a dictionary
   indexed according to ``w[l,r]``.  That is
 
   .. math::
@@ -148,7 +148,7 @@ def optimal_weights(k, xi):
   for l in range(n):
     eqns = []
 
-    #for j in range(2*k-1):
+    # we'll just use the first k eqns since the system is overdetermined
     for j in range(k):
 
       rmin = max(0, (k-1)-j)
@@ -164,19 +164,28 @@ def optimal_weights(k, xi):
     # (in xi), that the solution obtained above is a high
     # precision solution.
 
-    # XXX: The j loop above stops at k, whereas it should
-    # technically stop at 2*k-1.  That is, the system that should
-    # be solved is overdetermined, but we are stopping when we
-    # have enough equations.  As such, the solutions obtained
-    # above should be checked...
-
     sol = sympy.solve(eqns, omega)
 
+    # now check all 2*k-1 eqns to make sure the weights work out properly
+    for j in range(2*k-1):
+
+      rmin = max(0, (k-1)-j)
+      rmax = min(k-1, 2*(k-1)-j)
+
+      accum = 0
+      for r in range(rmin, rmax+1):
+        accum = accum + omega[r] * c[i,l,r,r-(k-1)+j]
+
+      eqn = accum - c2k[i,l,k-1,j]
+      eqn.subs(sol)             # XXX: check this
+
+    # check for negative weights and mark as split
     if min(sol.values()) < 0:
       split[l] = True
     else:
       split[l] = False
 
+    # split as appropriate
     for r in range(k):
       if split[l]:
         w  = sol[omega[r]]
@@ -196,8 +205,8 @@ def jiang_shu_smoothness_coefficients(k):
   r"""Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
   WENO scheme.
 
-  The coefficients are stored as SymPy variables in an array
-  indexed according to ``beta[r,m,n]``.  That is
+  The coefficients are stored as SymPy variables in dictionary indexed
+  according to ``beta[r,m,n]``.  That is
 
   .. math::
 
