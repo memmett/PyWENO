@@ -1,9 +1,14 @@
 What's new
 ===========
 
+**New in v0.8.1:**
+
+* The SciKit has been removed and the non-uniform code has been
+  simplified and resurrected.
+
 **New in v0.7.1:**
 
-* Major overhaul.  
+* Major overhaul.
 
 **New in v0.5.11:**
 

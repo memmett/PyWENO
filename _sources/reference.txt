@@ -4,9 +4,9 @@ Reference
 WENO SciKit
 -----------
 
-.. autofunction:: scikits.weno.reconstruct
+.. autofunction:: pyweno.weno.reconstruct
 
-.. autofunction:: scikits.weno.coeffs
+.. .. autofunction:: pyweno.reconstruction_coeffs.coeffs
 
 
 Symbolics
@@ -37,6 +37,13 @@ Wrappers
 ^^^^^^^^
 
 .. automodule:: pyweno.wrappers
+   :members:
+
+
+Non-uniform reconstructions
+---------------------------
+
+.. automodule:: pyweno.nonuniform
    :members:
 
 

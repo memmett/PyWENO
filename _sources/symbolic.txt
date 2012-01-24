@@ -61,21 +61,30 @@ For uniform grids, one could define the grid points by::
 Reconstruction coefficients
 ---------------------------
 
-Hereafter we assume that the grid is uniform.
+Hereafter we assume that the grid is uniform.  Furthermore, to specify
+a point within a cell, the interval [-1, 1] is used as a reference.
 
 The reconstruction coefficients for a 5th (=2k-1 where k=3) order WENO
-scheme corresponding to the reconstruction point at the left side of
-each grid cell are given by::
+scheme corresponding to the reconstruction point at the left side
+(*xi* = -1) of each grid cell are given by::
 
-  >>> c = pyweno.symbolic.reconstruction_coefficients(3, 'left')
+  >>> c = pyweno.symbolic.reconstruction_coefficients(3, [ -1 ])
   >>> c
-  array([[11/6, -7/6, 1/3],
-         [1/3, 5/6, -1/6],
-         [-1/6, 5/6, 1/3]], dtype=object)
+  {'k': 3,
+   'n': 1,
+   (0, 0, 0): 11/6,
+   (0, 0, 1): -7/6,
+   (0, 0, 2): 1/3,
+   (0, 1, 0): 1/3,
+   (0, 1, 1): 5/6,
+   (0, 1, 2): -1/6,
+   (0, 2, 0): -1/6,
+   (0, 2, 1): 5/6,
+   (0, 2, 2): 1/3
 
-Note that the return value *c* is a NumPy array of SymPy objects,
-indexed according to ``c[r,j]`` where ``r`` is the left-shift of the
-stencil.
+Note that the return value *c* is a dictionary of SymPy objects,
+indexed according to ``c[l,r,j]`` where ``l`` is the index of the
+reconstruction point and ``r`` is the left-shift of the stencil.
 
 
 Optimal weights
@@ -85,13 +94,14 @@ The optimal weights for a 5th (=2k-1 where k=3) order WENO scheme
 corresponding to the reconstruction point at the left side of each
 grid cell are given by::
 
-  >>> w = pyweno.symbolic.optimal_weights(3, 'left')
+  >>> w = pyweno.symbolic.optimal_weights(3, [ -1 ])
   >>> w
-  [1/10, 3/5, 3/10]
+  ({'k': 3, 'n': 1, (0, 0): 1/10, (0, 1): 3/5, (0, 2): 3/10}, {0: False, 'n': 1})
 
-Note that the return value *w* is a Python list of SymPy objects, and
-is indexed according to ``w[r]`` where ``r`` is the left-shift of the
-stencil.
+Note that the return value *w* is a tuple of dictionaries of SymPy
+objects.  The first dictionary contains the weights, and is indexed
+according to ``w[l,r]``.  the second dictionary contains boolean
+values determining of the weights are split (negative).
 
 
 Smoothness coefficients
@@ -102,6 +112,6 @@ order WENO scheme are given by::
 
   >>> beta = pyweno.symbolic.jiang_shu_smoothness_coefficients(3)
 
-The return value *beta* is a NumPy array of SymPy objects, and is
+The return value *beta* is a dictionary of SymPy objects, and is
 indexed according to ``beta[r,m,n]`` (see the reference documentation
 for details).

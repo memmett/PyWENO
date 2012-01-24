@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,24 +7,25 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Reference &mdash; PyWENO v0.7.2 documentation</title>
+    <title>Reference &mdash; PyWENO v0.8.1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.7.2',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.8.1',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
-    <link rel="top" title="PyWENO v0.7.2 documentation" href="index.html" />
+    <script type="text/javascript" src="http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.8.1 documentation" href="index.html" />
     <link rel="next" title="What’s new" href="whatsnew.html" />
-    <link rel="prev" title="Code generation" href="codegen.html" /> 
+    <link rel="prev" title="Non-uniform WENO reconstructions" href="nonuniform.html" /> 
   </head>
   <body>
     <div class="related">
@@ -32,15 +35,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="whatsnew.html" title="What’s new"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="codegen.html" title="Code generation"
+          <a href="nonuniform.html" title="Non-uniform WENO reconstructions"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.8.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -54,23 +57,23 @@
 <div class="section" id="weno-scikit">
 <h2>WENO SciKit<a class="headerlink" href="#weno-scikit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="scikits.weno.reconstruct">
-<tt class="descclassname">scikits.weno.</tt><tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>k</em>, <em>points</em>, <em>n=None</em>, <em>smoothness=None</em>, <em>weights=None</em>, <em>return_smoothness=False</em>, <em>return_weights=False</em>, <em>squeeze=True</em><big>)</big><a class="headerlink" href="#scikits.weno.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dt id="pyweno.weno.reconstruct">
+<tt class="descclassname">pyweno.weno.</tt><tt class="descname">reconstruct</tt><big>(</big><em>q</em>, <em>k</em>, <em>points</em>, <em>n=None</em>, <em>smoothness=None</em>, <em>weights=None</em>, <em>return_smoothness=False</em>, <em>return_weights=False</em>, <em>squeeze=True</em><big>)</big><a class="headerlink" href="#pyweno.weno.reconstruct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform WENO reconstruction of q.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><em>q</em> &#8211; cell-averaged unknown to reconstruct</li>
-<li><em>k</em> &#8211; order of reconstruction (odd values from 5 to 11)</li>
-<li><em>points</em> &#8211; reconstruction points (see below)</li>
-<li><em>n</em> &#8211; number of reconstruction points (see below, optional)</li>
-<li><em>smoothness</em> &#8211; use smoothness indicators <em>smoothness</em> (optional)</li>
-<li><em>weights</em> &#8211; use non-linear weights <em>weights</em> (optional)</li>
-<li><em>return_smoothness</em> &#8211; return smoothness indicators? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
-<li><em>return_weights</em> &#8211; return weights? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
-<li><em>squeeze</em> &#8211; squeeze the results? (defaults to <tt class="xref docutils literal"><span class="pre">True</span></tt>)</li>
+<li><strong>q</strong> &#8211; cell-averaged unknown to reconstruct</li>
+<li><strong>k</strong> &#8211; order of reconstruction (odd values from 5 to 11)</li>
+<li><strong>points</strong> &#8211; reconstruction points (see below)</li>
+<li><strong>n</strong> &#8211; number of reconstruction points (see below, optional)</li>
+<li><strong>smoothness</strong> &#8211; use smoothness indicators <em>smoothness</em> (optional)</li>
+<li><strong>weights</strong> &#8211; use non-linear weights <em>weights</em> (optional)</li>
+<li><strong>return_smoothness</strong> &#8211; return smoothness indicators? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
+<li><strong>return_weights</strong> &#8211; return weights? (defaults to <tt class="xref docutils literal"><span class="pre">False</span></tt>)</li>
+<li><strong>squeeze</strong> &#8211; squeeze the results? (defaults to <tt class="xref docutils literal"><span class="pre">True</span></tt>)</li>
 </ul>
 </td>
 </tr>
@@ -92,31 +95,6 @@ quadrature points</li>
 <p>This function wraps several complied WENO kernels which were
 generated by PyWENO.  If you need WENO reconstructions at points not
 supported by this wrapper, please checkout <a class="reference external" href="http://memmett.github.com/PyWENO/">PyWENO</a>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="scikits.weno.coeffs">
-<tt class="descclassname">scikits.weno.</tt><tt class="descname">coeffs</tt><big>(</big><em>xi</em>, <em>i</em>, <em>r</em>, <em>k</em>, <em>x</em>, <em>c</em><big>)</big><a class="headerlink" href="#scikits.weno.coeffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Numerically compute the reconstruction coefficients.</p>
-<p>The reconstruction coefficients <em>c_j</em> are used to approximate the
-function <em>f</em> given its cell averages <em>f_j</em> according to</p>
-<div class="math">
-f(\xi) \approx \sum_{j=0}^{k-1} c_j\, \overline{f}_{i-r+j}.</div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><em>xi</em> &#8211; reconstruction point</li>
-<li><em>i</em> &#8211; cell index (ie, index of the cell that containts <em>xi</em>)</li>
-<li><em>r</em> &#8211; left shift</li>
-<li><em>k</em> &#8211; order</li>
-<li><em>x</em> &#8211; cell boundaries</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </div>
@@ -144,8 +122,8 @@ function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).</p>
 scheme corresponding to the reconstruction points in <em>xi</em>.</p>
 <p>The reconstruction points in <em>xi</em> should in <span class="math">[-1, 1]</span>.  This
 interval is then mapped to the cell <span class="math">[x_{i-1/2}, x_{i+1/2}]</span>.</p>
-<p>The returned coefficients are stored as SymPy variables in an
-ndarray indexed according to <tt class="docutils literal"><span class="pre">c[l,r,j]</span></tt>.  That is</p>
+<p>The returned coefficients are stored as SymPy variables in a
+dictionary indexed according to <tt class="docutils literal"><span class="pre">c[l,r,j]</span></tt>.  That is</p>
 <div class="math">
 f^r(\xi_l) \approx \sum_j c^{l,r}_j \, f_{i-r+j}</div>
 <p>for each <span class="math">l</span> from 0 to <tt class="docutils literal"><span class="pre">len(xi)</span></tt>.</p>
@@ -156,7 +134,7 @@ f^r(\xi_l) \approx \sum_j c^{l,r}_j \, f_{i-r+j}</div>
 <tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">optimal_weights</tt><big>(</big><em>k</em>, <em>xi</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.optimal_weights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the optimal weights for a 2k-1 order WENO scheme
 corresponding to the reconstruction points in <em>xi</em>.</p>
-<p>The coefficients are stored as SymPy variables in an ndarray
+<p>The coefficients are stored as SymPy variables in a dictionary
 indexed according to <tt class="docutils literal"><span class="pre">w[l,r]</span></tt>.  That is</p>
 <div class="math">
 f(\xi^l) \approx \sum_r w^r f^r</div>
@@ -168,7 +146,7 @@ f(\xi^l) \approx \sum_r w^r f^r</div>
 <tt class="descclassname">pyweno.symbolic.</tt><tt class="descname">jiang_shu_smoothness_coefficients</tt><big>(</big><em>k</em><big>)</big><a class="headerlink" href="#pyweno.symbolic.jiang_shu_smoothness_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
 WENO scheme.</p>
-<p>The coefficients are stored as SymPy variables in an array
+<p>The coefficients are stored as SymPy variables in a dictionary
 indexed according to <tt class="docutils literal"><span class="pre">beta[r,m,n]</span></tt>.  That is</p>
 <div class="math">
 \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
@@ -179,18 +157,17 @@ indexed according to <tt class="docutils literal"><span class="pre">beta[r,m,n]<
 <div class="section" id="code-generation">
 <h2>Code generation<a class="headerlink" href="#code-generation" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="module-pyweno.kernels">
-<h3>Kernels<a class="headerlink" href="#module-pyweno.kernels" title="Permalink to this headline">¶</a></h3>
+<span id="kernels"></span><h3>Kernels<a class="headerlink" href="#module-pyweno.kernels" title="Permalink to this headline">¶</a></h3>
 <p>PyWENO code generation tool kit (kernels).</p>
 <dl class="class">
 <dt id="pyweno.kernels.KernelGenerator">
-<em class="property">
-class </em><tt class="descclassname">pyweno.kernels.</tt><tt class="descname">KernelGenerator</tt><big>(</big><em>lang</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pyweno.kernels.</tt><tt class="descname">KernelGenerator</tt><big>(</big><em>lang</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate kernels for WENO reconstructions.</p>
 <p>Each method generates a &#8216;kernel&#8217; for a specific WENO operation:
 computing smoothness indicators, non-linear weights, and
 reconstructions.  These code snippets can, in-turn, be used to
 create seperate functions or larger kernels.</p>
-<p>The <em>basenames</em> dictionary is used to define naming conventions:</p>
+<p>The <em>local_names</em> dictionary is used to define naming conventions:</p>
 <ul class="simple">
 <li>smoothness indicators: <em>sigma</em>, default <tt class="docutils literal"><span class="pre">sigmaX</span></tt></li>
 <li>weights: <em>omega</em>, default <tt class="docutils literal"><span class="pre">omegaX</span></tt></li>
@@ -205,7 +182,7 @@ accumulator variable <tt class="docutils literal"><span class="pre">acc</span></
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>lang</em> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lang</strong> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
 </tr>
 </tbody>
 </table>
@@ -221,17 +198,20 @@ computed) and the reconstruction coefficients <em>coeffs</em>.</p>
 <dl class="method">
 <dt id="pyweno.kernels.KernelGenerator.set_optimal_weights">
 <tt class="descname">set_optimal_weights</tt><big>(</big><em>varpi</em>, <em>split</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_optimal_weights" title="Permalink to this definition">¶</a></dt>
-<dd>Set the optimal (linear) weights.</dd></dl>
+<dd><p>Set the optimal (linear) weights.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.kernels.KernelGenerator.set_reconstruction_coefficients">
 <tt class="descname">set_reconstruction_coefficients</tt><big>(</big><em>coeffs</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
-<dd>Set the reconstruction coefficients.</dd></dl>
+<dd><p>Set the reconstruction coefficients.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.kernels.KernelGenerator.set_smoothness">
 <tt class="descname">set_smoothness</tt><big>(</big><em>beta</em><big>)</big><a class="headerlink" href="#pyweno.kernels.KernelGenerator.set_smoothness" title="Permalink to this definition">¶</a></dt>
-<dd>Set the smoothness indicator coefficients.</dd></dl>
+<dd><p>Set the smoothness indicator coefficients.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.kernels.KernelGenerator.smoothness">
@@ -262,12 +242,11 @@ XXX: pass power...</p>
 
 </div>
 <div class="section" id="module-pyweno.wrappers">
-<h3>Wrappers<a class="headerlink" href="#module-pyweno.wrappers" title="Permalink to this headline">¶</a></h3>
+<span id="wrappers"></span><h3>Wrappers<a class="headerlink" href="#module-pyweno.wrappers" title="Permalink to this headline">¶</a></h3>
 <p>PyWENO code generation module (wrappers).</p>
 <dl class="class">
 <dt id="pyweno.wrappers.WrapperGenerator">
-<em class="property">
-class </em><tt class="descclassname">pyweno.wrappers.</tt><tt class="descname">WrapperGenerator</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pyweno.wrappers.</tt><tt class="descname">WrapperGenerator</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate kernals and wrappers for WENO reconstructions.</p>
 <p>Each method generates a function (and optionallly a Python wrapper)
 for a specific WENO operation: computing smoothness indicators,
@@ -276,41 +255,103 @@ non-linear weights, and reconstructions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field"><th class="field-name">Parameter:</th><td class="field-body"><em>lang</em> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lang</strong> &#8211; <tt class="docutils literal"><span class="pre">'c'</span></tt>, <tt class="docutils literal"><span class="pre">'opencl'</span></tt>, or <tt class="docutils literal"><span class="pre">'fortran'</span></tt></td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="pyweno.wrappers.WrapperGenerator.footer">
 <tt class="descname">footer</tt><big>(</big><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.footer" title="Permalink to this definition">¶</a></dt>
-<dd>Return C Python extension module footer.</dd></dl>
+<dd><p>Return C Python extension module footer.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.wrappers.WrapperGenerator.header">
 <tt class="descname">header</tt><big>(</big><em>module=''</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.header" title="Permalink to this definition">¶</a></dt>
-<dd>Return C Python extension module header.</dd></dl>
+<dd><p>Return C Python extension module header.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.wrappers.WrapperGenerator.reconstruction">
 <tt class="descname">reconstruction</tt><big>(</big><em>function='reconstruct'</em>, <em>compute_smoothness=False</em>, <em>compute_weights=False</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.reconstruction" title="Permalink to this definition">¶</a></dt>
-<dd>Recontruction function.</dd></dl>
+<dd><p>Recontruction function.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.wrappers.WrapperGenerator.smoothness">
 <tt class="descname">smoothness</tt><big>(</big><em>function='smoothness'</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.smoothness" title="Permalink to this definition">¶</a></dt>
-<dd>Smoothness function.</dd></dl>
+<dd><p>Smoothness function.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyweno.wrappers.WrapperGenerator.weights">
 <tt class="descname">weights</tt><big>(</big><em>function='weights'</em>, <em>wrapper=False</em><big>)</big><a class="headerlink" href="#pyweno.wrappers.WrapperGenerator.weights" title="Permalink to this definition">¶</a></dt>
-<dd>Weights function.</dd></dl>
+<dd><p>Weights function.</p>
+</dd></dl>
 
 </dd></dl>
 
 </div>
 </div>
+<div class="section" id="module-pyweno.nonuniform">
+<span id="non-uniform-reconstructions"></span><h2>Non-uniform reconstructions<a class="headerlink" href="#module-pyweno.nonuniform" title="Permalink to this headline">¶</a></h2>
+<p>PyWENO non-uniform reconstruction routines.</p>
+<dl class="function">
+<dt id="pyweno.nonuniform.jiang_shu_smoothness_coefficients">
+<tt class="descclassname">pyweno.nonuniform.</tt><tt class="descname">jiang_shu_smoothness_coefficients</tt><big>(</big><em>k</em>, <em>x</em><big>)</big><a class="headerlink" href="#pyweno.nonuniform.jiang_shu_smoothness_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
+WENO scheme on the non-uniform grid <em>x</em>.</p>
+<p>The coefficients are stored in a NumPy array indexed according to
+<tt class="docutils literal"><span class="pre">beta[i,r,m,n]</span></tt>.  That is</p>
+<div class="math">
+\sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
+  \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.nonuniform.optimal_weights">
+<tt class="descclassname">pyweno.nonuniform.</tt><tt class="descname">optimal_weights</tt><big>(</big><em>xi</em>, <em>k</em>, <em>x</em>, <em>tolerance=1e-12</em><big>)</big><a class="headerlink" href="#pyweno.nonuniform.optimal_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the optimal weights for a 2k-1 order WENO scheme
+corresponding to the reconstruction points in <em>xi</em> on the
+non-uniform grid <em>x</em>.</p>
+<p>The coefficients are stored in a NumPy array that is indexed
+according to <tt class="docutils literal"><span class="pre">w[i,l,r]</span></tt>.  That is</p>
+<div class="math">
+f(\xi^l) \approx \sum_r w^r f^r</div>
+<p>for each <span class="math">l</span> from 0 to <tt class="docutils literal"><span class="pre">len(xi)</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pyweno.nonuniform.reconstruction_coefficients">
+<tt class="descclassname">pyweno.nonuniform.</tt><tt class="descname">reconstruction_coefficients</tt><big>(</big><em>xi</em>, <em>k</em>, <em>x</em><big>)</big><a class="headerlink" href="#pyweno.nonuniform.reconstruction_coefficients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Numerically compute the reconstruction coefficients for a 2k-1
+order WENO scheme corresponding to the reconstruction points in <em>xi</em>
+on the non-uniform grid <em>x</em>.</p>
+<p>The reconstruction points in <em>xi</em> should be in <span class="math">[-1, 1]</span>.  This
+interval is then mapped to the cell <span class="math">[x_{i-1/2}, x_{i+1/2}]</span>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>xi</strong> &#8211; list of reconstruction points</li>
+<li><strong>k</strong> &#8211; reconstruction order</li>
+<li><strong>x</strong> &#8211; cell boundaries</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The returned coefficients are stored in a NumPy array that is
+indexed according to <tt class="docutils literal"><span class="pre">c[i,l,r,j]</span></tt>.  That is</p>
+<div class="math">
+f^r(\xi_l) \approx \sum_j c^{l,r}_{i,j} \, f_{i-r+j}</div>
+<p>for each <span class="math">l</span> from 0 to <tt class="docutils literal"><span class="pre">len(xi)</span></tt>.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-pyweno.version">
-<h2>Version<a class="headerlink" href="#module-pyweno.version" title="Permalink to this headline">¶</a></h2>
+<span id="version"></span><h2>Version<a class="headerlink" href="#module-pyweno.version" title="Permalink to this headline">¶</a></h2>
 <p>PyWENO version information.</p>
 <p>To obtain the version of PyWENO:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyweno.version</span>
@@ -327,45 +368,42 @@ non-linear weights, and reconstructions.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">Reference</a><ul>
-<li><a class="reference external" href="#weno-scikit">WENO SciKit</a></li>
-<li><a class="reference external" href="#symbolics">Symbolics</a></li>
-<li><a class="reference external" href="#code-generation">Code generation</a><ul>
-<li><a class="reference external" href="#module-pyweno.kernels">Kernels</a></li>
-<li><a class="reference external" href="#module-pyweno.wrappers">Wrappers</a></li>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">PyWENO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">WENO SciKit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="symbolic.html">Symbolics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">Code generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nonuniform.html">Non-uniform WENO reconstructions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#weno-scikit">WENO SciKit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#symbolics">Symbolics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-generation">Code generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyweno.kernels">Kernels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyweno.wrappers">Wrappers</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#module-pyweno.version">Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyweno.nonuniform">Non-uniform reconstructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyweno.version">Version</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">What&#8217;s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Downloading and installing</a></li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="codegen.html"
-                                  title="previous chapter">Code generation</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="whatsnew.html"
-                                  title="next chapter">What&#8217;s new</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/reference.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -377,20 +415,20 @@ non-linear weights, and reconstructions.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="whatsnew.html" title="What’s new"
              >next</a> |</li>
         <li class="right" >
-          <a href="codegen.html" title="Code generation"
+          <a href="nonuniform.html" title="Non-uniform WENO reconstructions"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.8.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

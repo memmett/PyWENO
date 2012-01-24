@@ -1,7 +1,7 @@
 """PyWENO smooth reconstruction example."""
 
 import numpy as np
-import scikits.weno
+import pyweno.weno
 
 import matplotlib
 matplotlib.use('Agg')
@@ -12,10 +12,10 @@ F = np.sin
 
 x = np.linspace(0.0, 2*np.pi, 21)
 a = (F(x[1:]) - F(x[:-1]))/(x[1]-x[0])
-l, s = scikits.weno.reconstruct(a, 5, 'left', return_smoothness=True)
-r    = scikits.weno.reconstruct(a, 5, 'right')
+l, s = pyweno.weno.reconstruct(a, 5, 'left', return_smoothness=True)
+r    = pyweno.weno.reconstruct(a, 5, 'right')
 
-plt.title('scikits.weno reconstruction and smoothness indicators')
+plt.title('pyweno.weno reconstruction and smoothness indicators')
 
 plt.subplot(2,1,1)
 

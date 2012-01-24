@@ -5,7 +5,7 @@ The PyWENO project provides a set of open source tools for
 constructing high-order Weighted Essentially Non-oscillatory (WENO)
 methods and performing high-order WENO reconstructions.
 
-The project consists of three main parts:
+PyWENO consists of four main parts:
 
 * :doc:`Symbolics <symbolic>` - tools for exploring and constructing
   WENO methods.
@@ -13,16 +13,18 @@ The project consists of three main parts:
 * :doc:`Code generation <codegen>` - tools for generating custom C, Fortran,
   and OpenCL WENO routines.
 
-* :doc:`WENO SciKit <tutorial>` - an easy to use module to compute
-  WENO reconstructions in Python.
+* :doc:`WENO toolkit <tutorial>` - an easy to use toolkit to easily
+  compute WENO reconstructions in Python.
+
+* :doc:`Non-uniform <nonuniform>` - tools for generating WENO methods
+  on non-uniform grids.
 
 **News**
 
-* June 13 2011: A new `WENO SciKit`_ built using PyWENO is now available.
+* January 23 2012: The non-uniform codes have been resurrected.
 * June 13 2011: PyWENO has been significantly refactored and
   simplified.  A lot of code was removed in favour of focusing on code
-  generation and an easy to use WENO SciKit.
-* January 20 2011: `PyWENO 0.5.11`_ released (see :doc:`what's new <whatsnew>`).
+  generation and an easy to use WENO toolkit.
 
 Please check out the documentation (below) or the `PyWENO project
 page`_ for more information about using and contributing to PyWENO.
@@ -33,9 +35,10 @@ Documentation
 
 **Main parts of the documentation**
 
-* :doc:`WENO SciKit tutorial <tutorial>` - basic WENO reconstructions.
+* :doc:`WENO tutorial <tutorial>` - basic WENO reconstructions.
 * :doc:`Symbolics <symbolic>` - the symbolic tool kit.
 * :doc:`Code generation <codegen>` - the code generation tool kit.
+* :doc:`Non-uniform <nonuniform>` - the non-uniform grid tool kit.
 * :doc:`Reference <reference>` - reference documentation.
 * :doc:`Download <download>` - download and installation instructions.
 
@@ -53,19 +56,11 @@ patches to the primary author (`Matthew Emmett`_).  You will be credited.
    tutorial
    symbolic
    codegen
+   nonuniform
    reference
    whatsnew
    download
 
-.. _`WENO SciKit`: XXX
-.. _`SciKit interface`: 
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
 .. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/
-.. _`semantic versioning`: http://semver.org/
-.. _`PyBLAW`: http://memmett.github.com/PyBLAW
-.. _`Python Balance LAW`: http://memmett.github.com/PyBLAW
-.. _`PyWENO 0.4.0`: http://github.com/memmett/PyWENO/downloads
-.. _`PyWENO 0.5.0`: http://github.com/memmett/PyWENO/downloads
-.. _`PyWENO 0.5.7`: http://github.com/memmett/PyWENO/downloads
-.. _`PyWENO 0.5.9`: http://github.com/memmett/PyWENO/downloads
-.. _`PyWENO 0.5.11`: http://github.com/memmett/PyWENO/downloads
+

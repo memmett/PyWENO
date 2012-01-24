@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -5,22 +7,23 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>WENO SciKit &mdash; PyWENO v0.7.2 documentation</title>
+    <title>WENO SciKit &mdash; PyWENO v0.8.1 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.7.2',
-        COLLAPSE_MODINDEX: false,
+        VERSION:     '0.8.1',
+        COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
-    <link rel="top" title="PyWENO v0.7.2 documentation" href="index.html" />
+    <script type="text/javascript" src="http://www.unc.edu/~mwemmett/jsmath/easy/load.js"></script>
+    <link rel="top" title="PyWENO v0.8.1 documentation" href="index.html" />
     <link rel="next" title="Symbolics" href="symbolic.html" />
     <link rel="prev" title="PyWENO" href="index.html" /> 
   </head>
@@ -32,15 +35,15 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
-             accesskey="M">modules</a> |</li>
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="symbolic.html" title="Symbolics"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="PyWENO"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.8.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -54,38 +57,38 @@
 <div class="section" id="weno-reconstructions">
 <h2>WENO reconstructions<a class="headerlink" href="#weno-reconstructions" title="Permalink to this headline">¶</a></h2>
 <p>High-order WENO reconstructions for 1d arrays of cell-average
-quantities can be computed with the <tt class="docutils literal"><span class="pre">scikits.weno</span></tt> module.</p>
+quantities can be computed with the <tt class="docutils literal"><span class="pre">pyweno.weno</span></tt> module.</p>
 <p>For example, to reconstruct <em>sin(x)</em> at the left edge of each cell to
 fifth order accuracy:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scikits.weno</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">21</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1</span><span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mf">1</span><span class="p">]))</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mf">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mf">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">scikits</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mf">5</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pyweno.weno</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">q</span> <span class="o">=</span> <span class="n">pyweno</span><span class="o">.</span><span class="n">weno</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;left&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Please see the <a class="reference external" href="reference.html"><em>reference documentation</em></a> for more
+<p>Please see the <a class="reference internal" href="reference.html"><em>reference documentation</em></a> for more
 information.</p>
 <div class="section" id="smooth-reconstruction">
 <h3>Smooth reconstruction<a class="headerlink" href="#smooth-reconstruction" title="Permalink to this headline">¶</a></h3>
 <p>Here we reconstruct <em>sin(x)</em> at the left and right edges of each cell
 to fifth order accuracy and plot the results:</p>
-<img alt="_images/smooth1.png" src="_images/smooth1.png" />
-<p>The code to generate the above is in <a href="_downloads/smooth.py"><strong class="xref">smooth.py</strong></a>.</p>
+<img alt="_images/smooth.png" src="_images/smooth.png" />
+<p>The code to generate the above is in <a class="reference download internal" href="_downloads/smooth.py"><tt class="xref download docutils literal"><span class="pre">smooth.py</span></tt></a>.</p>
 </div>
 <div class="section" id="discontinuous-reconstruction">
 <h3>Discontinuous reconstruction<a class="headerlink" href="#discontinuous-reconstruction" title="Permalink to this headline">¶</a></h3>
 <p>Here we reconstruct a discontinuous function (<em>sin(x)</em> for <em>x&lt;0</em>,
 <em>cos(x)</em> for <em>x&gt;0</em>) at the left and right edges of each cell to fifth
 order accuracy and plot the results:</p>
-<img alt="_images/discontinuous1.png" src="_images/discontinuous1.png" />
-<p>The code to generate the above is in <a href="_downloads/discontinuous.py"><strong class="xref">discontinuous.py</strong></a>.</p>
+<img alt="_images/discontinuous.png" src="_images/discontinuous.png" />
+<p>The code to generate the above is in <a class="reference download internal" href="_downloads/discontinuous.py"><tt class="xref download docutils literal"><span class="pre">discontinuous.py</span></tt></a>.</p>
 </div>
 </div>
 <div class="section" id="non-uniform-reconstruction-coefficients">
 <h2>Non-uniform reconstruction coefficients<a class="headerlink" href="#non-uniform-reconstruction-coefficients" title="Permalink to this headline">¶</a></h2>
 <p>Reconstruction coefficients for arbitrary points within a non-uniform
-grid can be computed with the <tt class="docutils literal"><span class="pre">scikits.weno</span></tt> as well.</p>
+grid can be computed with the <tt class="docutils literal"><span class="pre">pyweno.weno</span></tt> as well.</p>
 <p>For example, XXX</p>
 </div>
 <div class="section" id="version-information">
@@ -105,44 +108,40 @@ grid can be computed with the <tt class="docutils literal"><span class="pre">sci
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-            <h3><a href="index.html">Table Of Contents</a></h3>
-            <ul>
-<li><a class="reference external" href="">WENO SciKit</a><ul>
-<li><a class="reference external" href="#weno-reconstructions">WENO reconstructions</a><ul>
-<li><a class="reference external" href="#smooth-reconstruction">Smooth reconstruction</a></li>
-<li><a class="reference external" href="#discontinuous-reconstruction">Discontinuous reconstruction</a></li>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">PyWENO</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">WENO SciKit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#weno-reconstructions">WENO reconstructions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#smooth-reconstruction">Smooth reconstruction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#discontinuous-reconstruction">Discontinuous reconstruction</a></li>
 </ul>
 </li>
-<li><a class="reference external" href="#non-uniform-reconstruction-coefficients">Non-uniform reconstruction coefficients</a></li>
-<li><a class="reference external" href="#version-information">Version information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#non-uniform-reconstruction-coefficients">Non-uniform reconstruction coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-information">Version information</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="symbolic.html">Symbolics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">Code generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nonuniform.html">Non-uniform WENO reconstructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whatsnew.html">What&#8217;s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Downloading and installing</a></li>
 </ul>
 
-            <h4>Previous topic</h4>
-            <p class="topless"><a href="index.html"
-                                  title="previous chapter">PyWENO</a></p>
-            <h4>Next topic</h4>
-            <p class="topless"><a href="symbolic.html"
-                                  title="next chapter">Symbolics</a></p>
-            <h3>This Page</h3>
-            <ul class="this-page-menu">
-              <li><a href="_sources/tutorial.txt"
-                     rel="nofollow">Show Source</a></li>
-            </ul>
-          <div id="searchbox" style="display: none">
-            <h3>Quick search</h3>
-              <form class="search" action="search.html" method="get">
-                <input type="text" name="q" size="18" />
-                <input type="submit" value="Go" />
-                <input type="hidden" name="check_keywords" value="yes" />
-                <input type="hidden" name="area" value="default" />
-              </form>
-              <p class="searchtip" style="font-size: 90%">
-              Enter search terms or a module, class or function name.
-              </p>
-          </div>
-          <script type="text/javascript">$('#searchbox').show(0);</script>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -154,7 +153,7 @@ grid can be computed with the <tt class="docutils literal"><span class="pre">sci
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modindex.html" title="Global Module Index"
+          <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="symbolic.html" title="Symbolics"
@@ -162,12 +161,12 @@ grid can be computed with the <tt class="docutils literal"><span class="pre">sci
         <li class="right" >
           <a href="index.html" title="PyWENO"
              >previous</a> |</li>
-        <li><a href="index.html">PyWENO v0.7.2 documentation</a> &raquo;</li> 
+        <li><a href="index.html">PyWENO v0.8.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-      &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+        &copy; Copyright 2009, 2010, 2011, Matthew Emmett.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>
