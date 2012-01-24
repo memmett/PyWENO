@@ -5,16 +5,16 @@ WENO reconstructions
 --------------------
 
 High-order WENO reconstructions for 1d arrays of cell-average
-quantities can be computed with the ``scikits.weno`` module.
+quantities can be computed with the ``pyweno.weno`` module.
 
 For example, to reconstruct *sin(x)* at the left edge of each cell to
 fifth order accuracy::
 
   >>> import numpy as np
-  >>> import scikits.weno
+  >>> import pyweno.weno
   >>> x = np.linspace(0.0, 2*np.pi, 21)
   >>> f = (np.cos(x[1:]) - np.cos(x[:-1])) / (x[1] - x[0])
-  >>> q = scikits.weno.reconstruct(f, 5, 'left')
+  >>> q = pyweno.weno.reconstruct(f, 5, 'left')
 
 Please see the :doc:`reference documentation <reference>` for more
 information.
@@ -46,7 +46,7 @@ Non-uniform reconstruction coefficients
 ---------------------------------------
 
 Reconstruction coefficients for arbitrary points within a non-uniform
-grid can be computed with the ``scikits.weno`` as well.
+grid can be computed with the ``pyweno.weno`` as well.
 
 For example, XXX
 

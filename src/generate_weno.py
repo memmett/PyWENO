@@ -1,7 +1,7 @@
 """Generate the cweno extension module.
 
 An easy to use interface this module can be found in
-scikits.weno.reconstruct.
+pyweno.weno.reconstruct.
 
 """
 
@@ -19,7 +19,7 @@ for k in range(3, 7):
   print 'k:', k
 
   ## smoothness
-  
+
   wrapper = pyweno.wrappers.WrapperGenerator('c')
 
   beta = pyweno.symbolic.jiang_shu_smoothness_coefficients(k)
@@ -61,8 +61,8 @@ for k in range(3, 7):
     for n in N:
 
       wrapper = pyweno.wrappers.WrapperGenerator('c')
-      wrapper.set_smoothness(beta)    
-      
+      wrapper.set_smoothness(beta)
+
       xi = func(n)
 
       print '    n:', n
