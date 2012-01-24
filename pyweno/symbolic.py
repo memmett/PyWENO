@@ -199,14 +199,14 @@ def optimal_weights(k, xi):
 
 
 
-###############################################################################n
+###############################################################################
 
 def jiang_shu_smoothness_coefficients(k):
   r"""Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
   WENO scheme.
 
-  The coefficients are stored as SymPy variables in dictionary indexed
-  according to ``beta[r,m,n]``.  That is
+  The coefficients are stored as SymPy variables in a dictionary
+  indexed according to ``beta[r,m,n]``.  That is
 
   .. math::
 
