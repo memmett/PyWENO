@@ -4,12 +4,15 @@ import reconstruction_coeffs as rc
 import numpy as np
 import sympy
 
+
+###############################################################################
+
 def reconstruction_coefficients(xi, k, x):
   r"""Numerically compute the reconstruction coefficients for a 2k-1
   order WENO scheme corresponding to the reconstruction points in *xi*
   on the non-uniform grid *x*.
 
-  The reconstruction points in *xi* should in :math:`[-1, 1]`.  This
+  The reconstruction points in *xi* should be in :math:`[-1, 1]`.  This
   interval is then mapped to the cell :math:`[x_{i-1/2}, x_{i+1/2}]`.
 
   :param xi: list of reconstruction points
@@ -42,13 +45,15 @@ def reconstruction_coefficients(xi, k, x):
   return c
 
 
+###############################################################################
+
 def optimal_weights(xi, k, x, tolerance=1e-12):
   r"""Compute the optimal weights for a 2k-1 order WENO scheme
   corresponding to the reconstruction points in *xi* on the
   non-uniform grid *x*.
 
-  The coefficients are stored as SymPy variables in an ndarray
-  indexed according to ``w[l,r]``.  That is
+  The coefficients are stored in a NumPy array that is indexed
+  according to ``w[i,l,r]``.  That is
 
   .. math::
 
@@ -57,7 +62,7 @@ def optimal_weights(xi, k, x, tolerance=1e-12):
   for each :math:`l` from 0 to ``len(xi)``.
   """
 
-  # XXX: using SymPy to do this is inefficient
+  # XXX: using SymPy to do this is probably inefficient
 
   x = np.array(x)
   n = len(xi)
@@ -70,9 +75,8 @@ def optimal_weights(xi, k, x, tolerance=1e-12):
   for r in range(k):
     omega.append(sympy.var('omega%d' % r))
 
-  varpi = { 'n': n, 'k': k }
-  split = { 'n': n }
-
+  varpi = numpy.zeros((N,l,k))
+  # split = { 'n': n }
 
   for i in range(2*k,N-2*k):
     for l in range(n):
@@ -106,22 +110,87 @@ def optimal_weights(xi, k, x, tolerance=1e-12):
         if not abs(eqn.subs(sol)) < tolerance:
           raise ValueError('Unable to find optimal weight')
 
-      # check for negative weights and mark as split
       if min(sol.values()) < 0:
-        split[i,l] = True
-      else:
-        split[i,l] = False
+        raise ValueError(
+          'Negative optimal weight encountered at cell %d, point %d.' % (i, l))
 
-      # split as appropriate
       for r in range(k):
-        if split[i,l]:
-          w  = sol[omega[r]]
-          wp = (w + 3*abs(w))/2
-          wm = wp - w
-          varpi[i,l,r] = (wp, wm)
-        else:
-          varpi[i,l,r] = sol[omega[r]]
+        varpi[i,l,r] = float(sol[omega[r]])
 
-  return (varpi, split)
+
+      # # check for negative weights and mark as split
+      # if min(sol.values()) < 0:
+      #   split[i,l] = True
+      # else:
+      #   split[i,l] = False
+
+      # # split as appropriate
+      # for r in range(k):
+      #   if split[i,l]:
+      #     w  = sol[omega[r]]
+      #     wp = (w + 3*abs(w))/2
+      #     wm = wp - w
+      #     varpi[i,l,r] = (wp, wm)
+      #   else:
+      #     varpi[i,l,r] = sol[omega[r]]
+
+  # return (varpi, split)
+  return varpi
+
+
+###############################################################################
+
+def jiang_shu_smoothness_coefficients(k, x):
+  r"""Compute the Jiang-Shu smoothness coefficients for a 2k-1 order
+  WENO scheme on the non-uniform grid *x*.
+
+  The coefficients are stored in a NumPy array indexed according to
+  ``beta[i,r,m,n]``.  That is
+
+  .. math::
+
+    \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
+      \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
+  """
+
+  from symbolic import primitive_polynomial_interpolator
+
+  xs = np.array(x)
+  N  = len(xs)
+  x  = sympy.var('x')
+
+  # build array of cell averages (sympy vars f[i])
+  fs = []
+  for j in range(-k+1, k):
+    fs.append(sympy.var('f[i%+d]' % j))
+
+  # compute reconstruction coefficients for each left shift r
+  beta = np.zeros((N,k,2*k-1,2*k-1))
+  for i in range(k, N-k):
+    for r in range(0, k):
+      p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1],
+                                            fs[k-1-r:k-1-r+k]).diff(x)
+      # sum of L^2 norms of derivatives
+      s = 0
+      for j in range(1, k):
+        pp = (sympy.diff(p, x, j))**2
+        pp = pp.as_poly(x)
+        pp = pp.integrate(x)
+        #pp = pp.as_basic()
+        pp = (xs[i+1] - xs[i])**(2*j-1) * (
+          pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
+        pp = pp.expand()
+        s = s + pp
+
+      #s = s.expand()
+
+      # pick out coefficients
+      for m in range(2*k-1):
+        for n in range(m, 2*k-1):
+          c = s.coeff(fs[m]*fs[n])
+          if c is not None:
+            beta[i,r,m,n] = float(c)
+
+  return beta
 
 
