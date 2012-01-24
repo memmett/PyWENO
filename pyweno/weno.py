@@ -1,5 +1,8 @@
 """PyWENO WENO reconstructor."""
 
+import numpy as np
+import pyweno.cweno
+
 def reconstruct(q, k, points,
                 n=None,
                 smoothness=None,
@@ -46,9 +49,6 @@ def reconstruct(q, k, points,
 
   """
 
-  import numpy as np
-  import pyweno.cweno as cweno
-
   valid_k = (5, 11)
   valid_points = [ 'left', 'right', 'middle', '+/-',
                    'gauss', 'gauss_legendre',
@@ -85,7 +85,7 @@ def reconstruct(q, k, points,
   if smoothness is None:
     smoothness = np.zeros((N,k))
     try:
-      func = getattr(cweno, 'smoothness%03d' % k)
+      func = getattr(pyweno.cweno, 'smoothness%03d' % k)
     except AttributeError:
       raise ValueError, 'unsupported smoothness indicator: k=%d not generated' % (2*k-1)
     func(q, smoothness)
@@ -96,7 +96,7 @@ def reconstruct(q, k, points,
   if weights is None:
     weights = np.zeros((N,n,k))
     try:
-      func = getattr(cweno, 'weights_' + points + '%03d%03d' % (k, n))
+      func = getattr(pyweno.cweno, 'weights_' + points + '%03d%03d' % (k, n))
     except AttributeError:
       raise ValueError, 'unsupported non-linear weights: k=%d not generated' % (2*k-1)
     func(smoothness, weights)
@@ -111,7 +111,7 @@ def reconstruct(q, k, points,
     raise NotImplementedError, '+/- not implemented yet'
 
   try:
-    func = getattr(cweno, 'reconstruct_' + points + '%03d%03d' % (k, n))
+    func = getattr(pyweno.cweno, 'reconstruct_' + points + '%03d%03d' % (k, n))
   except AttributeError:
     raise ValueError, 'unsupported WENO reconstruction: points=%s, k=%d, n=%d not generated' % (points, 2*k-1, n)
 

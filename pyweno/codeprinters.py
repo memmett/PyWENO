@@ -1,3 +1,4 @@
+"""PyWENO code generation helpers."""
 
 from sympy.printing.fcode import FCodePrinter as SympyFCodePrinter
 from sympy.printing.ccode import CCodePrinter as SympyCCodePrinter

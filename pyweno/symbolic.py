@@ -1,8 +1,7 @@
 """PyWENO symbolic tool kit."""
 
-import warnings
-
 import sympy
+
 
 ###############################################################################
 

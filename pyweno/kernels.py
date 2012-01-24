@@ -1,7 +1,8 @@
 """PyWENO code generation tool kit (kernels)."""
 
 from sympy import Symbol
-from code import FCodePrinter, CCodePrinter
+
+import codeprinters
 
 symbol = lambda x: Symbol(x, real=True)
 
@@ -60,16 +61,16 @@ class KernelGenerator(object):
     self.f     = {}
 
     if self.lang == 'fortran':
-      self.code = FCodePrinter(settings={'source_format': 'free'})
+      self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
     else:
-      self.code = CCodePrinter()
+      self.code = codeprinters.CCodePrinter()
 
 
   #############################################################################
   # set methods
 
   def assign(self, dest, value):
-    if isinstance(self.code, CCodePrinter):
+    if isinstance(self.code, codeprinters.CCodePrinter):
       return str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';'
 
     return str(dest) + ' = ' + self.code.doprint(value.evalf(35))

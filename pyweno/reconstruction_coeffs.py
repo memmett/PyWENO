@@ -1,7 +1,7 @@
 """PyWENO non-uniform reconstruction coefficients."""
 
 import numpy as np
-import pyweno.ccoeffs as ccoeffs
+import pyweno.ccoeffs
 
 
 def reconstruction_coeffs(xi, i, r, k, x):
@@ -26,7 +26,7 @@ def reconstruction_coeffs(xi, i, r, k, x):
   c = np.empty(k)
 
   try:
-    ccoeffs.reconstruction_coeffs(xi, i, r, k, x, c)
+    pyweno.ccoeffs.reconstruction_coeffs(xi, i, r, k, x, c)
   except:
     raise NotImplementedError, "reconstruction coeffs for k = %d not implemented yet" % (k)
 
