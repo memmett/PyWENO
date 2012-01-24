@@ -1,9 +1,5 @@
 """PyWENO non-uniform reconstruction routines."""
 
-import reconstruction_coeffs as rc
-import numpy as np
-import sympy
-
 
 ###############################################################################
 
@@ -29,6 +25,9 @@ def reconstruction_coefficients(xi, k, x):
   for each :math:`l` from 0 to ``len(xi)``.
 
   """
+
+  import reconstruction_coeffs as rc
+  import numpy as np
 
   x = np.array(x)
   N = len(x)-1
@@ -61,6 +60,9 @@ def optimal_weights(xi, k, x, tolerance=1e-12):
 
   for each :math:`l` from 0 to ``len(xi)``.
   """
+
+  import numpy as np
+  import sympy
 
   # XXX: using SymPy to do this is probably inefficient
 
@@ -153,6 +155,8 @@ def jiang_shu_smoothness_coefficients(k, x):
       \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
   """
 
+  import numpy as np
+  import sympy
   from symbolic import primitive_polynomial_interpolator
 
   xs = np.array(x)
