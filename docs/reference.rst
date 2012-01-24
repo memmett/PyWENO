@@ -1,8 +1,8 @@
 Reference
 =========
 
-WENO SciKit
------------
+WENO toolkit
+------------
 
 .. autofunction:: pyweno.weno.reconstruct
 

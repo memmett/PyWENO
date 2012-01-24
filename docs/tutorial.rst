@@ -1,5 +1,5 @@
-WENO SciKit
-===========
+WENO toolkit
+============
 
 WENO reconstructions
 --------------------

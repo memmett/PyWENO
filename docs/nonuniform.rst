@@ -1,5 +1,5 @@
-Non-uniform WENO reconstructions
-================================
+Non-uniform grids
+=================
 
 XXX
 
