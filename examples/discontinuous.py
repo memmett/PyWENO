@@ -1,7 +1,7 @@
 """PyWENO smooth reconstruction example."""
 
 import numpy as np
-import scikits.weno
+import pyweno.weno
 
 import matplotlib
 matplotlib.use('Agg')
@@ -32,10 +32,10 @@ def F(x):
 x = np.linspace(-2*np.pi, 2*np.pi, 41)
 a = (F(x[1:]) - F(x[:-1]))/(x[1]-x[0])
 a[20:21] = (F(x[21:22]) - 0.0)/(x[1]-x[0]) # fix middle cell average
-l, s = scikits.weno.reconstruct(a, 5, 'left', return_smoothness=True)
-r    = scikits.weno.reconstruct(a, 5, 'right')
+l, s = pyweno.weno.reconstruct(a, 5, 'left', return_smoothness=True)
+r    = pyweno.weno.reconstruct(a, 5, 'right')
 
-plt.title('scikits.weno reconstruction and smoothness indicators')
+plt.title('pyweno.weno reconstruction and smoothness indicators')
 
 plt.subplot(2,1,1)
 
