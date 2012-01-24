@@ -29,8 +29,8 @@ for mod_name in [ 'sympy', 'pyweno.codeprinters', 'pyweno.ccoeffs', 'pyweno.cwen
     sys.modules[mod_name] = Mock()
 
 # extentions
-extensions = [ 'sphinx.ext.autodoc' ]
-#extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax']
+#extensions = [ 'sphinx.ext.autodoc' ]
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax']
 #extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax']
 #jsmath_path = 'http://www.unc.edu/~mwemmett/jsmath/easy/load.js'
 
