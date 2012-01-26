@@ -173,9 +173,9 @@ def optimal_weights(k, xi):
 
       accum = 0
       for r in range(rmin, rmax+1):
-        accum = accum + omega[r] * c[i,l,r,r-(k-1)+j]
+        accum = accum + omega[r] * c[l,r,r-(k-1)+j]
 
-      eqn = accum - c2k[i,l,k-1,j]
+      eqn = accum - c2k[l,k-1,j]
       eqn.subs(sol)             # XXX: check this
 
     # check for negative weights and mark as split

@@ -9,7 +9,7 @@ import symbolic
 
 ###############################################################################
 
-def reconstruction_coefficients(xi, k, x):
+def reconstruction_coefficients(k, xi, x):
   r"""Numerically compute the reconstruction coefficients for a 2k-1
   order WENO scheme corresponding to the reconstruction points in *xi*
   on the non-uniform grid *x*.
@@ -49,7 +49,7 @@ def reconstruction_coefficients(xi, k, x):
 
 ###############################################################################
 
-def optimal_weights(xi, k, x, tolerance=1e-12):
+def optimal_weights(k, xi, x, tolerance=1e-12):
   r"""Compute the optimal weights for a 2k-1 order WENO scheme
   corresponding to the reconstruction points in *xi* on the
   non-uniform grid *x*.

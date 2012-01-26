@@ -269,7 +269,10 @@ class KernelGenerator(object):
       for r in range(k):
         acc = 0
         for j in range(k):
-          acc = coeff[l,r,j] * f[-r+j] + acc
+          try:
+            acc = coeff[l,r,j] * f[-r+j] + acc
+          except KeyError:
+            raise ValueError('smoothness indicators not set')
 
         kernel.append(self.assign(fr[l,r], acc))
 
