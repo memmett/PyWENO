@@ -8,7 +8,42 @@ symbol = lambda x: Symbol(x, real=True)
 
 
 ###############################################################################
-# CodeGenerator
+
+def nonuniform_symbols(n, k, lang):
+  """Return symbols appropriate for non-uniform reconstructions."""
+
+  if lang.lower() != 'fortran':
+    raise NotImplemented
+
+  # reconstruction coeffs
+  c = { 'n': n, 'k': k }
+  for l in range(n):
+    for r in range(k):
+      for j in range(k):
+        c[l,r,j] = symbol('coeffs(i,%d,%d,%d)' % (l,r,j))
+
+  # optimal weights
+  varpi = { 'n': n, 'k': k }
+  split = { 'n': n }
+  for l in range(n):
+    split[l] = False
+
+    for r in range(k):
+      varpi[l,r] = symbol('varpi(i,%d,%d)' % (l,r))
+
+  # smoothness coeffs
+  beta = { 'k': k }
+  for r in range(k):
+    for m in range(2*k-1):
+      for n in range(m, 2*k-1):
+        beta[r,m,n] = symbol('beta(i,%d,%d,%d)' % (r,m,n))
+
+  return c, varpi, split, beta
+
+
+
+###############################################################################
+# KernelGenerator
 
 local_names = {
   'sigma':  'sigmaX',
@@ -183,15 +218,33 @@ class KernelGenerator(object):
 
   #############################################################################
 
-  def weights(self, epsilon='1.0e-6'):
+  def weights(self, normalise=False, power=2, epsilon='1.0e-6'):
     r"""Fully un-rolled weights kernel for uniform grids.
 
-    The weights kernel computes the weights *omega* determined by
-    the smoothness coefficients *sigma* (which have already been
-    computed).
+    The weights kernel computes the weights :math:`\omega^r`
+    determined by the smoothness coefficients :math:`\sigma^r` (which
+    have already been computed).  The weights :math:`\omega^r` are
+    computed from the optimal weights :math:`\varpi^r` according to:
 
-    XXX: have epsilon passed to function
-    XXX: pass power...
+    .. math::
+
+      \omega^r = \frac{\varpi^r}{(\sigma^r + \epsilon)^p}
+
+    The weights are subsequently renormalised (if requested) according
+    to:
+
+    .. math::
+
+      \omega^r = \frac{\omega^r}{\sum_j \omega^j}
+
+    :param normalise: re-normalise the weights?
+    :param power: power :math:`p` of the denominator
+    :param epsilon: :math:`\epsilon`
+
+    If *normalise* is ``False`` the weights are not re-normalised.
+    Instead, the re-normalisation occurs during the reconstruction
+    step.  This saves a few divisions if the weights are computed
+    during the reconstruction.
 
     """
 
@@ -202,6 +255,8 @@ class KernelGenerator(object):
     sigma = self.sigma
     varpi = self.varpi
     scale = self.scale
+
+    self.weights_normalised = normalise
 
     epsilon = 1.0e-6
 
@@ -214,14 +269,15 @@ class KernelGenerator(object):
         acc = 0
         for r in range(0, k):
           kernel.append(self.assign(
-              omega[l,r], varpi[l,r] / (sigma[r] + epsilon)**2))
+              omega[l,r], varpi[l,r] / (sigma[r] + epsilon)**power))
 
           acc = omega[l,r] + acc
 
-        kernel.append(self.assign(accsym, acc))
-        for r in range(0, k):
-          kernel.append(self.assign(
-              omega[l,r], omega[l,r] / accsym))
+        if normalise:
+          kernel.append(self.assign(accsym, acc))
+          for r in range(0, k):
+            kernel.append(self.assign(
+                omega[l,r], omega[l,r] / accsym))
 
       else:
         for s, pm in enumerate(('p', 'm')):
@@ -229,14 +285,15 @@ class KernelGenerator(object):
 
           for r in range(0, k):
             kernel.append(self.assign(
-                omega[l,r,s], varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**2))
+                omega[l,r,s], varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**power))
 
             acc = omega[l,r,s] + acc
 
-          kernel.append(self.assign(accsym, acc))
-          for r in range(0, k):
-            kernel.append(self.assign(
-                omega[l,r,s], omega[l,r,s] / accsym))
+          if normalise:
+            kernel.append(self.assign(accsym, acc))
+            for r in range(0, k):
+              kernel.append(self.assign(
+                  omega[l,r,s], omega[l,r,s] / accsym))
 
     return '\n'.join(kernel)
 
@@ -281,14 +338,28 @@ class KernelGenerator(object):
       acc = 0
 
       if not self.split[l]:
+        acc0 = 0
+        acc1 = 0
+
         for r in range(k):
-          acc = omega[l,r] * fr[l,r] + acc
+          acc0 = acc + omega[l,r] * fr[l,r]
+          acc1 = acc1 + omega[l,r]
+
+        if not self.weights_normalised:
+          acc0 = acc0 / acc1
+
+        acc = acc0
 
       else:
         for s, pm in enumerate(('p', 'm')):
           acc0 = 0
+          acc1 = 0
           for r in range(k):
             acc0 = omega[l,r,s] * fr[l,r] + acc0
+            acc1 = acc1 + omega[l,r,s]
+
+          if not self.weights_normalised:
+            acc0 = acc0 / acc1
 
           acc = acc - scale[l,s] * acc0
 
