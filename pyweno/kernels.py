@@ -218,7 +218,7 @@ class KernelGenerator(object):
 
   #############################################################################
 
-  def weights(self, normalise=False, power=2, epsilon='1.0e-6'):
+  def weights(self, normalise=True, power=2, epsilon='1.0e-6'):
     r"""Fully un-rolled weights kernel for uniform grids.
 
     The weights kernel computes the weights :math:`\omega^r`

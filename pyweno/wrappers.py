@@ -191,11 +191,13 @@ class WrapperGenerator(kernels.KernelGenerator):
 
     if compute_smoothness:
       kernel.append(super(WrapperGenerator, self).smoothness())
+      compute_weights = True
 
     if compute_weights:
       if not compute_smoothness:
         kernel.append(self.set_vars(self.sigma, self.global_sigma))
-      kernel.append(super(WrapperGenerator, self).weights())
+      kernel.append(super(WrapperGenerator, self).weights(normalise=False))
+      #kernel.append(super(WrapperGenerator, self).weights())
     else:
       kernel.append(self.set_vars(self.omega, self.global_omega))
 
