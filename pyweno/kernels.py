@@ -197,19 +197,16 @@ class KernelGenerator(object):
 
     k = self.k
     f = self.f
-    beta = self.beta
+    beta  = self.beta
     sigma = self.sigma
 
     kernel = []
     for r in range(0, k):
 
       acc = 0
-      for m in range(k-r-1, 2*k-r-1):
-        for n in range(m, 2*k-r-1):
-          pm = -(k-1) + m
-          pn = -(k-1) + n
-
-          acc = beta[r,m,n] * f[pm] * f[pn] + acc
+      for m in range(k-1-r, 2*(k-1)-r+1):
+        for n in range(m, 2*(k-1)-r+1):
+          acc = beta[r,m,n] * f[m-(k-1)] * f[n-(k-1)] + acc
 
       kernel.append(self.assign(sigma[r], acc))
 
