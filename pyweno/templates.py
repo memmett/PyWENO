@@ -35,6 +35,13 @@ templates = {
     'omega': 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]',
     'fs':    'fr[i*frsi+{l}*frsl]',
 
+    ('f',     'in')  : ('__global const double *f, int n, int fsi', ''),
+    ('sigma', 'in')  : ('__global const double *sigma, int ssi, int ssr', ''),
+    ('omega', 'in')  : ('__global const double *omega, int wsi, int wsl, int wsr', ''),
+    ('sigma', 'out') : ('__global double *sigma, int ssi, int ssr', ''),
+    ('omega', 'out') : ('__global double *omega, int wsi, int wsl, int wsr', ''),
+    ('fs',    'out') : ('__global double *fr, int frsi, int frsl', ''),
+
     'callable': '''
       __kernel void {function}({args})
       {{
@@ -51,6 +58,13 @@ templates = {
     'sigma': 'sigma(i,{r})',
     'omega': 'omega(i,{l},{r},{s})',
     'fs':    'fr(i,{l})',
+
+    ('f',     'in')  : ('f, n', 'real(8), intent(in) :: f(n)\ninteger, intent(in) :: n'),
+    ('sigma', 'in')  : ('sigma', 'real(8), intent(in) :: sigma(n,0:{rmax})'),
+    ('omega', 'in')  : ('omega', 'real(8), intent(in) :: omega(n,{n},0:{rmax},2)'),
+    ('sigma', 'out') : ('sigma', 'real(8), intent(out) :: sigma(n,0:{rmax})'),
+    ('omega', 'out') : ('omega', 'real(8), intent(out) :: omega(n,{n},0:{rmax},2)'),
+    ('fs',    'out') : ('fr', 'real(8), intent(out) :: fr(n,0:{n}-1)'),
 
     'callable': '''
       subroutine {function}({args})

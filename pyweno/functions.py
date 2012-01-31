@@ -186,14 +186,16 @@ class FunctionGenerator(KernelGenerator):
 
 
     # generate function
+    k=getattr(self, 'k', 0)
+    n=getattr(self, 'n', 0)
+
     args, defs = self._build_arguments(args)
 
     src = t['callable'].format(
+      k=k, n=n,
       function=function, args=args, defs=defs,
       variables=self._variable_join(variables),
-      k=getattr(self, 'k', 0),
-      n=getattr(self, 'n', 0),
       kernel = '\n'.join(kernel),
-      )
+      ).format(k=k, n=n)
 
     return src
