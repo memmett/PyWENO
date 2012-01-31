@@ -62,5 +62,5 @@ patches to the primary author (`Matthew Emmett`_).  You will be credited.
    download
 
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
-.. _`Matthew Emmett`: http://www.math.ualberta.ca/~memmett/
+.. _`Matthew Emmett`: http://www.unc.edu/~mwemmett/
 

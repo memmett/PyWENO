@@ -33,10 +33,10 @@ Kernels
    :members:
 
 
-Wrappers
-^^^^^^^^
+Functions
+^^^^^^^^^
 
-.. automodule:: pyweno.wrappers
+.. automodule:: pyweno.functions
    :members:
 
 

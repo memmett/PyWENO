@@ -342,7 +342,7 @@ class KernelGenerator(object):
         acc1 = 0
 
         for r in range(k):
-          acc0 = acc + omega[l,r] * fr[l,r]
+          acc0 = acc0 + omega[l,r] * fr[l,r]
           acc1 = acc1 + omega[l,r]
 
         if not self.weights_normalised:

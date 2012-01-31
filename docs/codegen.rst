@@ -11,8 +11,7 @@ stages:
    own).
 
 #. Generate either (i) code snippets (kernels) to use as building
-   blocks for your own code, or (ii) callable functions/subroutines
-   (wrappers).
+   blocks for your own code, or (ii) callable functions/subroutines.
 
 
 Kernels
@@ -103,8 +102,8 @@ These behaviours can be adjusting the ``local_names`` and
 instantiating the ``KernelGenerator``.
 
 
-Wrappers
---------
+Functions
+---------
 
 XXX
 
