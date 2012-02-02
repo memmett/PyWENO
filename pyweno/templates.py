@@ -9,6 +9,11 @@ templates = {
     'omega': 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]',
     'fs':    'fr[i*frsi+{l}*frsl]',
 
+    'beta':   'beta[i*ssi+{r}*ssr]', # XXX
+    'varpi':  'varpi[i*ssi+{r}*ssr]', # XXX
+    'coeffs': 'coeffs[i*ssi+{r}*ssr]', # XXX
+
+
     ('f',     'in')  : ('const double *restrict f, int n, int fsi', ''),
     ('sigma', 'in')  : ('const double *restrict sigma, int ssi, int ssr', ''),
     ('omega', 'in')  : ('const double *restrict omega, int wsi, int wsl, int wsr', ''),
@@ -35,6 +40,10 @@ templates = {
     'omega': 'omega[i*wsi+{l}*wsl+{r}*wsr+{s}]',
     'fs':    'fr[i*frsi+{l}*frsl]',
 
+    'beta':   'beta[i*ssi+{r}*ssr]', # XXX
+    'varpi':  'varpi[i*ssi+{r}*ssr]', # XXX
+    'coeffs': 'coeffs[i*ssi+{r}*ssr]', # XXX
+
     ('f',     'in')  : ('__global const double *f, int n, int fsi', ''),
     ('sigma', 'in')  : ('__global const double *sigma, int ssi, int ssr', ''),
     ('omega', 'in')  : ('__global const double *omega, int wsi, int wsl, int wsr', ''),
@@ -58,6 +67,10 @@ templates = {
     'sigma': 'sigma(i,{r})',
     'omega': 'omega(i,{l},{r},{s})',
     'fs':    'fr(i,{l})',
+
+    'beta':   'beta(i,{r},{m},{n})',
+    'varpi':  'varpi(i,{l},{r})',
+    'coeffs': 'coeffs(i,{l},{r},{j})',
 
     ('f',     'in')  : ('f, n', 'real(8), intent(in) :: f(n)\ninteger, intent(in) :: n'),
     ('sigma', 'in')  : ('sigma', 'real(8), intent(in) :: sigma(n,0:{rmax})'),

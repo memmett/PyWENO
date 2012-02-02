@@ -21,6 +21,7 @@ class FunctionGenerator(KernelGenerator):
 
   def __init__(self, *args, **kwargs):
     super(FunctionGenerator, self).__init__(*args, **kwargs)
+    self.nonuniform = False
 
 
   #############################################################################
@@ -67,6 +68,43 @@ class FunctionGenerator(KernelGenerator):
     self.global_f_star = {}
     for l in range(self.n):
       self.global_f_star[l] = symbol(t['fs'].format(l=l))
+
+
+  def set_nonuniform(self, k, n):
+    """Set reconstruction coeffs, optimal weights, and smoothness
+    coeffs to symbols appropriate for non-uniform reconstructions."""
+
+    t = templates[self.lang]
+    self.nonuniform = True
+
+    # reconstruction coeffs
+    c = { 'n': n, 'k': k }
+    for l in range(n):
+      for r in range(k):
+        for j in range(k):
+          c[l,r,j] = symbol(t['coeffs'].format(l=l, r=r, j=j))
+
+    self.set_reconstruction_coefficients(c)
+
+    # optimal weights
+    varpi = { 'n': n, 'k': k }
+    split = { 'n': n }
+    for l in range(n):
+      split[l] = False
+
+      for r in range(k):
+        varpi[l,r] = symbol(t['varpi'].format(l=l, r=r))
+
+    self.set_optimal_weights(varpi, split)
+
+    # smoothness coeffs
+    beta = { 'k': k }
+    for r in range(k):
+      for m in range(2*k-1):
+        for n in range(m, 2*k-1):
+          beta[r,m,n] = symbol(t['beta'].format(r=r, m=m, n=n))
+
+    self.set_smoothness(beta)
 
 
   #############################################################################
