@@ -1,45 +1,9 @@
 """PyWENO code generation tool kit (kernels)."""
 
 from sympy import Symbol
-
 import codeprinters
 
 symbol = lambda x: Symbol(x, real=True)
-
-
-###############################################################################
-
-def nonuniform_symbols(n, k, lang):
-  """Return symbols appropriate for non-uniform reconstructions."""
-
-  if lang.lower() != 'fortran':
-    raise NotImplemented
-
-  # reconstruction coeffs
-  c = { 'n': n, 'k': k }
-  for l in range(n):
-    for r in range(k):
-      for j in range(k):
-        c[l,r,j] = symbol('coeffs(i,%d,%d,%d)' % (l,r,j))
-
-  # optimal weights
-  varpi = { 'n': n, 'k': k }
-  split = { 'n': n }
-  for l in range(n):
-    split[l] = False
-
-    for r in range(k):
-      varpi[l,r] = symbol('varpi(i,%d,%d)' % (l,r))
-
-  # smoothness coeffs
-  beta = { 'k': k }
-  for r in range(k):
-    for m in range(2*k-1):
-      for n in range(m, 2*k-1):
-        beta[r,m,n] = symbol('beta(i,%d,%d,%d)' % (r,m,n))
-
-  return c, varpi, split, beta
-
 
 
 ###############################################################################

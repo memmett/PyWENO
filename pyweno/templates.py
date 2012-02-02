@@ -76,8 +76,13 @@ templates = {
     ('sigma', 'in')  : ('sigma', 'real(8), intent(in) :: sigma(n,0:{rmax})'),
     ('omega', 'in')  : ('omega', 'real(8), intent(in) :: omega(n,{n},0:{rmax},2)'),
     ('sigma', 'out') : ('sigma', 'real(8), intent(out) :: sigma(n,0:{rmax})'),
-    ('omega', 'out') : ('omega', 'real(8), intent(out) :: omega(n,{n},0:{rmax},2)'),
+    ('omega', 'out') : ('omega', 'real(8), intent(out) :: omega(n,0:{n},0:{rmax},2)'),
     ('fs',    'out') : ('fr', 'real(8), intent(out) :: fr(n,0:{n}-1)'),
+
+    ('beta', 'in')   : ('beta', 'real(8), intent(in) :: beta(n,0:{k}-1,0:2*{k},0:2*{k})'),
+    ('varpi', 'in')  : ('varpi', 'real(8), intent(in) :: varpi(n,0:{n},0:{k}-1)'),
+    ('coeffs', 'in') : ('coeffs', 'real(8), intent(in) :: coeffs(n,0:{n},0:{k}-1,0:{k}-1)'),
+
 
     'callable': '''
       subroutine {function}({args})

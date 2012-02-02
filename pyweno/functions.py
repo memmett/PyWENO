@@ -131,7 +131,7 @@ class FunctionGenerator(KernelGenerator):
     defs = []
 
     a = { x[0]: x for x in args }
-    for arg in [ 'f', 'sigma', 'omega', 'fs' ]:
+    for arg in [ 'f', 'beta', 'sigma', 'varpi', 'omega', 'coeffs', 'fs' ]:
       if arg in a:
         s, d = t[a[arg]]
         sigs.append(s)
@@ -182,6 +182,9 @@ class FunctionGenerator(KernelGenerator):
       kernel.append(super(FunctionGenerator, self).smoothness())
       variables.extend(self.sigma.itervalues())
 
+      if self.nonuniform:
+        args.add(('beta', 'in'))
+
       if store_smoothness:
         args.add(('sigma', 'out'))
         kernel.append(self._set_vars(self.global_sigma, self.sigma))
@@ -196,6 +199,9 @@ class FunctionGenerator(KernelGenerator):
 
       kernel.append(super(FunctionGenerator, self).weights(normalise=normalise))
       variables.extend(self.omega.itervalues())
+
+      if self.nonuniform:
+        args.add(('varpi', 'in'))
 
       if normalise:
         variables.append('acc')
@@ -216,6 +222,9 @@ class FunctionGenerator(KernelGenerator):
     if reconstruct:
       args.add(('f', 'in'))
       args.add(('fs', 'out'))
+
+      if self.nonuniform:
+        args.add(('coeffs', 'in'))
 
       kernel.append(super(FunctionGenerator, self).reconstruction())
 
