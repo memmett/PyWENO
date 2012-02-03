@@ -168,9 +168,9 @@ class KernelGenerator(object):
     for r in range(0, k):
 
       acc = 0
-      for m in range(k-1-r, 2*(k-1)-r+1):
-        for n in range(m, 2*(k-1)-r+1):
-          acc = beta[r,m,n] * f[m-(k-1)] * f[n-(k-1)] + acc
+      for m in range(k):
+        for n in range(m, k):
+          acc = beta[r,m,n] * f[-r+m] * f[-r+n] + acc
 
       kernel.append(self.assign(sigma[r], acc))
 

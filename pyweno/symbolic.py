@@ -213,7 +213,6 @@ def jiang_shu_smoothness_coefficients(k):
       \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
   """
 
-  i = k-1
   (x, dx) = sympy.var('x dx')
   xi = sympy.var('x')
 
@@ -230,8 +229,8 @@ def jiang_shu_smoothness_coefficients(k):
   # compute reconstruction coefficients for each left shift r
   beta = { 'k': k }
   for r in range(0, k):
-    p = primitive_polynomial_interpolator(xs[i-r:i-r+k+1],
-                                          fs[i-r:i-r+k]).diff(x)
+    p = primitive_polynomial_interpolator(xs[k-1-r:2*k-r],
+                                          fs[k-1-r:2*k-1-r]).diff(x)
     # sum of L^2 norms of derivatives
     s = 0
     for j in range(1, k):
@@ -239,17 +238,17 @@ def jiang_shu_smoothness_coefficients(k):
       pp = pp.as_poly(x)
       pp = pp.integrate(x)
       #pp = pp.as_basic()
-      pp = (xs[i+1] - xs[i])**(2*j-1) * (
-        pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
+      pp = (xs[k] - xs[k-1])**(2*j-1) * (
+        pp.subs(x, xs[k]) - pp.subs(x, xs[k-1]) )
       pp = pp.expand()
       s = s + pp
 
     #s = s.expand()
 
     # pick out coefficients
-    for m in range(2*k-1):
-      for n in range(m, 2*k-1):
-        c = s.coeff(fs[m]*fs[n])
+    for m in range(k):
+      for n in range(m, k):
+        c = s.coeff(fs[k-1-r+m]*fs[k-1-r+n])
         if c is not None:
           beta[r,m,n] = c
 

@@ -100,8 +100,8 @@ class FunctionGenerator(KernelGenerator):
     # smoothness coeffs
     beta = { 'k': k }
     for r in range(k):
-      for m in range(2*k-1):
-        for n in range(m, 2*k-1):
+      for m in range(k):
+        for n in range(m, k):
           beta[r,m,n] = symbol(t['beta'].format(r=r, m=m, n=n))
 
     self.set_smoothness(beta)
