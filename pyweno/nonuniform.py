@@ -1,5 +1,8 @@
 """PyWENO non-uniform reconstruction routines."""
 
+import os
+import pickle
+
 import numpy as np
 import sympy
 
@@ -32,17 +35,17 @@ def reconstruction_coefficients(k, xi, x):
 
   """
 
-  x = np.array(x)
-  N = len(x)-1
+  X = np.array(x)
+  N = len(X) - 1
   n = len(xi)
 
   c = np.zeros((N,n,k,k))       # indexed as c[i,l,r,j]
 
-  for i in range(k, N-k):
+  for i in range(k-1, N-k+1):
     for l in range(n):
-      z = 0.5*(x[i] + x[i+1]) + 0.5*(x[i+1] - x[i])*xi[l]
+      z = 0.5*(X[i] + X[i+1]) + 0.5*(X[i+1] - X[i])*xi[l]
       for r in range(k):
-        c[i,l,r,:] = rc.reconstruction_coeffs(z, i, r, k, x)
+        c[i,l,r,:] = rc.reconstruction_coeffs(z, i, r, k, X)
 
   return c
 
@@ -64,79 +67,45 @@ def optimal_weights(k, xi, x, tolerance=1e-12):
   for each :math:`l` from 0 to ``len(xi)``.
   """
 
-  # XXX: using SymPy to do this is probably inefficient
-
-  x = np.array(x)
+  X = np.array(x)
   n = len(xi)
-  N = len(x)
+  N = len(X) - 1
 
-  c   = reconstruction_coefficients(xi, k, x)
-  c2k = reconstruction_coefficients(xi, 2*k-1, x)
+  c = reconstruction_coefficients(k, xi, X)
 
-  omega = []
-  for r in range(k):
-    omega.append(sympy.var('omega%d' % r))
+  # add on a periodic extension...
+  X2 = np.zeros(N+2*(k)+1, X.dtype)
+  X2[k:-k] = X
+  X2[:k]   = X[0]  - (X[-1]   - X[-k-1:-1])
+  X2[-k:]  = X[-1] + (X[1:k+1]- X[0])
+  c2k = reconstruction_coefficients(2*k-1, xi, X2)
 
-  varpi = numpy.zeros((N,l,k))
-  # split = { 'n': n }
+  # chop off the extra bits
+  c2k = c2k[k:-k,...]
 
-  for i in range(2*k,N-2*k):
+  varpi = np.zeros((N,n,k))
+  for i in range(k-1, N-k+1):
     for l in range(n):
-      eqns = []
 
       # we'll just use the first k eqns since the system is overdetermined
+      omega = {}
       for j in range(k):
 
         rmin = max(0, (k-1)-j)
         rmax = min(k-1, 2*(k-1)-j)
 
-        accum = 0
-        for r in range(rmin, rmax+1):
+        accum = 0.0
+        for r in range(rmin+1, rmax+1):
           accum = accum + omega[r] * c[i,l,r,r-(k-1)+j]
 
-        eqns.append(accum - c2k[i,l,k-1,j])
-
-      sol = sympy.solve(eqns, omega)
+        omega[rmin] = (c2k[i,l,k-1,j]-accum)/c[i,l,rmin,rmin-(k-1)+j]
 
       # now check all 2*k-1 eqns to make sure the weights work out properly
-      for j in range(2*k-1):
-
-        rmin = max(0, (k-1)-j)
-        rmax = min(k-1, 2*(k-1)-j)
-
-        accum = 0
-        for r in range(rmin, rmax+1):
-          accum = accum + omega[r] * c[i,l,r,r-(k-1)+j]
-
-        eqn = accum - c2k[i,l,k-1,j]
-        if not abs(eqn.subs(sol)) < tolerance:
-          raise ValueError('Unable to find optimal weight')
-
-      if min(sol.values()) < 0:
-        raise ValueError(
-          'Negative optimal weight encountered at cell %d, point %d.' % (i, l))
+      # XXX
 
       for r in range(k):
-        varpi[i,l,r] = float(sol[omega[r]])
+        varpi[i,l,r] = omega[r]
 
-
-      # # check for negative weights and mark as split
-      # if min(sol.values()) < 0:
-      #   split[i,l] = True
-      # else:
-      #   split[i,l] = False
-
-      # # split as appropriate
-      # for r in range(k):
-      #   if split[i,l]:
-      #     w  = sol[omega[r]]
-      #     wp = (w + 3*abs(w))/2
-      #     wm = wp - w
-      #     varpi[i,l,r] = (wp, wm)
-      #   else:
-      #     varpi[i,l,r] = sol[omega[r]]
-
-  # return (varpi, split)
   return varpi
 
 
@@ -155,39 +124,69 @@ def jiang_shu_smoothness_coefficients(k, x):
       \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
   """
 
-  xs = np.array(x)
-  N  = len(xs)
-  x  = sympy.var('x')
+  X = np.array(x)
+  N = len(X) - 1
+  x = sympy.var('x')
 
-  # build array of cell averages (sympy vars f[i])
-  fs = []
-  for j in range(-k+1, k):
-    fs.append(sympy.var('f[i%+d]' % j))
+  # build array of cell boundaries (sympy vars x[i])
+  xs = []
+  for j in range(k+1):
+    xs.append(sympy.var('x%d' % j))
 
-  # compute reconstruction coefficients for each left shift r
-  beta = np.zeros((N,k,2*k-1,2*k-1))
-  for i in range(k, N-k):
+  X1 = sympy.var('X1')
+  X2 = sympy.var('X2')
+
+  ys = []
+  for j in range(k):
+    ys.append(sympy.var('y%d' % j))
+
+  try:
+
+    p = os.path.dirname(os.path.abspath(__file__))
+    p = os.path.join(p, 'jiang_shu.pkl')
+
+    with open(p, 'r') as f:
+      ppp = pickle.load(f)
+
+    ppp = ppp[k]
+
+  except:
+
+    p = symbolic.primitive_polynomial_interpolator(xs, ys)
+    p = p.as_poly(x)
+    p = p.diff(x)
+
+    ppp = {}
     for r in range(0, k):
-      p = symbolic.primitive_polynomial_interpolator(xs[i-r:i-r+k+1],
-                                                     fs[k-1-r:k-1-r+k]).diff(x)
       # sum of L^2 norms of derivatives
       s = 0
       for j in range(1, k):
-        pp = (sympy.diff(p, x, j))**2
-        pp = pp.as_poly(x)
+        pp = (p.diff((0,j)))**2
         pp = pp.integrate(x)
-        #pp = pp.as_basic()
-        pp = (xs[i+1] - xs[i])**(2*j-1) * (
-          pp.subs(x, xs[i+1]) - pp.subs(x, xs[i]) )
-        pp = pp.expand()
+        pp = (X2 - X1)**(2*j-1) * (
+          pp.subs(x, X2) - pp.subs(x, X1) )
         s = s + pp
 
-      #s = s.expand()
+      ppp[r] = s
+
+  # compute reconstruction coefficients for each left shift r
+  beta = np.zeros((N,k,k,k))
+  for i in range(k-1, N-k+1):
+    for r in range(0, k):
+
+      s = ppp[r]
+
+      # subs in boundaries
+      for j in range(k+1):
+        s = s.subs(xs[j], X[i-r+j])
+
+      s = s.subs(X1, X[i])
+      s = s.subs(X2, X[i+1])
 
       # pick out coefficients
-      for m in range(2*k-1):
-        for n in range(m, 2*k-1):
-          c = s.coeff(fs[m]*fs[n])
+      for m in range(k):
+        for n in range(m, k):
+          c = s.coeff(ys[m]*ys[n])
           if c is not None:
             beta[i,r,m,n] = float(c)
 
