@@ -77,6 +77,9 @@ class FunctionGenerator(KernelGenerator):
     t = templates[self.lang]
     self.nonuniform = True
 
+    self.k = k
+    self.n = n
+
     # reconstruction coeffs
     c = { 'n': n, 'k': k }
     for l in range(n):
@@ -229,6 +232,7 @@ class FunctionGenerator(KernelGenerator):
       kernel.append(super(FunctionGenerator, self).reconstruction())
 
       kernel.append(self._set_vars(self.global_f_star, self.fs))
+      variables.extend(self.fr.itervalues())
       variables.extend(self.fs.itervalues())
 
 
