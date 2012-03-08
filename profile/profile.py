@@ -1,23 +1,22 @@
+"""Profiling routines."""
 
-from ctypes import *
+import os
+
+import numpy as np
 
 import pyweno.symbolic
 import pyweno.kernels
 import pyweno.wrappers
-import os
-import pstats
 
-import cProfile
 
-import numpy as np
-
-from os import system
+###############################################################################
+# config
 
 cc = os.environ.get('CC', None) or 'gcc'
 fc = os.environ.get('FC', None) or 'gfortran'
 
-cflags = os.environ.get('CFLAGS', None) or '-std=c99 -O3 -pg -fPIC -shared'
-fflags = os.environ.get('FFLAGS', None) or '-O3 -pg -fPIC -shared'
+cflags = os.environ.get('CFLAGS', None) or '-std=c99 -O2 -lm'
+fflags = os.environ.get('FFLAGS', None) or '-O2'
 
 compilers = {
     'c': [cc, cflags],
@@ -31,40 +30,61 @@ extensions = {
 
 profrecon = {
     'c': '''
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-        void profrecon(int repeat,
-                       const double *restrict f, int n, int fsi,
-                       double *restrict fr, int frsi, int frsl)
-        {
-          int i;
-        
-          for (i=0; i<repeat; i++) {
-            reconstruct(f, n, fsi, fr, frsi, frsl);
-          }
-        }'''
+#define N 1000000
+
+void
+main(int argc, char **argv) {
+  int i;
+  double *f, *q;
+
+  f = (double *) malloc(N*sizeof(double));
+  q = (double *) malloc(2*N*sizeof(double));
+
+  for (i=0; i<N; i++) {
+    f[i] = sin(1.0*i);
+  }
+
+  for (i=0; i<100; i++) {
+    reconstruct(f, N, 1, q, 2, 1);
+  }
+
+  free(f);
+  free(q);
+}
+'''
     }
 
 
-def make(src, so='prof', lang='c', verbose=True):
+###############################################################################
+# helpers
+
+def make(src, exe='prof', lang='c', verbose=True):
+    """Compile the source code in *src* (a string) into the executable
+    *exe*."""
 
     # write src to temporary file
-    tmp = so + extensions[lang]
+    tmp = exe + extensions[lang]
     with open(tmp, 'w') as f:
         f.write(src)
 
     # compile
     cmd = compilers[lang]
-    cmd.extend([tmp, '-o', so + '.so'])
+    cmd.extend([tmp, '-o', exe])
     cmd = ' '.join(cmd)
 
-    if system(cmd):
+    if os.system(cmd):
         raise ValueError
 
-    # return shared object name
-    return so
+    # return executable name
+    return exe
 
 
-def reconstruct(k, lang='c'):
+def reconstruct(k=3, lang='c'):
+    """Build reconstruction routine of order *k*."""
 
     wrapper = pyweno.wrappers.WrapperGenerator(lang)
 
@@ -86,41 +106,18 @@ def reconstruct(k, lang='c'):
     return src
 
 
-def profile(k, lang='c'):
+def profile(**kwargs):
+    """Build a reconstruction routine (all keyword arguments are
+    passed to *reconstruct*, compile, and run the profiling
+    executable."""
 
     # generate profiler and load compiled shared object
-    src = reconstruct(k, lang)
-    make(src)
-    prof = CDLL('./prof.so')
+    src = reconstruct(**kwargs)
+    exe = make(src)
 
-
-    # test function
-    f = np.cos
-    F = np.sin
-
-    # cell averages
-    x = np.linspace(0.0, 2*np.pi, 201)
-    a = (F(x[1:]) - F(x[:-1]))/(x[1]-x[0])
-
-    # allocate destination
-    fr = np.zeros((a.shape[0],2))
-
-    # run the profiler!
-    dptr = POINTER(c_double)
-
-    ctx = {}
-    ctx.update(globals())
-    ctx.update(locals())
-
-    cProfile.runctx('''prof.profrecon(
-                         c_int(1000000),
-                         a.ctypes.data_as(dptr), c_int(a.shape[0]), c_int(1),
-                         fr.ctypes.data_as(dptr), c_int(2), c_int(1))
-    ''', ctx, ctx, 'prof.stats')
-
-    p = pstats.Stats('prof.stats')
-    p.strip_dirs().sort_stats('time').print_stats(20)
+    # run the profiler and time it
+    os.system('time ./' + exe)
 
 
 if __name__ == '__main__':
-    profile(3)
+    profile(k=5)
