@@ -46,7 +46,7 @@ class KernelGenerator(object):
 
   """
 
-  def __init__(self, lang, **kwargs):
+  def __init__(self, lang, reuse=False, vectorize=False, **kwargs):
 
     self.n = None
     self.k = None
@@ -59,10 +59,16 @@ class KernelGenerator(object):
     self.fs    = {}
     self.f     = {}
 
+    self.weights_normalised = True
+
+    self.reuse = reuse
+    self.vectorize = vectorize
+
     if self.lang == 'fortran':
       self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
     else:
       self.code = codeprinters.CCodePrinter()
+      self.vectorize = False
 
 
   #############################################################################
@@ -100,8 +106,13 @@ class KernelGenerator(object):
     self.fr = {}
     for l in range(self.n):
       for r in range(self.k):
-        self.fr[l,r] = symbol(
-          local_names['f_r'].replace('X', str(l*self.k+r)))
+        if self.vectorize:
+          self.fr[l,r] = symbol(
+            'fr%d(%d)' % (l, r))
+        else:
+          self.fr[l,r] = symbol(
+            local_names['f_r'].replace('X', str(l*self.k+r)))
+
 
     self.fs = {}
     for l in range(self.n):
@@ -132,12 +143,20 @@ class KernelGenerator(object):
       if self.split[l]:
         for r in range(self.k):
           for s in (0, 1):
-            self.omega[l,r,s] = symbol(
-              local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
+            if self.vectorize:
+              self.omega[l,r,s] = symbol(
+                'omega%d%s(%d)' % (l, pm[s], r))
+            else:
+              self.omega[l,r,s] = symbol(
+                local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
       else:
         for r in range(self.k):
-          self.omega[l,r] = symbol(
-            local_names['omega'].replace('X', str(self.k*l+r)))
+          if self.vectorize:
+            self.omega[l,r] = symbol(
+              'omega%d(%d)' % (l, r))
+          else:
+            self.omega[l,r] = symbol(
+              local_names['omega'].replace('X', str(self.k*l+r)))
 
 
   #############################################################################
@@ -219,8 +238,7 @@ class KernelGenerator(object):
 
     self.weights_normalised = normalise
 
-    epsilon = 1.0e-6
-
+    epsilon = symbol(epsilon)
     accsym = symbol('acc')
 
     kernel = []
@@ -299,17 +317,25 @@ class KernelGenerator(object):
       acc = 0
 
       if not self.split[l]:
-        acc0 = 0
-        acc1 = 0
 
-        for r in range(k):
-          acc0 = acc0 + omega[l,r] * fr[l,r]
-          acc1 = acc1 + omega[l,r]
+        if self.vectorize:
+          acc = symbol('dot_product(fr{l}, omega{l})'.format(l=l))
 
-        if not self.weights_normalised:
-          acc0 = acc0 / acc1
+          if not self.weights_normalised:
+            acc = acc / symbol('sum(omega{l})'.format(l=l))
 
-        acc = acc0
+        else:
+          acc0 = 0
+          acc1 = 0
+
+          for r in range(k):
+            acc0 = acc0 + omega[l,r] * fr[l,r]
+            acc1 = acc1 + omega[l,r]
+
+          if not self.weights_normalised:
+            acc0 = acc0 / acc1
+
+          acc = acc0
 
       else:
         for s, pm in enumerate(('p', 'm')):
