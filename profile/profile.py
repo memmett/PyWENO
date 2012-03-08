@@ -5,8 +5,7 @@ import os
 import numpy as np
 
 import pyweno.symbolic
-import pyweno.kernels
-import pyweno.wrappers
+import pyweno.functions
 
 
 ###############################################################################
@@ -15,8 +14,8 @@ import pyweno.wrappers
 cc = os.environ.get('CC', None) or 'gcc'
 fc = os.environ.get('FC', None) or 'gfortran'
 
-cflags = os.environ.get('CFLAGS', None) or '-std=c99 -O2 -lm'
-fflags = os.environ.get('FFLAGS', None) or '-O2'
+cflags = os.environ.get('CFLAGS', None) or '-std=c99 -O2 -lm -msse2'
+fflags = os.environ.get('FFLAGS', None) or '-O3 -msse2'
 
 compilers = {
     'c': [cc, cflags],
@@ -34,7 +33,9 @@ profrecon = {
 #include <stdlib.h>
 #include <math.h>
 
-#define N 1000000
+#define N 100000
+
+%s
 
 void
 main(int argc, char **argv) {
@@ -55,6 +56,24 @@ main(int argc, char **argv) {
   free(f);
   free(q);
 }
+''',
+    'fortran': '''
+program profile
+  integer, parameter :: N = 100000
+  real(8) :: f(N), fr(N,0:1)
+  integer :: i
+
+  do i = 1, N
+    f(i) = sin(dble(i))
+  end do
+
+  do i = 1, 100
+    call reconstruct(f, N, fr)
+  end do
+  
+contains
+  %s
+end program profile
 '''
     }
 
@@ -62,7 +81,7 @@ main(int argc, char **argv) {
 ###############################################################################
 # helpers
 
-def make(src, exe='prof', lang='c', verbose=True):
+def make(src, exe='prof', lang='c', **kwargs):
     """Compile the source code in *src* (a string) into the executable
     *exe*."""
 
@@ -83,27 +102,25 @@ def make(src, exe='prof', lang='c', verbose=True):
     return exe
 
 
-def reconstruct(k=3, lang='c'):
+def reconstruct(k=3, lang='c', vectorize=False, **kwargs):
     """Build reconstruction routine of order *k*."""
 
-    wrapper = pyweno.wrappers.WrapperGenerator(lang)
+    gen = pyweno.functions.FunctionGenerator(lang, vectorize=vectorize, normalise=False)
 
     # set smoothness
     beta = pyweno.symbolic.jiang_shu_smoothness_coefficients(k)
-    wrapper.set_smoothness(beta)
+    gen.set_smoothness(beta)
 
     # reconstructions: -1=left, 1=right
     (varpi, split) = pyweno.symbolic.optimal_weights(k, [ -1, 1 ])
     coeffs = pyweno.symbolic.reconstruction_coefficients(k, [ -1, 1 ])
 
-    wrapper.set_optimal_weights(varpi, split)
-    wrapper.set_reconstruction_coefficients(coeffs)
+    gen.set_optimal_weights(varpi, split)
+    gen.set_reconstruction_coefficients(coeffs)
 
-    src = wrapper.reconstruction(compute_weights=True, compute_smoothness=True)
+    src = gen.generate('reconstruct', weights=True, smoothness=True)
 
-    src += profrecon[lang]
-
-    return src
+    return profrecon[lang] % (src)
 
 
 def profile(**kwargs):
@@ -113,11 +130,11 @@ def profile(**kwargs):
 
     # generate profiler and load compiled shared object
     src = reconstruct(**kwargs)
-    exe = make(src)
+    exe = make(src, **kwargs)
 
     # run the profiler and time it
     os.system('time ./' + exe)
 
 
 if __name__ == '__main__':
-    profile(k=5)
+    profile(k=3, lang='fortran', vectorize=True)
