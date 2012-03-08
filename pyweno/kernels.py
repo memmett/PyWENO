@@ -88,8 +88,11 @@ class KernelGenerator(object):
 
     self.sigma = {}
     for r in range(self.k):
-      self.sigma[r] = symbol(
-        local_names['sigma'].replace('X', str(r)))
+      if self.vectorize:
+        self.sigma[r] = symbol('sigma(%r)' % r)
+      else:
+        self.sigma[r] = symbol(
+          local_names['sigma'].replace('X', str(r)))
 
     self.f = {}
     for r in range(-2*self.k, 2*self.k+1):
@@ -184,14 +187,19 @@ class KernelGenerator(object):
     sigma = self.sigma
 
     kernel = []
-    for r in range(0, k):
 
-      acc = 0
-      for m in range(k):
-        for n in range(m, k):
-          acc = beta[r,m,n] * f[-r+m] * f[-r+n] + acc
+    if self.reuse:
+      pass
 
-      kernel.append(self.assign(sigma[r], acc))
+    else:
+      for r in range(0, k):
+
+        acc = 0
+        for m in range(k):
+          for n in range(m, k):
+              acc = beta[r,m,n] * f[-r+m] * f[-r+n] + acc
+
+        kernel.append(self.assign(sigma[r], acc))
 
     return '\n'.join(kernel)
 

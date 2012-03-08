@@ -183,7 +183,10 @@ class FunctionGenerator(KernelGenerator):
       args.add(('f', 'in'))
 
       kernel.append(super(FunctionGenerator, self).smoothness())
-      variables.extend(self.sigma.itervalues())
+      if self.vectorize:
+        variables.append('sigma(0:%d)' % (self.k-1))
+      else:
+        variables.extend(self.sigma.itervalues())
 
       if self.nonuniform:
         args.add(('beta', 'in'))
@@ -201,7 +204,11 @@ class FunctionGenerator(KernelGenerator):
     if weights:
 
       kernel.append(super(FunctionGenerator, self).weights(normalise=normalise))
-      variables.extend(self.omega.itervalues())
+      if self.vectorize:
+        for n in range(self.n):
+          variables.append('omega%d(0:%d)' % (n, self.k-1))
+      else:
+        variables.extend(self.omega.itervalues())
 
       if self.nonuniform:
         args.add(('varpi', 'in'))
@@ -232,7 +239,12 @@ class FunctionGenerator(KernelGenerator):
       kernel.append(super(FunctionGenerator, self).reconstruction())
 
       kernel.append(self._set_vars(self.global_f_star, self.fs))
-      variables.extend(self.fr.itervalues())
+
+      if self.vectorize:
+        for n in range(self.n):
+          variables.append('fr%d(0:%d)' % (n, self.k-1))
+      else:
+        variables.extend(self.fr.itervalues())
       variables.extend(self.fs.itervalues())
 
 

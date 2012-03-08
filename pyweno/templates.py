@@ -23,13 +23,13 @@ templates = {
 
     'callable': '''
       void {function}({args})
-      {{
+      {{{{
         int i;
         double {variables};
-        for (i={k}-1; i<n-{k}+1; i++) {{
+        for (i={k}-1; i<n-{k}+1; i++) {{{{
           {kernel}
-        }}
-      }}
+        }}}}
+      }}}}
       ''',
 
     },
@@ -88,6 +88,8 @@ templates = {
       subroutine {function}({args})
         implicit none
         {defs}
+        integer :: i
+        real(8) :: {variables}
 
         do i={k}, n-{k}
           {kernel}
