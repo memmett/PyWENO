@@ -21,6 +21,9 @@ PyWENO consists of four main parts:
 
 **News**
 
+* May 15 2012: Several routines were added for computing
+  reconstructions of derivatives.  These were contributed by Michael
+  Welter.
 * January 23 2012: The non-uniform codes have been resurrected.
 * June 13 2011: PyWENO has been significantly refactored and
   simplified.  A lot of code was removed in favour of focusing on code

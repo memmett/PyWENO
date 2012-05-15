@@ -80,10 +80,12 @@ class KernelGenerator(object):
 
     return str(dest) + ' = ' + self.code.doprint(value.evalf(35))
 
+
   def set_smoothness(self, beta):
     """Set the smoothness indicator coefficients."""
 
-    self.k    = beta['k']
+    self.k    = beta['k']              # poly reconstruction order
+    self.nc   = beta.get('l', self.k)  # number of coefficients in the stencil
     self.beta = beta
 
     self.sigma = {}
@@ -102,8 +104,9 @@ class KernelGenerator(object):
   def set_reconstruction_coefficients(self, coeffs):
     """Set the reconstruction coefficients."""
 
-    self.n = coeffs['n']
-    self.k = coeffs['k']
+    self.n  = coeffs['n']
+    self.k  = coeffs['k']
+    self.nc = coeffs.get('l', self.k)
     self.coeff = coeffs
 
     self.fr = {}
@@ -181,8 +184,9 @@ class KernelGenerator(object):
 
     """
 
-    k = self.k
-    f = self.f
+    k  = self.k
+    f  = self.f
+    nc = self.nc
     beta  = self.beta
     sigma = self.sigma
 
@@ -195,8 +199,8 @@ class KernelGenerator(object):
       for r in range(0, k):
 
         acc = 0
-        for m in range(k):
-          for n in range(m, k):
+        for m in range(nc):
+          for n in range(m, nc):
               acc = beta[r,m,n] * f[-r+m] * f[-r+n] + acc
 
         kernel.append(self.assign(sigma[r], acc))
@@ -236,8 +240,9 @@ class KernelGenerator(object):
 
     """
 
-    n = self.n
-    k = self.k
+    n  = self.n
+    k  = self.k
+    nc = self.nc
 
     omega = self.omega
     sigma = self.sigma
@@ -296,8 +301,9 @@ class KernelGenerator(object):
 
     """
 
-    n = self.n
-    k = self.k
+    n  = self.n
+    k  = self.k
+    nc = self.nc
 
     f     = self.f
     fr    = self.fr
@@ -312,7 +318,7 @@ class KernelGenerator(object):
     for l in range(n):
       for r in range(k):
         acc = 0
-        for j in range(k):
+        for j in range(nc):
           try:
             acc = coeff[l,r,j] * f[-r+j] + acc
           except KeyError:

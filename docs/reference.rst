@@ -22,6 +22,13 @@ Symbolics
 
 .. autofunction:: pyweno.symbolic.jiang_shu_smoothness_coefficients
 
+.. autofunction:: pyweno.symbolic.reconstruction_coefficients_for_derivative
+
+.. autofunction:: pyweno.symbolic.optimal_weights_for_derivative
+
+.. autofunction:: pyweno.symbolic.jiang_shu_smoothness_coefficients_for_derivative
+
+
 
 Code generation
 ---------------

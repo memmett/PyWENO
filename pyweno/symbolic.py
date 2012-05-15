@@ -253,3 +253,157 @@ def jiang_shu_smoothness_coefficients(k):
           beta[r,m,n] = c
 
   return beta
+
+
+###############################################################################
+
+def reconstruction_coefficients_for_derivative(k, bias):
+  """XXX"""
+  
+  i = k-1
+  (x, dx) = sympy.var('x dx')
+
+  # build array of grid points (sympy vars x[i])
+  xs = []
+  for j in range(-k+1, k+1):
+    xs.append(j*dx)
+
+  # build array of point values (sympy vars f[i])
+  fs = []
+  for j in range(-k+1, k+1):
+    fs.append(sympy.var('f[i%+d]' % j))
+
+  n = 1
+
+  # compute reconstruction coefficients for each left shift r
+  c = { 'n': n, 'k': k, 'l': k+1 }
+
+  for l in range(n):
+    for r in range(0, k):
+      p = polynomial_interpolator(xs[i-r:i-r+k+1], fs[i-r:i-r+k+1]).diff(x)
+
+      z = xs[i] if bias=='+' else xs[i+1]
+
+      for j in range(0, k+1):
+        p = p.expand()
+        c[l,r,j] = p.subs(x, z).coeff(fs[i-r+j])
+
+        if c[l,r,j] is None:
+          c[l,r,j] = 0 # i think it may be zero for k=2
+        c[l,r,j] *= dx
+          
+  return c
+
+
+###############################################################################
+
+def optimal_weights_for_derivative(k, bias):
+  """XXX"""
+
+  n = 1
+  c   = reconstruction_coefficients_for_derivative(k, bias)
+  c2k = reconstruction_coefficients_for_derivative(2*k-1, bias)
+
+  omega = []
+  for r in range(k):
+    omega.append(sympy.var('omega%d' % r))
+
+  varpi = { 'n': n, 'k': k }
+  split = { 'n': n }
+
+  for l in range(n):
+    eqns = []
+
+    # we'll just use the first k eqns since the system is overdetermined
+    for j in range(k):
+
+      rmin = max(0, (k-1)-j)
+      rmax = min(k-1, 2*(k-1)-j)
+
+      accum = 0
+      for r in range(rmin, rmax+1):
+        accum = accum + omega[r] * c[l,r,r-(k-1)+j]
+
+      eqns.append(accum - c2k[l,k-1,j])
+
+    # XXX: Should make sure that when mpmath.mpf's are passed in
+    # (in xi), that the solution obtained above is a high
+    # precision solution.
+
+    sol = sympy.solve(eqns, omega)
+
+    # now check all 2*k-1 eqns to make sure the weights work out properly
+    for j in range(2*k-1):
+
+      rmin = max(0, (k-1)-j)
+      rmax = min(k-1, 2*(k-1)-j)
+
+      accum = 0
+      for r in range(rmin, rmax+1):
+        accum = accum + omega[r] * c[l,r,r-(k-1)+j]
+
+      eqn = accum - c2k[l,k-1,j]
+      eqn.subs(sol)             # XXX: check this
+
+    # check for negative weights and mark as split
+    if min(sol.values()) < 0:
+      split[l] = True
+    else:
+      split[l] = False
+
+    # split as appropriate
+    for r in range(k):
+      if split[l]:
+        w  = sol[omega[r]]
+        wp = (w + 3*abs(w))/2
+        wm = wp - w
+        varpi[l,r] = (wp, wm)
+      else:
+        varpi[l,r] = sol[omega[r]]
+
+  return (varpi, split)
+
+
+###############################################################################
+
+def jiang_shu_smoothness_coefficients_for_derivative(k, bias):
+  """XXX"""
+
+  (x, dx) = sympy.var('x dx')
+
+  # build array of grid points (sympy vars x[i])
+  xs = []
+  for j in range(-k+1, k+1):
+    xs.append(j*dx)
+
+  # build array of point values (sympy vars f[i])
+  fs = []
+  for j in range(-k+1, k+1):
+    fs.append(sympy.var('f[i%+d]' % j))
+
+  # compute reconstruction coefficients for each left shift r
+  beta = { 'k': k, 'l' : k+1 }
+  for r in range(0, k):
+    p = polynomial_interpolator(xs[k-1-r:2*k-r], fs[k-1-r:2*k-r])
+    # sum of L^2 norms of derivatives
+    s = 0
+    for j in range(2, k+1): 
+      # start at the second derivative since we are
+      # interested in the smoothness of the derivative of p
+      pp = (sympy.diff(p, x, j))**2
+      pp = sympy.integrate(pp, x)
+      q = (-1 if bias=='+' else 1) * dx/2
+      pp = (xs[k] - xs[k-1])**(2*j-1) * (
+        pp.subs(x, xs[k]) - pp.subs(x, xs[k-1]) )
+      pp = pp.expand()
+      s = s + pp
+
+    # pick out coefficients
+    for m in range(k+1):
+      for n in range(m, k+1):
+        c = s.coeff(fs[k-1-r+m]*fs[k-1-r+n])
+        if c is not None:
+          beta[r,m,n] = c
+
+  return beta
+
