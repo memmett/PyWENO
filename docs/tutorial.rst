@@ -27,7 +27,8 @@ to fifth order accuracy and plot the results:
 
 .. image:: ../examples/smooth.png
 
-The code to generate the above is in :download:`smooth.py <../examples/smooth.py>`.
+The code to generate the above is in
+:download:`smooth.py <../examples/smooth.py>`.
 
 
 Discontinuous reconstruction
@@ -39,16 +40,8 @@ order accuracy and plot the results:
 
 .. image:: ../examples/discontinuous.png
 
-The code to generate the above is in :download:`discontinuous.py <../examples/discontinuous.py>`.
-
-
-Non-uniform reconstruction coefficients
----------------------------------------
-
-Reconstruction coefficients for arbitrary points within a non-uniform
-grid can be computed with the ``pyweno.weno`` as well.
-
-For example, XXX
+The code to generate the above is in
+:download:`discontinuous.py <../examples/discontinuous.py>`.
 
 
 Version information

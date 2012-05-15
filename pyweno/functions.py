@@ -133,7 +133,10 @@ class FunctionGenerator(KernelGenerator):
     sigs = []
     defs = []
 
-    a = { x[0]: x for x in args }
+    a = {}
+    for x in args:
+      a[x[0]] = x
+
     for arg in [ 'f', 'beta', 'sigma', 'varpi', 'omega', 'coeffs', 'fs' ]:
       if arg in a:
         s, d = t[a[arg]]

@@ -36,7 +36,6 @@ To install PyWENO, you need:
 
   * NumPy
   * SymPy    (optional if you avoid pyweno.symbolic)
-  * PyOpenCL (optional if you avoid pyweno.opencl)
 
 
 License
