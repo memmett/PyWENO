@@ -362,7 +362,10 @@ class KernelGenerator(object):
           if not self.weights_normalised:
             acc0 = acc0 / acc1
 
-          acc = acc - scale[l,s] * acc0
+          if pm == 'p':
+            acc = acc + scale[l,s] * acc0
+          else:
+            acc = acc - scale[l,s] * acc0
 
       kernel.append(self.assign(fs[l], acc))
 
