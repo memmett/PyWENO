@@ -53,11 +53,11 @@ templates = {
 
     'callable': '''
       __kernel void {function}({args})
-      {{
+      {{{{
         int i = get_global_id(0);
         double {variables};
         {kernel}
-      }}
+      }}}}
       ''',
 
     },

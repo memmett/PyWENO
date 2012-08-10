@@ -262,6 +262,8 @@ class FunctionGenerator(KernelGenerator):
       function=function, args=args, defs=defs,
       variables=self._variable_join(variables),
       kernel = '\n'.join(kernel),
-      ).format(k=k, n=n)
+      )
+
+    src = src.format(k=k, n=n, rmax=k-1)
 
     return src
