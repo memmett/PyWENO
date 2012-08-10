@@ -12,8 +12,7 @@ include: left edge, right edge, Gauss-Legendre quadrature points,
 Gauss-Lobatto quadrature points, and Guass-Radau quadrature points.
 
 PyWENO can also be used as a code generator to build custom WENO
-reconstructors in C, Fortran, and OpenCL on uniform and non-uniform
-grids.
+reconstructors in C, Fortran, and OpenCL on uniform grids.
 
 Please see
 

@@ -66,7 +66,7 @@ setup(
     description  = "Weighted Essentially Non-oscillatory (WENO) reconstructions.",
     license      = "BSD",
     keywords     = "weno, interpolate, interpolation, finite, volume",
-    url          = "http://memmett.github.com/PyWENO/",
+    url          = "http://readthedocs.org/docs/pyweno/en/latest/",
 
     # XXX
 #    requires = [],
