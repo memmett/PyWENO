@@ -1,6 +1,9 @@
 """PyWENO symbolic tool kit."""
 
 import sympy
+from itertools import product
+
+from sympy import Symbol as sym
 
 
 ###############################################################################
@@ -11,25 +14,19 @@ def polynomial_interpolator(x, y):
   The returned polynomial is a function of the SymPy variable x.
   """
 
-  xi = sympy.var('x')
+  k, xi = len(x), sym('x')
 
-  # build polynomial interpolant in Lagrange form
-  k = len(x)
   sum_i = 0
   for i in range(k):
-
-    ns = range(0,k)
+    ns = range(k)
     ns.remove(i)
 
-    prod_n = 1
+    num, den = 1, 1
     for n in ns:
-      prod_n = prod_n * (xi - x[n])
+      num *= xi   - x[n]
+      den *= x[i] - x[n]
 
-    prod_m = 1
-    for m in ns:
-      prod_m = prod_m * (x[i] - x[m])
-
-    sum_i = sum_i + prod_n / prod_m * y[i]
+    sum_i += num / den * y[i]
 
   return sum_i
 
@@ -44,10 +41,12 @@ def primitive_polynomial_interpolator(x, y):
   """
 
   Y = [0]
-  for i in range(0, len(y)):
+  for i in range(len(y)):
     Y.append(Y[-1] + (x[i+1] - x[i]) * y[i])
 
   return polynomial_interpolator(x, Y)
+
+ppi = primitive_polynomial_interpolator
 
 
 ###############################################################################
@@ -63,7 +62,7 @@ def _pt(a, b, x):
   return w * x + c
 
 
-def reconstruction_coefficients(k, xi):
+def reconstruction_coefficients(k, xi, d=0):
   r"""Compute the reconstruction coefficients for a 2k-1 order WENO
   scheme corresponding to the reconstruction points in *xi*.
 
@@ -71,7 +70,7 @@ def reconstruction_coefficients(k, xi):
   interval is then mapped to the cell :math:`[x_{i-1/2}, x_{i+1/2}]`.
 
   The returned coefficients are stored as SymPy variables in a
-  dictionary indexed according to ``c[l,r,j]``.  That is
+  dictionary indexed according to ``c[l, r, j]``.  That is
 
   .. math::
 
@@ -80,45 +79,33 @@ def reconstruction_coefficients(k, xi):
   for each :math:`l` from 0 to ``len(xi)``.
   """
 
-  i = k-1
-  (x, dx) = sympy.var('x dx')
+  i, n, x, dx  = k-1, len(xi), sym('x'), sym('dx')
 
-  # build array of cell boundaries (sympy vars x[i])
-  xs = []
-  for j in range(-k+1, k+1):
-    xs.append(j*dx)
+  # build arrays of cell boundaries and cell averages
+  xs = [ j*dx               for j in range(-k+1, k+1) ]
+  fs = [ sym('f[i%+d]' % j) for j in range(-k+1, k)   ]
 
-  # build array of cell averages (sympy vars f[i])
-  fs = []
-  for j in range(-k+1, k):
-    fs.append(sympy.var('f[i%+d]' % j))
-
-  # set reconstruction point xi
-  n = len(xi)
+  c = { 'n': n, 'k': k, 'd': d }
 
   # compute reconstruction coefficients for each left shift r
-  c = { 'n': n, 'k': k }
+  for l, r in product(range(n), range(k)):
+    p = ppi(xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x, d+1)
 
-  for l in range(n):
-    for r in range(0, k):
-      p = primitive_polynomial_interpolator(
-        xs[i-r:i-r+k+1], fs[i-r:i-r+k]).diff(x)
+    for j in range(k):
+      z = _pt(xs[i], xs[i+1], xi[l])
+      c[l, r, j] = p.subs(x, z).expand().coeff(fs[i-r+j])
 
-      for j in range(0, k):
-        p = p.expand()
+      if c[l, r, j] is None:
+        c[l, r, j] = 0
 
-        z = _pt(xs[i], xs[i+1], xi[l])
-        c[l,r,j] = p.subs(x, z).coeff(fs[i-r+j])
-
-        if c[l,r,j] is None:
-          raise ValueError, 'obtained a zero coefficient'
+      c[l, r, j] *= dx**d
 
   return c
 
 
 ###############################################################################
 
-def optimal_weights(k, xi):
+def optimal_weights(k, xi, **kwargs):
   r"""Compute the optimal weights for a 2k-1 order WENO scheme
   corresponding to the reconstruction points in *xi*.
 
@@ -134,30 +121,21 @@ def optimal_weights(k, xi):
 
   n = len(xi)
 
-  c   = reconstruction_coefficients(k, xi)
-  c2k = reconstruction_coefficients(2*k-1, xi) #[:,k-1,:]
+  c   = reconstruction_coefficients(k, xi, **kwargs)
+  c2k = reconstruction_coefficients(2*k-1, xi, **kwargs)
 
-  omega = []
-  for r in range(k):
-    omega.append(sympy.var('omega%d' % r))
-
+  omega = [ sym('omega%d' % r) for r in range(k) ]
   varpi = { 'n': n, 'k': k }
   split = { 'n': n }
 
   for l in range(n):
+
+    # use first k eqns since weight system is overdetermined
     eqns = []
-
-    # we'll just use the first k eqns since the system is overdetermined
     for j in range(k):
-
-      rmin = max(0, (k-1)-j)
-      rmax = min(k-1, 2*(k-1)-j)
-
-      accum = 0
-      for r in range(rmin, rmax+1):
-        accum = accum + omega[r] * c[l,r,r-(k-1)+j]
-
-      eqns.append(accum - c2k[l,k-1,j])
+      rmin, rmax = max(0, (k-1)-j), min(k-1, 2*(k-1)-j)
+      terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
+      eqns.append(sum(terms) - c2k[l, k-1, j])
 
     # XXX: Should make sure that when mpmath.mpf's are passed in
     # (in xi), that the solution obtained above is a high
@@ -167,35 +145,25 @@ def optimal_weights(k, xi):
 
     # now check all 2*k-1 eqns to make sure the weights work out properly
     for j in range(2*k-1):
+      rmin, rmax = max(0, (k-1)-j), min(k-1, 2*(k-1)-j)
+      terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
+      eqn = sum(terms) - c2k[l, k-1, j]
+      err = eqn.subs(sol)
+      if abs(err) > 0:
+        raise ValueError("optimal weight %d failed with error %s" % (j, err))
 
-      rmin = max(0, (k-1)-j)
-      rmax = min(k-1, 2*(k-1)-j)
-
-      accum = 0
-      for r in range(rmin, rmax+1):
-        accum = accum + omega[r] * c[l,r,r-(k-1)+j]
-
-      eqn = accum - c2k[l,k-1,j]
-      eqn.subs(sol)             # XXX: check this
-
-    # check for negative weights and mark as split
-    if min(sol.values()) < 0:
-      split[l] = True
-    else:
-      split[l] = False
-
-    # split as appropriate
+    # set weight or split as appropriate
+    split[l] = min(sol.values()) < 0
     for r in range(k):
       if split[l]:
         w  = sol[omega[r]]
         wp = (w + 3*abs(w))/2
         wm = wp - w
-        varpi[l,r] = (wp, wm)
+        varpi[l, r] = (wp, wm)
       else:
-        varpi[l,r] = sol[omega[r]]
+        varpi[l, r] = sol[omega[r]]
 
-  return (varpi, split)
-
+  return varpi, split
 
 
 ###############################################################################
@@ -205,7 +173,7 @@ def jiang_shu_smoothness_coefficients(k):
   WENO scheme.
 
   The coefficients are stored as SymPy variables in a dictionary
-  indexed according to ``beta[r,m,n]``.  That is
+  indexed according to ``beta[r, m, n]``.  That is
 
   .. math::
 
@@ -213,44 +181,33 @@ def jiang_shu_smoothness_coefficients(k):
       \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
   """
 
-  (x, dx) = sympy.var('x dx')
-  xi = sympy.var('x')
+  x, dx, xi = sym('x'), sym('dx'), sym('x')
 
-  # build array of cell boundaries (sympy vars x[i])
-  xs = []
-  for j in range(-k+1, k+1):
-    xs.append(j*dx)
+  # build arrays of cell boundaries and cell averages
+  xs = [ j*dx               for j in range(-k+1, k+1) ]
+  fs = [ sym('f[i%+d]' % j) for j in range(-k+1, k)   ]
 
-  # build array of cell averages (sympy vars f[i])
-  fs = []
-  for j in range(-k+1, k):
-    fs.append(sympy.var('f[i%+d]' % j))
-
-  # compute reconstruction coefficients for each left shift r
   beta = { 'k': k }
-  for r in range(0, k):
-    p = primitive_polynomial_interpolator(xs[k-1-r:2*k-r],
-                                          fs[k-1-r:2*k-1-r]).diff(x)
+
+  # compute smoothness coefficients for each left shift r
+  for r in range(k):
+    p = ppi(xs[k-1-r:2*k-r], fs[k-1-r:2*k-1-r]).diff(x)
+
     # sum of L^2 norms of derivatives
     s = 0
     for j in range(1, k):
-      pp = (sympy.diff(p, xi, j))**2
+      pp = sympy.diff(p, xi, j)**2
       pp = pp.as_poly(x)
       pp = pp.integrate(x)
-      #pp = pp.as_basic()
-      pp = (xs[k] - xs[k-1])**(2*j-1) * (
-        pp.subs(x, xs[k]) - pp.subs(x, xs[k-1]) )
-      pp = pp.expand()
-      s = s + pp
-
-    #s = s.expand()
+      pp = dx**(2*j-1) * ( pp.subs(x, xs[k]) - pp.subs(x, xs[k-1]) )
+      s += pp.expand()
 
     # pick out coefficients
     for m in range(k):
       for n in range(m, k):
         c = s.coeff(fs[k-1-r+m]*fs[k-1-r+n])
         if c is not None:
-          beta[r,m,n] = c
+          beta[r, m, n] = c
 
   return beta
 
