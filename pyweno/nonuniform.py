@@ -167,11 +167,11 @@ wenos = dict()
 
 def get_weno(k):
     try:
-        name = 'pyweno.weno_' + str(k)
+        name = 'pyweno.nonuniform_weno_' + str(k)
         if name in wenos:
             wenok = wenos[name]
         else:
-            wenok = __import__(name).__dict__['weno_' + str(k)]
+            wenok = __import__(name).__dict__['nonuniform_weno_' + str(k)]
         wenos[name] = wenok
         return wenok
     except ImportError as e:

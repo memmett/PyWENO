@@ -1,9 +1,14 @@
 """
-PyWENO non-uniform reconstruction routines.
+PyWENO non-uniform reconstruction code generation routines
 
 Original code written by Matthew Emmett as part of PyWENO.
 Edited by Ben Thompson.
+
+To generate a new fortran module for weno reconstruction of order k, run:
+
+create_fncs(k)
 """
+import sys
 import os
 import subprocess
 import sympy
@@ -144,7 +149,7 @@ def save_fnc(k, fnc, fnc_name, args):
     # Build the code using the sympy codegen module
     code = codegen((fnc_name, fnc), "F95", "autoweno",
                    argument_sequence=args)
-    filename_prefix = get_filename_prefix(k)
+    filename_prefix = get_filename_prefix(get_module_name(k))
     source_file = filename_prefix + '.f90'
     # Save it to the proper file.
     with open(source_file, 'a') as ff:
@@ -153,9 +158,14 @@ def save_fnc(k, fnc, fnc_name, args):
     clear_cache()
 
 
-def get_filename_prefix(k):
+def get_module_name(k):
+    module_name = 'nonuniform_weno_' + str(k)
+    return module_name
+
+
+def get_filename_prefix(module_name):
     root = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(root, 'nonuniform_weno_' + str(k))
+    return os.path.join(root, module_name)
 
 
 def create_fncs(k, force=False):
@@ -168,7 +178,8 @@ def create_fncs(k, force=False):
     Note: if the library already exists, this will do nothing. Delete the
     weno_k.so file to rebuild it.
     """
-    filename_prefix = get_filename_prefix(k)
+    module_name = get_module_name(k)
+    filename_prefix = get_filename_prefix(module_name)
     source_file = filename_prefix + '.f90'
 
     # Check if the library already exists.
@@ -180,20 +191,15 @@ def create_fncs(k, force=False):
         os.remove(source_file)
 
     # Build the new source
-    for d in range(0, 1):
+    for d in range(0, k):
         coeffs(k, d)
-    # smoothness(k)
+    smoothness(k)
     # Compile!
-    subprocess.call('f2py -c ' + source_file + ' -m ' + filename_prefix,
+    subprocess.call('f2py -c ' + source_file + ' -m ' + module_name,
                     shell=True)
     # Test the module
-    module = __import__(filename_prefix)
+    module = __import__(module_name)
     assert(module)
 
-
-def create_standard():
-    create_fncs(3)
-    # create_fncs(5)
-
 if __name__ == "__main__":
-    create_standard()
+    create_fncs(int(sys.argv[1]))

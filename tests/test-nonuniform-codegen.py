@@ -1,6 +1,6 @@
 import sympy
-from src.nonuniform_codegen import polynomial_interpolator, smoothness
-from src.nonuniform_codegen import primitive_polynomial_interpolator, _pt, coeffs
+from pyweno.nonuniform_codegen import polynomial_interpolator, smoothness
+from pyweno.nonuniform_codegen import primitive_polynomial_interpolator, _pt, coeffs
 
 
 def test_polynomial_interpolator():

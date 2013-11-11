@@ -17,7 +17,7 @@ def test_coeffs():
 
 
 def test_weights():
-    weights = np.array([0.1, 0.6, 0.3])
+    weights = np.array([0.3, 0.6, 0.1])
     result = optimal_weights(
         3, [-1.0, 1.0], [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
     np.testing.assert_almost_equal(result[2][1], weights)

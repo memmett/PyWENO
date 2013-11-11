@@ -59,7 +59,7 @@ f.close()
 setup(
 
     name         = "PyWENO",
-    packages     = [ 'pyweno' ],
+    packages     = ['pyweno'],
     version      = version,
     author       = "Matthew Emmett",
     author_email = "matthew@emmett.ca",
@@ -67,20 +67,21 @@ setup(
     license      = "BSD",
     keywords     = "weno, interpolate, interpolation, finite, volume",
     url          = "http://readthedocs.org/docs/pyweno/en/latest/",
+    data_files   = [('pyweno', ['pyweno/nonuniform_weno_3.f90'])],
 
     # XXX
 #    requires = [],
 
-    ext_modules = [
-        Extension('pyweno.ccoeffs',
-                  sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
-                  include_dirs=[np.get_include()]
-                  ),
-        Extension('pyweno.cweno',
-                  sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
-                  include_dirs=[np.get_include()],
-                  extra_compile_args = ['-std=c99'],
-                  )],
+    # ext_modules = [
+    #     Extension('pyweno.ccoeffs',
+    #               sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
+    #               include_dirs=[np.get_include()]
+    #               ),
+    #     Extension('pyweno.cweno',
+    #               sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
+    #               include_dirs=[np.get_include()],
+    #               extra_compile_args = ['-std=c99'],
+    #               )],
 
     long_description = long_description,
 
