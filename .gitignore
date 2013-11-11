@@ -15,6 +15,7 @@ __git_version__.py
 # setuptools
 build
 dist
+MANIFEST
 PyWENO*
 
 # examples

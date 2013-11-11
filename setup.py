@@ -1,5 +1,6 @@
 '''PyWENO setup script.'''
 
+import subprocess
 import glob
 import os
 import re
@@ -53,6 +54,12 @@ f.write("version = '%s'\n" % (version))
 f.close()
 
 
+if not os.path.exists('pyweno/nonuniform_weno_3.so'):
+    subprocess.call('f2py -c pyweno/nonuniform_weno_3.f90 -m nonuniform_weno_3', shell=True)
+    subprocess.call('mv nonuniform_weno_3.so pyweno/', shell=True)
+    subprocess.call('f2py -c pyweno/nonuniform_weno_5.f90 -m nonuniform_weno_5', shell=True)
+    subprocess.call('mv nonuniform_weno_5.so pyweno/', shell=True)
+
 ###############################################################################
 # setup!
 
@@ -60,6 +67,7 @@ setup(
 
     name         = "PyWENO",
     packages     = ['pyweno'],
+    package_data = {'pyweno': ['nonuniform_weno_3.so', 'nonuniform_weno_5.so']},
     version      = version,
     author       = "Matthew Emmett",
     author_email = "matthew@emmett.ca",
@@ -67,7 +75,6 @@ setup(
     license      = "BSD",
     keywords     = "weno, interpolate, interpolation, finite, volume",
     url          = "http://readthedocs.org/docs/pyweno/en/latest/",
-    data_files   = [('pyweno', ['pyweno/nonuniform_weno_3.f90'])],
 
     # XXX
 #    requires = [],
