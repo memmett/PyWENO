@@ -149,7 +149,7 @@ def optimal_weights(k, xi, **kwargs):
       terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
       eqn = sum(terms) - c2k[l, k-1, j]
       err = eqn.subs(sol)
-      if abs(err) > 0:
+      if abs(err) > 1e-15:
         raise ValueError("optimal weight %d failed with error %s" % (j, err))
 
     # set weight or split as appropriate
@@ -216,7 +216,7 @@ def jiang_shu_smoothness_coefficients(k):
 
 def reconstruction_coefficients_for_derivative(k, bias):
   """XXX"""
-  
+
   i = k-1
   (x, dx) = sympy.var('x dx')
 
@@ -248,7 +248,7 @@ def reconstruction_coefficients_for_derivative(k, bias):
         if c[l,r,j] is None:
           c[l,r,j] = 0 # i think it may be zero for k=2
         c[l,r,j] *= dx
-          
+
   return c
 
 
@@ -344,7 +344,7 @@ def jiang_shu_smoothness_coefficients_for_derivative(k, bias):
     p = polynomial_interpolator(xs[k-1-r:2*k-r], fs[k-1-r:2*k-r])
     # sum of L^2 norms of derivatives
     s = 0
-    for j in range(2, k+1): 
+    for j in range(2, k+1):
       # start at the second derivative since we are
       # interested in the smoothness of the derivative of p
       pp = (sympy.diff(p, x, j))**2

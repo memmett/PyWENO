@@ -6,6 +6,7 @@ Edited by Ben Thompson.
 """
 import numpy as np
 
+
 def smoothness_fnc_name(k, r, i, j):
     """
     Arguments:
@@ -15,12 +16,15 @@ def smoothness_fnc_name(k, r, i, j):
     """
     return 'smoothness_' + str(k) + '_' + str(r) + '_' + str(i) + '_' + str(j)
 
+
 def coeffs_fnc_name(k, d, j):
     return 'reconstruction_coeffs_' + str(k) + '_' + str(d) + '_' + str(j)
+
 
 def call_coeffs(k, d, j, args):
     fnc_name = coeffs_fnc_name(k, d, j)
     return get_weno(k).__dict__[fnc_name](*args)
+
 
 def reconstruction_coefficients(k, xi, x, d=0):
     r"""Numerically compute the reconstruction coefficients for a 2k-1
@@ -53,18 +57,18 @@ def reconstruction_coefficients(k, xi, x, d=0):
     args = np.zeros(k + 2)
     for i in range(k - 1, N - k + 1):
         for l in range(n):
-            # Map the point under consideration back into original
-            # spatial domain
-            z = 0.5 * (X[i] + X[i + 1]) +\
-                0.5 * (X[i + 1] - X[i]) * xi[l]
             for r in range(k):
-                args[0:k + 1] = x[i - r:i - r + k + 1]
+                args[0:k + 1] = X[i - r:i - r + k + 1]
+                # Map the point under consideration back into original
+                # spatial domain, then subtract X[i - r] to get into
+                # near-zero coordinates for floating point happiness
+                z = 0.5 * (X[i] + X[i + 1]) - X[i - r] + \
+                    0.5 * (X[i + 1] - X[i]) * xi[l]
                 args[k + 1] = z
                 for j in range(k):
                     val = call_coeffs(k, d, j, args)
                     c[i, l, r, j] = val
     return c
-
 
 
 def optimal_weights(k, xi, x, tolerance=1e-12):
@@ -165,6 +169,7 @@ def jiang_shu_smoothness_coefficients(k, x):
 
 wenos = dict()
 
+
 def get_weno(k):
     try:
         name = 'pyweno.nonuniform_weno_' + str(k)
@@ -177,7 +182,5 @@ def get_weno(k):
     except ImportError as e:
         raise Exception("Nonuniform WENO library file does not exist. "
                         "Please run 'python src/nonuniform_codegen.py' "
-                        "from the pyweno source directory (Original Exception: " \
+                        "from the pyweno source directory (Original Exception: "
                         + str(e) + ")")
-
-

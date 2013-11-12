@@ -16,6 +16,13 @@ def test_coeffs():
     np.testing.assert_almost_equal(correct, result[2])
 
 
+# This test was causing some floating point error -- fixed now
+def test_coeffs_stress():
+    x = np.linspace(0, 100000, 100000)
+    result = reconstruction_coefficients(3, [1.0], x)
+    np.testing.assert_almost_equal(result[5][0], result[-5][0])
+
+
 def test_weights():
     weights = np.array([0.3, 0.6, 0.1])
     result = optimal_weights(
@@ -35,8 +42,8 @@ def test_jiang_shu_smoothness_coefficients():
           [0.,   8.33333333, -10.33333333],
           [0.,   0.,   3.33333333]]])
     # Check for the correct answer on a uniform grid.
-    beta = jiang_shu_smoothness_coefficients(3, [1, 2, 3, 4, 5, 6, 7])
-    np.testing.assert_almost_equal(beta[3], correct)
+    beta = jiang_shu_smoothness_coefficients(3, np.linspace(0, 10000, 10000))
+    np.testing.assert_almost_equal(beta[9500], correct)
 
     # Make sure it doesn't fail in the case of a non-uniform grid.
     # How to check correctness?
