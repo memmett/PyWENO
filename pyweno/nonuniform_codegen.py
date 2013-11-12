@@ -12,9 +12,7 @@ import sys
 import os
 import subprocess
 import sympy
-from sympy.utilities.codegen import codegen
-from sympy.core.cache import clear_cache
-from pyweno.nonuniform import smoothness_fnc_name, coeffs_fnc_name
+from pyweno.nonuniform import coeffs_fnc_name, smoothness_fnc_name
 
 
 def polynomial_interpolator(x, y):
@@ -64,31 +62,19 @@ def _pt(a, b, x):
     return w * x + c
 
 
-def coeffs(k, d):
+def coeffs(k, d, offset):
     # build arrays of cell boundaries and cell averages
-    xs = [sympy.var('x%d' % j) for j in range(k + 1)]
-    fs = [sympy.var('f%d' % j) for j in range(k)]
+    xs = [sympy.var('x%d' % j) for j in range(offset, k + offset + 1)]
+    ys = [sympy.var('f%d' % j) for j in range(offset, k + offset)]
 
     x = sympy.var('x')
-    # z = _pt(xs[k - 1], xs[k], x)
 
-    # compute reconstruction coefficients for each left shift r
     # Interpolate the polynomial
-    poly = primitive_polynomial_interpolator(xs, fs).diff(x, d + 1)
-    # We have to do .simplify().expand() in order to get the proper symbolic
-    # coefficients
-    poly = poly.simplify().expand()
-    for j in range(k):
-        args = xs[:]
-        args.append(x)
-        fnc = poly.coeff(fs[j]).simplify()
-        fnc_name = coeffs_fnc_name(k, d, j)
-        save_fnc(k, fnc, fnc_name, args)
+    poly = primitive_polynomial_interpolator(xs, ys).diff(x, d + 1)
+    return poly
 
 
-
-
-def smoothness(k):
+def smoothness(k, offset):
     """
     Compute the Jiang-Shu smoothness coefficient functions and output them in a form ready
     to be compiled to fortran.
@@ -98,18 +84,14 @@ def smoothness(k):
     x = sympy.var('x')
 
     # build array of cell boundaries and cell averages (sympy vars x[i])
-    xs = []
-    for j in range(k + 1):
-        xs.append(sympy.var('x%d' % j))
+    xs = [sympy.var('x%d' % j) for j in range(offset, k + offset + 1)]
     # and build the array of cell averages
-    ys = []
-    for j in range(k):
-        ys.append(sympy.var('y%d' % j))
+    ys = [sympy.var('y%d' % j) for j in range(offset, k + offset)]
 
     # The upper and lower boundaries of the cell, used as the integration
     # bounds.
-    b1 = sympy.var('b1')
-    b2 = sympy.var('b2')
+    b1 = sympy.var('x%d' % (k - 1))
+    b2 = sympy.var('x%d' % k)
 
     # Interpolate the polynomial
     p = primitive_polynomial_interpolator(xs, ys)
@@ -117,89 +99,31 @@ def smoothness(k):
     p = p.diff(x)
 
     ppp = []
-    for r in range(0, k):
         # The smoothness is measured as the sum of L^2 norms of derivatives
-        s = 0
-        for j in range(1, k):
-            pp = (p.diff((0, j))) ** 2
-            pp = pp.integrate(x)
-            pp = (b2 - b1) ** (2 * j - 1) * (
-                pp.subs(x, b2) - pp.subs(x, b1))
-            s = s + pp
-        # We have to do .simplify().expand() in order to get the proper
-        # symbolic coefficients
-        ppp.append(s.simplify().expand())
-
-    # Saves functions and arguments in a form ready to be compiled to fortran
-    # expressions that can be called from the live code.
-    for r in range(0, k):
-        for i in range(0, k):
-            for j in range(0, k):
-                args = [xs[m] for m in range(0, k + 1)]
-                # I suspect that I could carefully redesign this so that
-                # b1 and b2 would be drawn from the xs array
-                args.append(b1)
-                args.append(b2)
-                fnc = ppp[r].coeff(ys[i] * ys[j]).simplify()
-                fnc_name = smoothness_fnc_name(k, r, i, j)
-                save_fnc(k, fnc, fnc_name, args)
-
-
-def save_fnc(k, fnc, fnc_name, args):
-    # Build the code using the sympy codegen module
-    code = codegen((fnc_name, fnc), "F95", "autoweno",
-                   argument_sequence=args)
-    filename_prefix = get_filename_prefix(get_module_name(k))
-    source_file = filename_prefix + '.f90'
-    # Save it to the proper file.
-    with open(source_file, 'a') as ff:
-        ff.write(code[0][1])
-    # Clear the sympy cache so that we don't completely fill up RAM.
-    clear_cache()
-
-
-def get_module_name(k):
-    module_name = 'nonuniform_weno_' + str(k)
-    return module_name
-
-
-def get_filename_prefix(module_name):
-    root = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(root, module_name)
+    s = 0
+    for j in range(1, k):
+        pp = (p.diff((0, j))) ** 2
+        pp = pp.integrate(x)
+        pp = (b2 - b1) ** (2 * j - 1) * (
+            pp.subs(x, b2) - pp.subs(x, b1))
+        s = s + pp
+    ppp = s.as_expr()
+    return ppp
 
 
 def create_fncs(k, force=False):
-    """
-    This function uses the sympy autowrap module to create fortran functions
-    with f2py. It is massively faster at runtime than directly calling the
-    sympy functions using subs. As a tradeoff, this takes a long time
-    to generate the fortran functions (sympy can be slow!).
+    args = [sympy.var('x%d' % j) for j in range(0, 2 * k)]
+    args.extend([sympy.var('y%d' % j) for j in range(0, 2 * k - 1)])
+    args.append(sympy.var('x'))
 
-    Note: if the library already exists, this will do nothing. Delete the
-    weno_k.so file to rebuild it.
-    """
-    module_name = get_module_name(k)
-    filename_prefix = get_filename_prefix(module_name)
-    source_file = filename_prefix + '.f90'
+    fncs = []
+    for i in range(0, k):
+        for d in range(0, k):
+            expr = coeffs(k, d, i)
+            fncs.append((args, expr, coeffs_fnc_name(k, d, i)))
+        expr = smoothness(k, i)
+        fncs.append((args, expr, smoothess_fnc_name(k, i))
 
-    # Check if the library already exists.
-    if (not force) and os.path.exists(filename_prefix + '.so'):
-        return
-
-    # Delete the old source
-    if os.path.exists(source_file):
-        os.remove(source_file)
-
-    # Build the new source
-    for d in range(0, k):
-        coeffs(k, d)
-    smoothness(k)
-    # Compile!
-    subprocess.call('f2py -c ' + source_file + ' -m ' + module_name,
-                    shell=True)
-    # Test the module
-    module = __import__(module_name)
-    assert(module)
 
 if __name__ == "__main__":
     create_fncs(int(sys.argv[1]))

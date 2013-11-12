@@ -15,6 +15,10 @@ def test_coeffs():
                                          [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0])
     np.testing.assert_almost_equal(correct, result[2])
 
+def test_coeffs_stress():
+    x = np.linspace(0, 1, 100000)
+    result = reconstruction_coefficients(3, [1.0], x)
+    np.testing.assert_almost_equal(result[5][0], result[-5][0])
 
 def test_weights():
     weights = np.array([0.3, 0.6, 0.1])

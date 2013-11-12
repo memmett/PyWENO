@@ -6,20 +6,14 @@ Edited by Ben Thompson.
 """
 import numpy as np
 
-def smoothness_fnc_name(k, r, i, j):
-    """
-    Arguments:
-        :param k: The order of the polynomial reconstruction.
-        :param i: The first dimension of the smoothness kernel position.
-        :param j: The second dimension of the smoothness kernel position.
-    """
-    return 'smoothness_' + str(k) + '_' + str(r) + '_' + str(i) + '_' + str(j)
+def smoothness_fnc_name(k, offset):
+    return 'smoothness_' + str(k) + '_' + str(offset)
 
-def coeffs_fnc_name(k, d, j):
-    return 'reconstruction_coeffs_' + str(k) + '_' + str(d) + '_' + str(j)
+def coeffs_fnc_name(k, d, offset):
+    return 'reconstruction_coeffs_' + str(k) + '_' + str(d) + '_' + str(offset)
 
-def call_coeffs(k, d, j, args):
-    fnc_name = coeffs_fnc_name(k, d, j)
+def call_coeffs(k, d, offset, args):
+    fnc_name = coeffs_fnc_name(k, d, offset)
     return get_weno(k).__dict__[fnc_name](*args)
 
 def reconstruction_coefficients(k, xi, x, d=0):
@@ -58,10 +52,14 @@ def reconstruction_coefficients(k, xi, x, d=0):
             z = 0.5 * (X[i] + X[i + 1]) +\
                 0.5 * (X[i + 1] - X[i]) * xi[l]
             for r in range(k):
-                args[0:k + 1] = x[i - r:i - r + k + 1]
+                xargs = x[i - k + 1:i + k]
                 args[k + 1] = z
                 for j in range(k):
-                    val = call_coeffs(k, d, j, args)
+                    # SUPER HACKY, BUT THIS *DOES* GET THE COEFFICIENT
+                    yargs = [0] * (2 * k - 1)
+                    yargs[r + j] = 1.0
+                    args = xargs + yargs + [z]
+                    val = call_coeffs(k, d, r, args)
                     c[i, l, r, j] = val
     return c
 
@@ -150,14 +148,13 @@ def jiang_shu_smoothness_coefficients(k, x):
     beta = np.zeros((N, k, k, k))
     for i in range(k - 1, N - k + 1):
         for r in range(0, k):
-            args = []
-            for j in range(0, k + 1):
-                args.append([X[i - r + j]])
+            xargs = [X[i - r:i - r + k + 1]]
             args.append([X[i]])
             args.append([X[i + 1]])
             # pick out coefficients
             for m in range(k):
                 for n in range(m, k):
+                    yargs =
                     c = call_smoothness(k, r, m, n, args)
                     if c is not None:
                         beta[i, r, m, n] = float(c)
