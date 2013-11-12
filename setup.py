@@ -79,16 +79,16 @@ setup(
     # XXX
 #    requires = [],
 
-    # ext_modules = [
-    #     Extension('pyweno.ccoeffs',
-    #               sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
-    #               include_dirs=[np.get_include()]
-    #               ),
-    #     Extension('pyweno.cweno',
-    #               sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
-    #               include_dirs=[np.get_include()],
-    #               extra_compile_args = ['-std=c99'],
-    #               )],
+    ext_modules = [
+        Extension('pyweno.ccoeffs',
+                  sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
+                  include_dirs=[np.get_include()]
+                  ),
+        Extension('pyweno.cweno',
+                  sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
+                  include_dirs=[np.get_include()],
+                  extra_compile_args = ['-std=c99'],
+                  )],
 
     long_description = long_description,
 
