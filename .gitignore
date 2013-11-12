@@ -4,6 +4,8 @@ __git_version__.py
 
 # backup files
 *~
+*.swp
+*.swo
 
 # compiled python and shared objects
 *.pyc
@@ -13,6 +15,7 @@ __git_version__.py
 # setuptools
 build
 dist
+MANIFEST
 PyWENO*
 
 # examples
