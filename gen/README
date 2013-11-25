@@ -1,0 +1,2 @@
+This directory contains Python code to generate a slew of C code to
+perform WENO reconstructions.  The generated code is written to ../src.
