@@ -1,26 +1,27 @@
 """PyWENO code generation tool kit (kernels)."""
 
-from sympy import Symbol
+import sympy
 import codeprinters
+import symbolic
 
-symbol = lambda x: Symbol(x, real=True)
+from symbols import *
 
 
-###############################################################################
-# KernelGenerator
+class Kernel(object):
+  def __init__(self):
+    if names.lang == 'fortran':
+      self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
+    else:
+      self.code = codeprinters.CCodePrinter()
+    self.src = []
+  def assign(self, dest, value):
+    if isinstance(self.code, codeprinters.CCodePrinter):
+      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';')
+    else:
+      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)))
+  def body(self):
+    return '\n'.join(self.src)
 
-local_names = {
-  'sigma':  'sigmaX',
-  'omega':  'omegaX',
-  'f_star': 'fsX',
-  'f_r':    'frX',
-  }
-
-global_names = {
-  'c':       'f[(i{r:+d})*fsi]',
-  'opencl':  'f[(i{r:+d})*fsi]',
-  'fortran': 'f(i{r:+d})'
-  }
 
 class KernelGenerator(object):
   """Generate kernels for WENO reconstructions.
@@ -30,7 +31,7 @@ class KernelGenerator(object):
   reconstructions.  These code snippets can, in-turn, be used to
   create seperate functions or larger kernels.
 
-  The *local_names* dictionary is used to define naming conventions:
+  The pyweno.kernels.names object is used to define naming conventions:
 
   * smoothness indicators: *sigma*, default ``sigmaX``
   * weights: *omega*, default ``omegaX``
@@ -46,129 +47,18 @@ class KernelGenerator(object):
 
   """
 
-  def __init__(self, lang, reuse=False, vectorize=False, **kwargs):
-
-    self.n = None
-    self.k = None
-
+  def __init__(self, lang, order=None, xi=None, **kwargs):
+    if order is not None:
+      self.k = (order + 1) / 2
+      self.xi = xi
     self.lang = lang.lower()
-
-    self.sigma = {}
-    self.omega = {}
-    self.fr    = {}
-    self.fs    = {}
-    self.f     = {}
-
-    self.weights_normalised = True
-
-    self.reuse = reuse
-    self.vectorize = vectorize
-
-    if self.lang == 'fortran':
-      self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
-    else:
-      self.code = codeprinters.CCodePrinter()
-      self.vectorize = False
+    self.weights_normalised = False
+    names.lang = lang.lower()
 
 
   #############################################################################
-  # set methods
 
-  def assign(self, dest, value):
-    if isinstance(self.code, codeprinters.CCodePrinter):
-      return str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';'
-
-    return str(dest) + ' = ' + self.code.doprint(value.evalf(35))
-
-
-  def set_smoothness(self, beta):
-    """Set the smoothness indicator coefficients."""
-
-    self.k    = beta['k']              # poly reconstruction order
-    self.nc   = beta.get('l', self.k)  # number of coefficients in the stencil
-    self.beta = beta
-
-    self.sigma = {}
-    for r in range(self.k):
-      if self.vectorize:
-        self.sigma[r] = symbol('sigma(%r)' % r)
-      else:
-        self.sigma[r] = symbol(
-          local_names['sigma'].replace('X', str(r)))
-
-    self.f = {}
-    for r in range(-2*self.k, 2*self.k+1):
-      self.f[r] = symbol(global_names[self.lang].format(r=r))
-
-
-  def set_reconstruction_coefficients(self, coeffs):
-    """Set the reconstruction coefficients."""
-
-    self.n  = coeffs['n']
-    self.k  = coeffs['k']
-    self.nc = coeffs.get('l', self.k)
-    self.coeff = coeffs
-
-    self.fr = {}
-    for l in range(self.n):
-      for r in range(self.k):
-        if self.vectorize:
-          self.fr[l,r] = symbol(
-            'fr%d(%d)' % (l, r))
-        else:
-          self.fr[l,r] = symbol(
-            local_names['f_r'].replace('X', str(l*self.k+r)))
-
-
-    self.fs = {}
-    for l in range(self.n):
-      self.fs[l] = symbol(
-            local_names['f_star'].replace('X', str(l)))
-
-
-  def set_optimal_weights(self, varpi, split):
-    """Set the optimal (linear) weights."""
-
-    self.n = varpi['n']
-    self.k = varpi['k']
-    self.varpi = varpi
-    self.split = split
-
-    self.scale = {}
-    if any(self.split.values()):
-      for l in range(self.n):
-        if self.split[l]:
-          for s in (0, 1):
-            self.scale[l,s] = 0
-            for r in range(0, self.k):
-              self.scale[l,s] += varpi[l,r][s]
-
-    self.omega = {}
-    pm = ['p', 'm']
-    for l in range(self.n):
-      if self.split[l]:
-        for r in range(self.k):
-          for s in (0, 1):
-            if self.vectorize:
-              self.omega[l,r,s] = symbol(
-                'omega%d%s(%d)' % (l, pm[s], r))
-            else:
-              self.omega[l,r,s] = symbol(
-                local_names['omega'].replace('X', str(self.k*l+r) + pm[s]))
-      else:
-        for r in range(self.k):
-          if self.vectorize:
-            self.omega[l,r] = symbol(
-              'omega%d(%d)' % (l, r))
-          else:
-            self.omega[l,r] = symbol(
-              local_names['omega'].replace('X', str(self.k*l+r)))
-
-
-  #############################################################################
-  # kernels
-
-  def smoothness(self):
+  def smoothness(self, beta=None):
     r"""Fully un-rolled smoothness indicator kernel for uniform
     grids.
 
@@ -184,33 +74,27 @@ class KernelGenerator(object):
 
     """
 
-    k  = self.k
-    f  = self.f
-    nc = self.nc
-    beta  = self.beta
-    sigma = self.sigma
+    kernel = Kernel()
 
-    kernel = []
+    if beta is None:
+      beta = getattr(self, 'beta', symbolic.jiang_shu_smoothness_coefficients(self.k))
 
-    if self.reuse:
-      pass
+    k  = beta.get('k', 0)
+    nc = beta.get('l', k)
 
-    else:
-      for r in range(0, k):
+    for r in range(0, k):
+      v = sum([ beta[r,m,n] * f[-r+m] * f[-r+n]
+                for m in range(nc)
+                for n in range(m, nc) ])
+      kernel.assign(sigma[r], v)
 
-        acc = 0
-        for m in range(nc):
-          for n in range(m, nc):
-              acc = beta[r,m,n] * f[-r+m] * f[-r+n] + acc
-
-        kernel.append(self.assign(sigma[r], acc))
-
-    return '\n'.join(kernel)
+    self.beta = beta
+    return kernel.body()
 
 
   #############################################################################
 
-  def weights(self, normalise=True, power=2, epsilon='1.0e-6'):
+  def weights(self, varpi=None, split=None, normalise=False, power=2, epsilon='1.0e-6'):
     r"""Fully un-rolled weights kernel for uniform grids.
 
     The weights kernel computes the weights :math:`\omega^r`
@@ -240,59 +124,53 @@ class KernelGenerator(object):
 
     """
 
-    n  = self.n
-    k  = self.k
-    nc = self.nc
+    kernel = Kernel()
 
-    omega = self.omega
-    sigma = self.sigma
-    varpi = self.varpi
-    scale = self.scale
+    varpi = getattr(self, 'varpi', None)
+    split = getattr(self, 'split', None)
+    if varpi is None:
+      varpi, split = symbolic.optimal_weights(self.k, self.xi)
+
+    n  = varpi.get('n')
+    k  = varpi.get('k')
+    nc = varpi.get('l', k)
+
+    scale = { (l,s): sum([ varpi[l,r][s] for r in range(0, k) ])
+                                         for l in range(n)
+                                         for s in (0, 1) if split[l] }
 
     self.weights_normalised = normalise
 
-    epsilon = symbol(epsilon)
-    accsym = symbol('acc')
+    epsilon = real(epsilon)
+    accsym  = real('acc')
 
-    kernel = []
     for l in range(n):
 
-      if not self.split[l]:
-        acc = 0
+      if not split[l]:
         for r in range(0, k):
-          kernel.append(self.assign(
-              omega[l,r], varpi[l,r] / (sigma[r] + epsilon)**power))
-
-          acc = omega[l,r] + acc
-
+          kernel.assign(omega[l,r], varpi[l,r] / (sigma[r] + epsilon)**power)
         if normalise:
-          kernel.append(self.assign(accsym, acc))
+          kernel.assign(accsym, sum([ omega[l,r] for r in range(0, k) ]))
           for r in range(0, k):
-            kernel.append(self.assign(
-                omega[l,r], omega[l,r] / accsym))
+            kernel.assign(omega[l,r], omega[l,r] / accsym)
 
       else:
         for s, pm in enumerate(('p', 'm')):
-          acc = 0
-
           for r in range(0, k):
-            kernel.append(self.assign(
-                omega[l,r,s], varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**power))
-
-            acc = omega[l,r,s] + acc
-
+            kernel.assign(omega[l,r,s], varpi[l,r][s] / scale[l,s] / (sigma[r] + epsilon)**power)
           if normalise:
-            kernel.append(self.assign(accsym, acc))
+            kernel.assign(accsym, sum([ omega[l,r,s] for r in range(0, k) ]))
             for r in range(0, k):
-              kernel.append(self.assign(
-                  omega[l,r,s], omega[l,r,s] / accsym))
+              kernel.assign(omega[l,r,s], omega[l,r,s] / accsym)
 
-    return '\n'.join(kernel)
+    self.varpi = varpi
+    self.split = split
+    return kernel.body()
 
 
   #############################################################################
 
-  def reconstruction(self):
+  def reconstruction(self, coeffs=None):
     r"""Fully un-rolled reconstruction kernel for uniform grids.
 
     The reconstruction kernel computes the WENO reconstruction
@@ -301,73 +179,46 @@ class KernelGenerator(object):
 
     """
 
-    n  = self.n
-    k  = self.k
-    nc = self.nc
+    kernel = Kernel()
 
-    f     = self.f
-    fr    = self.fr
-    fs    = self.fs
-    coeff = self.coeff
-    omega = self.omega
-    scale = self.scale
+    if coeffs is None:
+      coeffs = getattr(self, 'coeffs', symbolic.reconstruction_coefficients(self.k, self.xi))
 
-    kernel = []
+    n  = coeffs.get('n')
+    k  = coeffs.get('k')
+    nc = coeffs.get('l', k)
+
+    varpi = getattr(self, 'varpi', None)
+    split = getattr(self, 'split', None)
+    if varpi is None:
+      varpi, split = symbolic.optimal_weights(self.k, self.xi)
+
+    scale = { (l,s): sum([ varpi[l,r][s] for r in range(0, k) ])
+                                         for l in range(n)
+                                         for s in (0, 1) if split[l] }
 
     # reconstructions
     for l in range(n):
       for r in range(k):
-        acc = 0
-        for j in range(nc):
-          try:
-            acc = coeff[l,r,j] * f[-r+j] + acc
-          except KeyError:
-            raise ValueError('smoothness indicators not set')
-
-        kernel.append(self.assign(fr[l,r], acc))
+        v = sum([ coeffs[l,r,j] * f[-r+j] for j in range(nc) ])
+        kernel.assign(fr[l,r], v)
 
     # weighted reconstruction
     for l in range(n):
-      acc = 0
-
-      if not self.split[l]:
-
-        if self.vectorize:
-          acc = symbol('dot_product(fr{l}, omega{l})'.format(l=l))
-
-          if not self.weights_normalised:
-            acc = acc / symbol('sum(omega{l})'.format(l=l))
-
-        else:
-          acc0 = 0
-          acc1 = 0
-
-          for r in range(k):
-            acc0 = acc0 + omega[l,r] * fr[l,r]
-            acc1 = acc1 + omega[l,r]
-
-          if not self.weights_normalised:
-            acc0 = acc0 / acc1
-
-          acc = acc0
-
+      if not split[l]:
+        v = sum([ omega[l,r] * fr[l,r] for r in range(k) ])
+        if not self.weights_normalised:
+           v /= sum([ omega[l,r] for r in range(k) ])
       else:
-        for s, pm in enumerate(('p', 'm')):
-          acc0 = 0
-          acc1 = 0
-          for r in range(k):
-            acc0 = omega[l,r,s] * fr[l,r] + acc0
-            acc1 = acc1 + omega[l,r,s]
+        vp = sum([ omega[l,r,0] * fr[l,r] for r in range(k) ])
+        if not self.weights_normalised:
+          vp /= sum([ omega[l,r,0] for r in range(k) ])
+        vm = sum([ omega[l,r,1] * fr[l,r] for r in range(k) ])
+        if not self.weights_normalised:
+          vm /= sum([ omega[l,r,1] for r in range(k) ])
+        v = scale[l,0] * vp - scale[l,1] * vm
 
-          if not self.weights_normalised:
-            acc0 = acc0 / acc1
+      kernel.assign(fs[l], v)
 
-          if pm == 'p':
-            acc = acc + scale[l,s] * acc0
-          else:
-            acc = acc - scale[l,s] * acc0
-
-      kernel.append(self.assign(fs[l], acc))
-
-    return '\n'.join(kernel)
+    return kernel.body()
 

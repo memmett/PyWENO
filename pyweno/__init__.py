@@ -1,3 +1,11 @@
 """The PyWENO module."""
 
-__all__ = [ 'kernels', 'wrappers', 'symbolic', 'weno', 'nonuniform', 'version' ]
+import kernels
+import nonuniform
+import points
+import symbolic
+import symbols
+import version
+import weno
+
+import cweno
