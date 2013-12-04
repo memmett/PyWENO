@@ -37,6 +37,20 @@ To install PyWENO, you need:
   * SymPy    (optional if you avoid pyweno.symbolic)
 
 
+Testing
+-------
+
+To build PyWENO and create symlinks to the extension modules:
+
+  $ python setup.py build
+  $ cd pyweno
+  $ for so in ../build/lib*/pyweno/*.so; do ln -s $so; done
+
+Now, nosetests should work:
+
+  $ nosetests
+
+
 License
 -------
 

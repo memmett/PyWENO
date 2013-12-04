@@ -8,4 +8,6 @@ import symbols
 import version
 import weno
 
+import nonuniform_codegen
+
 import cweno

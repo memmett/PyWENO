@@ -88,6 +88,11 @@ setup(
                   sources = ['src/cweno.c'] + glob.glob('src/weno*.c'),
                   include_dirs=[np.get_include()],
                   extra_compile_args = ['-std=c99'],
+                  ),
+        Extension('pyweno.cnonuniform',
+                  sources = ['src/nfweno.c', 'src/poly.c'],
+                  include_dirs=[np.get_include()],
+                  extra_compile_args = ['-std=c99'],
                   )],
 
     long_description = long_description,

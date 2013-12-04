@@ -13,7 +13,7 @@ Interpolating polynomials
 First, let's build some grid points and y-values::
 
   >>> import sympy
-  >>> import pyweno.symbolic
+  >>> import pyweno
   >>> (x0, x1, x2) = sympy.var('x0 x1 x2')
   >>> (y0, y1, y2) = sympy.var('y0 y1 y2')
 

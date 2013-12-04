@@ -8,7 +8,7 @@ To generate a new fortran module for weno reconstruction of order k, run:
 
 create_fncs(k)
 """
-import sys
+
 import os
 import subprocess
 import sympy
@@ -16,52 +16,8 @@ from sympy.utilities.codegen import codegen
 from sympy.core.cache import clear_cache
 from pyweno.nonuniform import smoothness_fnc_name, coeffs_fnc_name
 
-
-def polynomial_interpolator(x, y):
-    """Build a symbolic polynomial that interpolates the points (x_i, y_i).
-
-    The returned polynomial is a function of the SymPy variable x.
-    """
-    k, xi = len(x), sympy.var('x')
-    sum_i = 0
-    for i in range(k):
-        ns = range(k)
-        ns.remove(i)
-
-        num, den = 1, 1
-        for n in ns:
-            num *= xi - x[n]
-            den *= x[i] - x[n]
-
-        sum_i += num / den * y[i]
-
-    return sum_i
-
-
-def primitive_polynomial_interpolator(x, y):
-    """Build a symbolic polynomial that approximates the primitive
-    function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).
-
-    Note: The x argument should be list that is one element longer
-    than the y list.
-
-    The returned polynomial is a function of the SymPy variable 'x'.
-    """
-
-    Y = [0]
-    for i in range(len(y)):
-        Y.append(Y[-1] + (x[i + 1] - x[i]) * y[i])
-
-    return polynomial_interpolator(x, Y)
-
-
-def _pt(a, b, x):
-    """Map x in [-1, 1] to x in [a, b]."""
-    half = sympy.sympify(1.0 / 2.0)
-    w = half * (b - a)
-    c = half * (a + b)
-
-    return w * x + c
+from pyweno.symbolic import polynomial_interpolator
+from pyweno.symbolic import primitive_polynomial_interpolator
 
 
 def coeffs(k, d):
@@ -70,7 +26,6 @@ def coeffs(k, d):
     fs = [sympy.var('f%d' % j) for j in range(k)]
 
     x = sympy.var('x')
-    # z = _pt(xs[k - 1], xs[k], x)
 
     # compute reconstruction coefficients for each left shift r
     # Interpolate the polynomial
@@ -233,5 +188,7 @@ def create_fncs(k, do_smoothness, max_derivative, force=False):
     module = __import__(module_name)
     assert(module)
 
+
 if __name__ == "__main__":
+    import sys
     create_fncs(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))

@@ -20,11 +20,10 @@ Kernels
 First, let's generate a Fortran kernel to reconstruct at the left and
 right endpoints of a cell to fifth order::
 
-  >>> import pyweno.symbolic
+  >>> import pyweno
   >>> c = pyweno.symbolic.reconstruction_coefficients(3, [ -1, 1 ])
   >>> w, s = pyweno.symbolic.optimal_weights(3, [ -1, 1 ])
   >>> b = pyweno.symbolic.jiang_shu_smoothness_coefficients(3)
-  >>> import pyweno.kernels
   >>> k = pyweno.kernels.KernelGenerator('Fortran')
   >>> k.set_reconstruction_coefficients(c)
   >>> k.set_optimal_weights(w, s)
@@ -138,7 +137,7 @@ above kernels::
          fr2, &
          fs0, &
          fs1
-  
+
     do i=3, n-3
        sigma0 = 3.3333333333333333333333333333333333d0*f(i+0)**2 - &
             10.333333333333333333333333333333333d0*f(i+0)*f(i+1) + &

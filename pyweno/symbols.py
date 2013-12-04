@@ -10,6 +10,7 @@ class names(object):
   omega  = 'omega{}r{}'
   f_star = 'fs{}'
   f_r    = 'fr{}r{}'
+  f_mn   = 'f{:+d}{:+d}'
   f = {
     'c':       'f[(i{:+d})*fsi]',
     'opencl':  'f[(i{:+d})*fsi]',
@@ -69,3 +70,10 @@ class FGenerator(object):
     return real(tmp.format(idx))
 
 f = FGenerator()
+
+class FMNGenerator(object):
+  def __getitem__(self, idx):
+    tmp = getattr(names, 'f_mn')
+    return real(tmp.format(*idx).replace('-','m').replace('+','p'))
+
+fmn = FMNGenerator()

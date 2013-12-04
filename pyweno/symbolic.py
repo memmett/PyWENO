@@ -37,6 +37,9 @@ def primitive_polynomial_interpolator(x, y):
   """Build a symbolic polynomial that approximates the primitive
   function f such that f(x_i) = sum_j y_j * (x_{j+1} - x_{j}).
 
+  Note: The x argument should be list that is one element longer
+  than the y list.
+
   The returned polynomial is a function of the SymPy variable 'x'.
   """
 

@@ -21,6 +21,8 @@ PyWENO consists of four main parts:
 
 **News**
 
+* November 12 2013: Several improvements were made to the non-uniform
+  module.  These were contributed by Ben Thompson.
 * May 15 2012: Several routines were added for computing
   reconstructions of derivatives.  These were contributed by Michael
   Welter.

@@ -58,7 +58,7 @@ class KernelGenerator(object):
 
   #############################################################################
 
-  def smoothness(self, beta=None):
+  def smoothness(self, reuse=False, beta=None):
     r"""Fully un-rolled smoothness indicator kernel for uniform
     grids.
 
@@ -82,11 +82,54 @@ class KernelGenerator(object):
     k  = beta.get('k', 0)
     nc = beta.get('l', k)
 
-    for r in range(0, k):
-      v = sum([ beta[r,m,n] * f[-r+m] * f[-r+n]
-                for m in range(nc)
-                for n in range(m, nc) ])
-      kernel.assign(sigma[r], v)
+    if not reuse:
+      for r in range(k):
+        v = sum([ beta[r,m,n] * f[-r+m] * f[-r+n]
+                  for m in range(nc)
+                  for n in range(m, nc) ])
+        kernel.assign(sigma[r], v)
+
+    else:
+
+      # first pass: compute all unique combinations of f[i-r+m] * f[i-r+n]
+      #             usually this would be done for i=k once
+      burnin = Kernel()
+      burnt  = {}
+      for r in range(k):
+        for m in range(nc):
+          for n in range(m, nc):
+            if (-r+m,-r+n) not in burnt:
+              burnin.assign(fmn[-r+m,-r+n], f[-r+m] * f[-r+n])
+            burnt[-r+m,-r+n] = fmn[-r+m,-r+n]
+
+      # second pass: assuming all unique f[i-r+m] * f[i-r+n] have already been computed,
+      #              set/compute all unique f[i+1-r+m] * f[i+1-r+n]
+      cache   = {}
+      delayed = Kernel()
+      for r in range(k):
+        for m in range(nc):
+          for n in range(m, nc):
+            if (-r+m,-r+n) in cache:
+              continue
+            if (1-r+m,1-r+n) in burnt:
+              # set fmn[-r+m,-r+n] from previous pass
+              kernel.assign(fmn[-r+m,-r+n], fmn[1-r+m,1-r+n])
+            else:
+              # compute new fmn[-r+m,-r+n], delay until after all copies are done
+              delayed.assign(fmn[-r+m,-r+n], f[-r+m] * f[-r+n])
+            cache[-r+m,-r+n] = True
+
+      kernel.src.extend(delayed.src)
+
+      self.burnin = burnin.body()
+
+      # finally, using above compute sigma
+      for r in range(k):
+        v = sum([ beta[r,m,n] * fmn[-r+m,-r+n]
+                  for m in range(nc)
+                  for n in range(m, nc) ])
+        kernel.assign(sigma[r], v)
+
 
     self.beta = beta
     return kernel.body()
