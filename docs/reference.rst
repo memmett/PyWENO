@@ -40,12 +40,6 @@ Kernels
    :members:
 
 
-Functions
-^^^^^^^^^
-
-.. automodule:: pyweno.functions
-   :members:
-
 
 Non-uniform reconstructions
 ---------------------------
