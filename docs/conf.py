@@ -25,7 +25,7 @@ class Mock(object):
         else:
             return Mock()
 
-for mod_name in [ 'sympy', 'pyweno.codeprinters', 'pyweno.ccoeffs', 'pyweno.cweno' ]:
+for mod_name in [ 'sympy', 'pyweno.codeprinters', 'pyweno.ccoeffs', 'pyweno.cweno', 'pyweno.symbols' ]:
     sys.modules[mod_name] = Mock()
 
 # extentions
