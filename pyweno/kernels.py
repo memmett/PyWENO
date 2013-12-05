@@ -5,9 +5,6 @@ import codeprinters
 
 import symbolic
 
-# from symbols import *
-# XXX
-
 class KernelGenerator(object):
   """Generate kernels for WENO reconstructions.
 
@@ -16,7 +13,7 @@ class KernelGenerator(object):
   reconstructions.  These code snippets can, in-turn, be used to
   create seperate functions or larger kernels.
 
-  The pyweno.kernels.names object is used to define naming conventions:
+  The pyweno.symbols.names object is used to define naming conventions:
 
   * smoothness indicators: *sigma*, default ``sigmaX``
   * weights: *omega*, default ``omegaX``
@@ -33,12 +30,13 @@ class KernelGenerator(object):
   """
 
   def __init__(self, lang, order=None, xi=None, **kwargs):
+    import symbols
     if order is not None:
       self.k = (order + 1) / 2
       self.xi = xi
     self.lang = lang.lower()
     self.weights_normalised = False
-    names.lang = lang.lower()
+    symbols.names.lang = lang.lower()
 
 
   #############################################################################
@@ -58,6 +56,8 @@ class KernelGenerator(object):
                                          \overline{f}_{i-k+n}.
 
     """
+
+    from symbols import sigma, fmn, f
 
     kernel = Kernel()
 
@@ -152,6 +152,8 @@ class KernelGenerator(object):
 
     """
 
+    from symbols import real, omega, sigma
+
     kernel = Kernel()
 
     varpi = getattr(self, 'varpi', None)
@@ -207,6 +209,8 @@ class KernelGenerator(object):
 
     """
 
+    from symbols import omega, fs, fr, f
+
     kernel = Kernel()
 
     if coeffs is None:
@@ -256,7 +260,8 @@ class KernelGenerator(object):
 
 class Kernel(object):
   def __init__(self):
-    if names.lang == 'fortran':
+    import symbols
+    if symbols.names.lang == 'fortran':
       self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
     else:
       self.code = codeprinters.CCodePrinter()
