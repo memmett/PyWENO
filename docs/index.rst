@@ -66,7 +66,6 @@ patches to the primary author (`Matthew Emmett`_).  You will be credited.
    codegen
    nonuniform
    reference
-   whatsnew
    download
 
 .. _`PyWENO project page`: http://github.com/memmett/PyWENO
