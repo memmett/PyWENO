@@ -1,26 +1,14 @@
 """PyWENO code generation tool kit (kernels)."""
 
 import sympy
-import codeprinters
+
+from sympy.printing.fcode import FCodePrinter
+from sympy.printing.ccode import CCodePrinter as SympyCCodePrinter
+from sympy.printing.precedence import precedence
+
 import symbolic
 
 from symbols import *
-
-
-class Kernel(object):
-  def __init__(self):
-    if names.lang == 'fortran':
-      self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
-    else:
-      self.code = codeprinters.CCodePrinter()
-    self.src = []
-  def assign(self, dest, value):
-    if isinstance(self.code, codeprinters.CCodePrinter):
-      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';')
-    else:
-      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)))
-  def body(self):
-    return '\n'.join(self.src)
 
 
 class KernelGenerator(object):
@@ -265,3 +253,31 @@ class KernelGenerator(object):
 
     return kernel.body()
 
+
+###############################################################################
+# helpers
+
+class CCodePrinter(SympyCCodePrinter):
+  def _print_Pow(self, expr):
+    if expr.exp == 2:
+      PREC = precedence(expr)
+      s = str(self.parenthesize(expr.base, PREC))
+      return '%s*%s' % (s,s)
+    else:
+      return super(CCodePrinter,self)._print_Pow(expr)
+
+
+class Kernel(object):
+  def __init__(self):
+    if names.lang == 'fortran':
+      self.code = FCodePrinter(settings={'source_format': 'free'})
+    else:
+      self.code = CCodePrinter()
+    self.src = []
+  def assign(self, dest, value):
+    if isinstance(self.code, CCodePrinter):
+      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';')
+    else:
+      self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)))
+  def body(self):
+    return '\n'.join(self.src)
