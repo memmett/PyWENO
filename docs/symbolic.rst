@@ -31,8 +31,8 @@ and is a function of the SymPy variable ``x``.  For example::
   y2
 
 
-The polynomial that interpolates the primitive function of *f* such
-that
+The polynomial that interpolates the primitive function of :math:`f`
+such that
 
 .. math::
 
@@ -66,9 +66,9 @@ a point within a cell, the interval [-1, 1] is used as a reference.
 
 The reconstruction coefficients for a 5th (=2k-1 where k=3) order WENO
 scheme corresponding to the reconstruction point at the left side
-(*xi* = -1) of each grid cell are given by::
+(:math:`\xi` = -1) of each grid cell are given by::
 
-  >>> c = pyweno.symbolic.reconstruction_coefficients(3, [ -1 ])
+  >>> c = pyweno.symbolic.reconstruction_coefficients(k=3, xi=[ -1 ])
   >>> c
   {'k': 3,
    'n': 1,
@@ -82,20 +82,20 @@ scheme corresponding to the reconstruction point at the left side
    (0, 2, 1): 5/6,
    (0, 2, 2): 1/3
 
-Note that the return value *c* is a dictionary of SymPy objects,
+Note that the return value ``c`` is a dictionary of SymPy objects,
 indexed according to ``c[l,r,j]`` where ``l`` is the index of the
 reconstruction point and ``r`` is the left-shift of the stencil.
 
-Recall that the reconstruction coefficients *c* are used to
-reconstruct the original function :math:`f` at each point :math:`\xi`
-in *xi* according to
+Recall that the reconstruction coefficients :math:`c` are used to
+reconstruct the original (unknown) function :math:`f` at each point
+:math:`\xi_l` in ``xi`` according to
 
 .. math::
 
-  f^r(\xi_l) \approx \sum_j c(l,r,j) \, f_{i-r+j}
+  f^r(\xi^l) \approx \sum_{j=0}^{k-1} c^l_{r,j} \, \bar{f}_{i-r+j}
 
-for each :math:`l` from 0 to ``len(xi)``, where :math:`f_{i-r+j}` is
-the cell average of :math:`f` in the cell *i-r+j*.
+for each :math:`l` from 0 to *len(xi)*, where :math:`\bar{f}_{i-r+j}` is
+the cell average of :math:`f` in the cell :math:`i-r+j`.
 
 
 
@@ -115,16 +115,13 @@ objects.  The first dictionary contains the weights, and is indexed
 according to ``w[l,r]``.  the second dictionary contains boolean
 values determining if the weights are split (negative).
 
-Recall that the optimal weights are used to obtain a high-order
-reconstruction of the original function :math:`f` given the low-order
-reconstructions :math:`f^r` according to
+Recall that the optimal weights are used to obtain an optimally
+high-order reconstruction of the original function :math:`f` given the
+low-order reconstructions :math:`f^r(\xi^l)` according to
 
 .. math::
 
-  f(\xi^l) \approx \sum_{r=0}^{k-1} w^{l,r} f^r(\xi_l)
-
-for each :math:`l` from 0 to ``len(xi)``.
-
+  f(\xi^l) \approx \sum_{r=0}^{k-1} \varpi^{l,r} f^r(\xi_l).
 
 
 Smoothness coefficients
@@ -140,9 +137,24 @@ indexed according to ``beta[r,m,n]`` (see the reference documentation
 for details).
 
 Recall that the smoothness coefficients ``beta[r, m, n]`` are used to
-compute the non-linear weights :math:`\omega` according to
+compute the non-linear weights :math:`\omega^{l,r}` (used in place of
+:math:`\varpi^{l,r}` in non-smooth regions) according to
+
+.. math::
+
+  \omega^{l,r} = \frac{\alpha^{l,r}}{\alpha^{l,0} + \cdots + \alpha_{l,k-1}}
+
+where
+
+.. math::
+
+  \alpha^{l,r} = \frac{\varpi^{l,r}}{(\epsilon + \sigma^r)^p}
+
+and
 
 .. math::
 
   \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
     \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.
+
+
