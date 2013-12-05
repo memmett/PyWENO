@@ -27,12 +27,13 @@ def coefficients(k, xi, x):
 
     nc = len(x) - 1
     n  = len(xi)
-    c    = np.zeros((nc, n, k, k), np.float64)
-    beta = np.zeros((nc, k, k, k), np.float64)
+    c     = np.zeros((nc, n, k, k), np.float64)
+    beta  = np.zeros((nc, k, k, k), np.float64)
+    varpi = np.zeros((nc, n, k), np.float64)
 
-    pyweno.cnonuniform.nonuniform_coeffs(k, xi, x, c, beta)
+    pyweno.cnonuniform.nonuniform_coeffs(k, xi, x, c, beta, varpi)
 
-    return c, beta
+    return c, beta, varpi
 
 
 

@@ -104,6 +104,54 @@ weno weno_recon_polys(const weno w0)
 }
 
 /*
+ * Compute the 2k-order reconstruction polynomials c2[i,j].
+ */
+weno weno_recon2_polys(const weno w0)
+{
+  weno w = w0;
+
+  const int k  = 2*w.k-1;
+  const int r  = w.k-1;
+  const int il = w.k-1;
+  dtype xlocal[2*w.k];
+
+  for (int i=w.k-1; i<w.nc-(w.k-1); i++) {
+
+    for (int j=0; j<2*w.k; j++)
+      xlocal[j] = w.x[i-il+j] - w.x[i];
+
+    for (int j=0; j<k; j++) {
+      const int ij = i*k + j;
+
+      w.c2_ij_x[ij] = poly_zero(k-1);
+      for (int l=j+1; l<=k; l++) {
+	poly sum_m = poly_zero(k-1);
+	for (int m=0; m<=k; m++) {
+	  if (m==l) continue;
+	  poly prd_n = poly_one(k-1);
+	  for (int n=0; n<=k; n++) {
+	    if ((n==l) || (n==m)) continue;
+	    inplace_poly_mult_xpa(prd_n, -xlocal[il-r+n]);
+	  }
+	  inplace_poly_add(sum_m, prd_n);
+	}
+	dtype a = 1.0;
+	for (int m=0; m<=k; m++) {
+	  if (m==l) continue;
+	  a *= (xlocal[il-r+l] - xlocal[il-r+m]);
+	}
+	a = 1.0/a;
+	inplace_poly_scale(sum_m, a);
+	inplace_poly_add(w.c2_ij_x[ij], sum_m);
+      } // for l
+
+    } // for j
+  } // for i
+
+  return w;
+}
+
+/*
  * Compute reconstruction coefficients from the (already computed)
  * reconstruction polynomials.
  */
@@ -125,6 +173,45 @@ weno weno_recon_coefs(const weno w0)
 }
 
 /*
+ * Compute optimal weights from the (already computed) reconstruction
+ * polynomials.
+ */
+weno weno_optimal_weights(const weno w0)
+{
+  weno w = w0;
+  dtype omega[w.k];
+
+  for (int i=w.k-1; i<w.nc-(w.k-1); i++)
+    for (int n=0; n<w.nxi; n++) {
+      const dtype xi = 0.5 * (1.0 + w.xi[n]) * (w.x[i+1] - w.x[i]);
+
+      for (int j=0; j<w.k; j++) {
+	const int rmin = w.k-1-j > 0 ? w.k-1-j : 0;
+	const int rmax = w.k-1 < 2*(w.k-1)-j ? w.k-1 : 2*(w.k-1)-j;
+
+	dtype acc = 0.0;
+	for (int r=rmin+1; r<=rmax; r++) {
+	  const int ilrj = w.csi*i + w.csl*n + w.csr*r + w.csj*(r-(w.k-1)+j);
+	  acc += omega[r] * w.c_ilrj[ilrj];
+	}
+
+	const int   ij   = i*(2*w.k-1) + j;
+	const dtype c2k  = poly_eval(w.c2_ij_x[ij], xi);
+	const int   ilrj = w.csi*i + w.csl*n + w.csr*rmin + w.csj*(rmin-(w.k-1)+j);
+	omega[rmin] = (c2k - acc) / w.c_ilrj[ilrj];
+      }
+
+      for (int r=0; r<w.k; r++) {
+	const int ilr = w.vsi*i + w.vsl*n + w.vsr*r;
+	w.varpi[ilr] = omega[r];
+      }
+
+    }
+
+  return w;
+}
+
+/*
  * Compute smoothness coefficients from the (already computed)
  * reconstruction polynomials.
  */
@@ -138,7 +225,7 @@ weno weno_smoothness_coefs(const weno w0)
       for (int m=0; m<w.k; m++) {
 	const int irm = i*w.k*w.k + r*w.k + m;
 	for (int n=m; n<w.k; n++) {
-	  const int irn  = i*w.k*w.k + r*w.k + n;
+	  const int irn = i*w.k*w.k + r*w.k + n;
 
 	  int  multi = m == n ? 1 : 2;
 	  poly pm    = w.c_irj_x[irm];
@@ -150,7 +237,6 @@ weno weno_smoothness_coefs(const weno w0)
 	    pn = poly_diff(pn, 1);
 	    l2 += multi * pow(dx, 2*d-1) * poly_int(poly_mult(pm, pn), 0.0, dx);
 	  }
-
 	  w.beta[w.bsi*i + w.bsr*r + w.bsm*m + w.bsn*n] = l2;
 	}
       }
@@ -162,12 +248,12 @@ weno weno_smoothness_coefs(const weno w0)
 
 PyObject *py_nonuniform_coeffs(PyObject *self, PyObject *args)
 {
-  PyArrayObject *x_py, *xi_py, *c_py, *beta_py;
-  double *x, *xi, *c, *beta;
+  PyArrayObject *x_py, *xi_py, *c_py, *beta_py, *varpi_py;
+  double *x, *xi, *c, *beta, *varpi;
   int k;
 
   /* parse options */
-  if (!PyArg_ParseTuple (args, "iOOOO", &k, &xi_py, &x_py, &c_py, &beta_py))
+  if (!PyArg_ParseTuple (args, "iOOOOO", &k, &xi_py, &x_py, &c_py, &beta_py, &varpi_py))
     return NULL;
 
   if (x_py->nd != 1 || x_py->descr->type_num != PyArray_DOUBLE) {
@@ -190,10 +276,16 @@ PyObject *py_nonuniform_coeffs(PyObject *self, PyObject *args)
     return NULL;
   }
 
-  x    = (double *) PyArray_DATA(x_py);
-  xi   = (double *) PyArray_DATA(xi_py);
-  c    = (double *) PyArray_DATA(c_py);
-  beta = (double *) PyArray_DATA(beta_py);
+  if (varpi_py->nd != 3 || varpi_py->descr->type_num != PyArray_DOUBLE) {
+    PyErr_SetString(PyExc_ValueError, "varpi must be three-dimensional and of type double");
+    return NULL;
+  }
+
+  x     = (double *) PyArray_DATA(x_py);
+  xi    = (double *) PyArray_DATA(xi_py);
+  c     = (double *) PyArray_DATA(c_py);
+  beta  = (double *) PyArray_DATA(beta_py);
+  varpi = (double *) PyArray_DATA(varpi_py);
 
   int nx = PyArray_DIM(x_py, 0);
   int nxi = PyArray_DIM(xi_py, 0);
@@ -206,8 +298,10 @@ PyObject *py_nonuniform_coeffs(PyObject *self, PyObject *args)
   w.x       = x;
   w.xi      = xi;
   w.c_irj_x = calloc(sizeof(poly), w.nc*w.k*w.k);
+  w.c2_ij_x = calloc(sizeof(poly), w.nc*(2*w.k-1));
   w.c_ilrj  = c;
   w.beta    = beta;
+  w.varpi   = varpi;
 
   w.csi = c_py->strides[0] / sizeof(double);
   w.csl = c_py->strides[1] / sizeof(double);
@@ -219,11 +313,18 @@ PyObject *py_nonuniform_coeffs(PyObject *self, PyObject *args)
   w.bsm = beta_py->strides[2] / sizeof(double);
   w.bsn = beta_py->strides[3] / sizeof(double);
 
+  w.vsi = varpi_py->strides[0] / sizeof(double);
+  w.vsl = varpi_py->strides[1] / sizeof(double);
+  w.vsr = varpi_py->strides[2] / sizeof(double);
+
   w = weno_recon_polys(w);
   w = weno_recon_coefs(w);
+  w = weno_recon2_polys(w);
   w = weno_smoothness_coefs(w);
+  w = weno_optimal_weights(w);
 
   free(w.c_irj_x);
+  free(w.c2_ij_x);
 
   Py_INCREF (Py_None);
   return Py_None;

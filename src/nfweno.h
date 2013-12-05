@@ -25,10 +25,13 @@ typedef struct weno {
   /* strides */
   int       csi, csl, csr, csj;
   int       bsi, bsr, bsm, bsn;
+  int       vsi, vsl, vsr;
 
   poly*     c_irj_x;	/* base reconstruction polynomials p^r_{i,j}(x), based on x  */
+  poly*     c2_ij_x;	/* optimal weight reconstruction polynomials p^r_{i,j}(x), based on x  */
   dtype*    c_ilrj;	/* reconstruction coeffs c[i,l,r,j] (based on xi) */
   dtype*    beta;	/* smoothness coeffs beta[i,r,m,n] */
+  dtype*    varpi;	/* optimal weights varpi[i,l,r] */
 
 } weno;
 

@@ -36,10 +36,13 @@ def test_cnonuniform():
           [0.,   8.33333333, -10.33333333],
           [0.,   0.,   3.33333333]]])
 
-    c, beta = pyweno.nonuniform.coefficients(3, xi, x)
+    varpi0 = np.array([[0.1, 0.6, 0.3], [0.3, 0.6, 0.1]])
+
+    c, beta, varpi = pyweno.nonuniform.coefficients(3, xi, x)
 
     np.testing.assert_almost_equal(c0, c[2])
     np.testing.assert_almost_equal(beta0, beta[9500])
+    np.testing.assert_almost_equal(varpi0, varpi[100])
 
 
 if __name__ == '__main__':
