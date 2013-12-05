@@ -5,8 +5,8 @@ import codeprinters
 
 import symbolic
 
-from symbols import *
-
+# from symbols import *
+# XXX
 
 class KernelGenerator(object):
   """Generate kernels for WENO reconstructions.
