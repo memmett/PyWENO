@@ -86,6 +86,18 @@ Note that the return value *c* is a dictionary of SymPy objects,
 indexed according to ``c[l,r,j]`` where ``l`` is the index of the
 reconstruction point and ``r`` is the left-shift of the stencil.
 
+Recall that the reconstruction coefficients *c* are used to
+reconstruct the original function :math:`f` at each point :math:`\xi`
+in *xi* according to
+
+.. math::
+
+  f^r(\xi_l) \approx \sum_j c(l,r,j) \, f_{i-r+j}
+
+for each :math:`l` from 0 to ``len(xi)``, where :math:`f_{i-r+j}` is
+the cell average of :math:`f` in the cell *i-r+j*.
+
+
 
 Optimal weights
 ---------------
@@ -101,7 +113,18 @@ grid cell are given by::
 Note that the return value *w* is a tuple of dictionaries of SymPy
 objects.  The first dictionary contains the weights, and is indexed
 according to ``w[l,r]``.  the second dictionary contains boolean
-values determining of the weights are split (negative).
+values determining if the weights are split (negative).
+
+Recall that the optimal weights are used to obtain a high-order
+reconstruction of the original function :math:`f` given the low-order
+reconstructions :math:`f^r` according to
+
+.. math::
+
+  f(\xi^l) \approx \sum_{r=0}^{k-1} w^{l,r} f^r(\xi_l)
+
+for each :math:`l` from 0 to ``len(xi)``.
+
 
 
 Smoothness coefficients
@@ -115,3 +138,11 @@ order WENO scheme are given by::
 The return value *beta* is a dictionary of SymPy objects, and is
 indexed according to ``beta[r,m,n]`` (see the reference documentation
 for details).
+
+Recall that the smoothness coefficients ``beta[r, m, n]`` are used to
+compute the non-linear weights :math:`\omega` according to
+
+.. math::
+
+  \sigma^r = \sum_{m=1}^{2k-1} \sum_{n=1}^{2k-1}
+    \beta_{r,m,n}\, \overline{f}_{i-k+m}\, \overline{f}_{i-k+n}.

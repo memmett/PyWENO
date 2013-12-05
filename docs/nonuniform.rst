@@ -22,7 +22,7 @@ left and right endpoints of a cell to fifth order::
           [-0.24193548,  1.06241234,  0.17952314],
           [ 0.33333333, -1.16666667,  1.83333333]]])
 
-Note that the ``r`` array is indexed according to ``r[i,l,r,j]`` where
+Note that the ``c`` array is indexed according to ``c[i,l,r,j]`` where
 ``i`` is the cell number, ``l`` is the reconstruction point (eg, 0 is
 the left edge and 1 is the right edge), ``r`` is the left-shift of the
 stencil, and ``j`` is the summation index.

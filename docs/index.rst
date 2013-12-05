@@ -21,6 +21,9 @@ PyWENO consists of four main parts:
 
 **News**
 
+* December 4 2013: The kernel generator has been simplified a lot and
+  the functional generator was removed.  Several more (speed)
+  improvements were made to the non-uniform module.
 * November 12 2013: Several improvements were made to the non-uniform
   module.  These were contributed by Ben Thompson.
 * May 15 2012: Several routines were added for computing

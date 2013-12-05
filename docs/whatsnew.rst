@@ -1,35 +1,19 @@
 What's new
 ===========
 
-**New in v0.8.1:**
+**New in v0.11.0:**
 
-* The SciKit has been removed and the non-uniform code has been
-  simplified and resurrected.
+* The kernel generator was cleaned up a lot and simplified.
 
-**New in v0.7.1:**
+* The function generator was removed.  It was hard to maintain and
+  seldom used.  I recommend using the new kernel generator together
+  with a template engine such as Jinja2 to incorporate the kernels
+  into your codes.
 
-* Major overhaul.
+* New symbolic C routines are used to compute variou non-uniform
+  coefficients.
 
-**New in v0.5.11:**
+**New in v0.9.0:**
 
-* OpenCL support for N'th order WENO reconstructions at cell
-  boundaries (fully un-rolled).
-* Lots of documentation updates.
-
-**New in v0.5.9:**
-
-* OpenCL support for 5th order WENO reconstructions.
-* New symbolic toolkit.
-
-**New in v0.5.7:**
-
-* Periodic domain reconstruction.
-
-**New in v0.5.0:**
-
-* Partial domain support for smoothness and reconstruction routines.
-
-**New in v0.4.0:**
-
-* Biasing (ie, upstream and downstream biasing).
-* Full domain reconstruction (ie, domain boundaries are not avoided).
+* A bunch of mush faster non-uniform code was contributed by Ben
+  Thompson.
