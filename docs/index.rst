@@ -7,14 +7,14 @@ methods and performing high-order WENO reconstructions.
 
 PyWENO consists of four main parts:
 
+* :doc:`WENO toolkit <tutorial>` - an easy to use toolkit to easily
+  compute WENO reconstructions in Python.
+
 * :doc:`Symbolics <symbolic>` - tools for exploring and constructing
   WENO methods.
 
 * :doc:`Code generation <codegen>` - tools for generating custom C, Fortran,
   and OpenCL WENO routines.
-
-* :doc:`WENO toolkit <tutorial>` - an easy to use toolkit to easily
-  compute WENO reconstructions in Python.
 
 * :doc:`Non-uniform <nonuniform>` - tools for generating WENO methods
   on non-uniform grids.

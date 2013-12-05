@@ -1,10 +1,7 @@
 """PyWENO code generation tool kit (kernels)."""
 
 import sympy
-
-from sympy.printing.fcode import FCodePrinter
-from sympy.printing.ccode import CCodePrinter as SympyCCodePrinter
-from sympy.printing.precedence import precedence
+import codeprinters
 
 import symbolic
 
@@ -257,25 +254,15 @@ class KernelGenerator(object):
 ###############################################################################
 # helpers
 
-class CCodePrinter(SympyCCodePrinter):
-  def _print_Pow(self, expr):
-    if expr.exp == 2:
-      PREC = precedence(expr)
-      s = str(self.parenthesize(expr.base, PREC))
-      return '%s*%s' % (s,s)
-    else:
-      return super(CCodePrinter,self)._print_Pow(expr)
-
-
 class Kernel(object):
   def __init__(self):
     if names.lang == 'fortran':
-      self.code = FCodePrinter(settings={'source_format': 'free'})
+      self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
     else:
-      self.code = CCodePrinter()
+      self.code = codeprinters.CCodePrinter()
     self.src = []
   def assign(self, dest, value):
-    if isinstance(self.code, CCodePrinter):
+    if isinstance(self.code, codeprinters.CCodePrinter):
       self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)) + ';')
     else:
       self.src.append(str(dest) + ' = ' + self.code.doprint(value.evalf(35)))
