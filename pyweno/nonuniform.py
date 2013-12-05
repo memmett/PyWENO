@@ -5,6 +5,7 @@ Original code written by Matthew Emmett as part of PyWENO.
 Edited by Ben Thompson.
 """
 
+import numpy as np
 
 def coefficients(k, xi, x):
     """Numerically compute reconstruction and smoothness coefficients.
@@ -18,7 +19,6 @@ def coefficients(k, xi, x):
     stuff below with this routine.
     """
 
-    import numpy as np
     import pyweno.cnonuniform
 
     x  = np.asarray(x,  np.float64)

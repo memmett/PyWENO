@@ -174,7 +174,10 @@ weno weno_recon_coefs(const weno w0)
 
 /*
  * Compute optimal weights from the (already computed) reconstruction
- * polynomials.
+ * polynomials and coefficients.
+ *
+ * XXX: This should check all 2k-1 equations and signal an error if
+ * the optimal weights don't work out.
  */
 weno weno_optimal_weights(const weno w0)
 {

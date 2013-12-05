@@ -1,4 +1,2 @@
 include LICENSE
 include version.py
-include pyweno/nonuniform_weno_3.so
-include pyweno/nonuniform_weno_5.so
