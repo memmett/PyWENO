@@ -47,3 +47,7 @@ def test_jiang_shu_smoothness_coefficients():
     # How to check correctness?
     # beta2 = jiang_shu_smoothness_coefficients(3, [1, 2, 3, 3.5, 5, 6, 7])
     # assert(beta2 is not None)
+
+if __name__ == '__main__':
+    test_coeffs()
+    test_jiang_shu_smoothness_coefficients()

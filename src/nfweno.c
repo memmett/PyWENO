@@ -63,12 +63,9 @@ weno weno_recon_polys(const weno w0)
 
   for (int i=w.k-1; i<w.nc-(w.k-1); i++) {
 
-    // center each polynomial about the left edge of cell
-    /* XXX: Matt: @Ben, does this look right to you?  I'm trying to
-     *            center things at the left edge of the cell.
-     */
+    const dtype xc = 0.5 * (w.x[i+1] + w.x[i]);
     for (int j=0; j<2*w.k; j++)
-      xlocal[j] = w.x[i-il+j] - w.x[i];
+      xlocal[j] = w.x[i-il+j] - xc;
 
     for (int r=0; r<w.k; r++) {
       for (int j=0; j<w.k; j++) {
@@ -117,8 +114,9 @@ weno weno_recon2_polys(const weno w0)
 
   for (int i=w.k-1; i<w.nc-(w.k-1); i++) {
 
+    const dtype xc = 0.5 * (w.x[i+1] + w.x[i]);
     for (int j=0; j<2*w.k; j++)
-      xlocal[j] = w.x[i-il+j] - w.x[i];
+      xlocal[j] = w.x[i-il+j] - xc;
 
     for (int j=0; j<k; j++) {
       const int ij = i*k + j;
@@ -163,7 +161,9 @@ weno weno_recon_coefs(const weno w0)
     for (int r=0; r<w.k; r++)
       for (int j=0; j<w.k; j++)
 	for (int n=0; n<w.nxi; n++) {
-	  const dtype xi   = 0.5 * (1.0 + w.xi[n]) * (w.x[i+1] - w.x[i]);
+      //      const dtype xi = 0.5 * (1.0 + w.xi[n]) * (w.x[i+1] - w.x[i]);
+           const dtype xi = 0.5 * w.xi[n] * (w.x[i+1] - w.x[i]);
+
 	  const int   ilrj = w.csi*i + w.csl*n + w.csr*r + w.csj*j;
 	  const int   irj  = i*w.k*w.k + r*w.k + j;
 	  w.c_ilrj[ilrj] = poly_eval(w.c_irj_x[irj], xi);
@@ -186,7 +186,8 @@ weno weno_optimal_weights(const weno w0)
 
   for (int i=w.k-1; i<w.nc-(w.k-1); i++)
     for (int n=0; n<w.nxi; n++) {
-      const dtype xi = 0.5 * (1.0 + w.xi[n]) * (w.x[i+1] - w.x[i]);
+      //      const dtype xi = 0.5 * (1.0 + w.xi[n]) * (w.x[i+1] - w.x[i]);
+           const dtype xi = 0.5 * w.xi[n] * (w.x[i+1] - w.x[i]);
 
       for (int j=0; j<w.k; j++) {
 	const int rmin = w.k-1-j > 0 ? w.k-1-j : 0;
@@ -223,7 +224,8 @@ weno weno_smoothness_coefs(const weno w0)
   weno w = w0;
 
   for (int i=w.k-1; i<w.nc-(w.k-1); i++) {
-    const dtype dx = w.x[i+1] - w.x[i];
+    const dtype dx  = w.x[i+1] - w.x[i];
+    const dtype dx2 = 0.5 * dx;
     for (int r=0; r<w.k; r++) {
       for (int m=0; m<w.k; m++) {
 	const int irm = i*w.k*w.k + r*w.k + m;
@@ -238,7 +240,7 @@ weno weno_smoothness_coefs(const weno w0)
 	  for (int d=1; d<w.k; d++) {
 	    pm = poly_diff(pm, 1);
 	    pn = poly_diff(pn, 1);
-	    l2 += multi * pow(dx, 2*d-1) * poly_int(poly_mult(pm, pn), 0.0, dx);
+	    l2 += multi * pow(dx, 2*d+1) * poly_int(poly_mult(pm, pn), -dx2, dx2);
 	  }
 	  w.beta[w.bsi*i + w.bsr*r + w.bsm*m + w.bsn*n] = l2;
 	}
