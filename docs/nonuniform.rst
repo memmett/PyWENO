@@ -12,7 +12,7 @@ left and right endpoints of a cell to fifth order::
 
   >>> import pyweno.nonuniform
   >>> edges = [ 0.0, 1.0, 2.5, 3.9, 4.7, 5.5, 6.3, 7.8, 8.8, 9.9, 10.5 ]
-  >>> c = pyweno.nonuniform.reconstruction_coefficients(3, [ -1, 1 ], edges)
+  >>> c, beta, varpi = pyweno.nonuniform.coefficients(3, [ -1, 1 ], edges)
   >>> c[5]
   array([[[ 1.59025033, -0.81328063,  0.2230303 ],
           [ 0.37096774,  0.71879383, -0.08976157],

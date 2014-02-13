@@ -3,6 +3,9 @@
 import jinja2
 import pyweno
 
+jinja2.filters.FILTERS['pm']  = lambda x: "{:+d}".format(x)
+jinja2.filters.FILTERS['pmr'] = lambda x: "{:+d}".format(x).replace('-','m').replace('+','p')
+
 with open('weno_smoothness.tmpl.c', 'r') as f:
   smoothness = jinja2.Template(f.read())
 
@@ -12,11 +15,12 @@ with open('weno_reconstruction.tmpl.c', 'r') as f:
 for k in range(3, 4):
   print 'k:', k
   kernel = pyweno.kernels.KernelGenerator('c', order=2*k-1)
+  ksmoothness = kernel.smoothness(reuse=True)
 
   name = 'smoothness%03d' % k
   with open('../src/weno_' + name + '.c', 'w') as f:
     f.write(smoothness.render(
-        name=name, k=k, kernel=kernel.smoothness()))
+        name=name, k=k, burnin=kernel.burnin, kernel=ksmoothness))
 
   for pts in [ 'left', 'right', 'middle' ]:
 #               'gauss_legendre', 'gauss_lobatto', 'gauss_radau' ]:

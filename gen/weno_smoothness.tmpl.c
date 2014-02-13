@@ -8,6 +8,8 @@ void
   {% for r in range(k) %}
   double sigma{{r}};
   {%- endfor %}
+  i = {{k-1}};
+  {{burnin}}
   for (i={{k-1}}; i < n-{{k-1}}; i++)
     {
       {{kernel}}

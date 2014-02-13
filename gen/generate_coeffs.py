@@ -11,7 +11,7 @@ K = range(3, 10)
 
 def reconstruction_coeff_functions(k):
 
-  f = open('coeffs%03d.c' % k, 'w')
+  f = open('../coeffs%03d.c' % k, 'w')
 
   f.write(dedent('''\
        void
@@ -75,7 +75,7 @@ for k in K:
 ######################################################################
 # write the python c extension file
 
-f = open('ccoeffs.c', 'w')
+f = open('../ccoeffs.c', 'w')
 
 f.write(dedent('''\
      #define PY_ARRAY_UNIQUE_SYMBOL PYWENO_ARRAY_API
