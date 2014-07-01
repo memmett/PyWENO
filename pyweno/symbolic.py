@@ -152,7 +152,7 @@ def optimal_weights(k, xi, **kwargs):
       terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
       eqn = sum(terms) - c2k[l, k-1, j]
       err = eqn.subs(sol)
-      if abs(err) > 1e-15:
+      if abs(err) > 1e-10:
         raise ValueError("optimal weight %d failed with error %s" % (j, err))
 
     # set weight or split as appropriate
