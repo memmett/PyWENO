@@ -22,7 +22,7 @@ class SigmaGenerator(object):
     tmp = getattr(names, 'sigma')
     return real(tmp.format(idx))
   def all(self, k):
-    return [ { 'r': r, 'name': self[r] } for r in range(0, k) ]
+    return [ { 'r': r, 'name': str(self[r]) } for r in range(0, k) ]
 
 sigma = SigmaGenerator()
 
@@ -37,11 +37,11 @@ class OmegaGenerator(object):
     for l in range(n):
       if not split[l]:
         for r in range(0, k):
-          all.append({ 'l': l, 'r': r, 's': 0, 'pm': '', 'name': self[l,r] })
+          all.append({ 'l': l, 'r': r, 's': 0, 'pm': '', 'name': str(self[l,r]) })
       else:
         for r in range(0, k):
-          all.append({ 'l': l, 'r': r, 's': 0, 'pm': 'p', 'name': self[l,r,0] })
-          all.append({ 'l': l, 'r': r, 's': 1, 'pm': 'm', 'name': self[l,r,1] })
+          all.append({ 'l': l, 'r': r, 's': 0, 'pm': 'p', 'name': str(self[l,r,0]) })
+          all.append({ 'l': l, 'r': r, 's': 1, 'pm': 'm', 'name': str(self[l,r,1]) })
     return all
 
 omega = OmegaGenerator()
@@ -51,7 +51,7 @@ class FStarGenerator(object):
     tmp = getattr(names, 'f_star')
     return real(tmp.format(idx))
   def all(self, n):
-    return [ { 'l': l, 'name': self[l] } for l in range(n) ]
+    return [ { 'l': l, 'name': str(self[l]) } for l in range(n) ]
 
 fs = FStarGenerator()
 
@@ -60,7 +60,7 @@ class FRGenerator(object):
     tmp = getattr(names, 'f_r')
     return real(tmp.format(*idx))
   def all(self, n, k):
-    return [ { 'l': l, 'r': r, 'name': self[l,r] } for l in range(n) for r in range(k) ]
+    return [ { 'l': l, 'r': r, 'name': str(self[l,r]) } for l in range(n) for r in range(k) ]
 
 fr = FRGenerator()
 
