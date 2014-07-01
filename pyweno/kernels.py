@@ -156,8 +156,8 @@ class KernelGenerator(object):
 
     kernel = Kernel()
 
-    varpi = getattr(self, 'varpi', None)
-    split = getattr(self, 'split', None)
+    varpi = varpi or getattr(self, 'varpi', None)
+    split = split or getattr(self, 'split', None)
     if varpi is None:
       varpi, split = symbolic.optimal_weights(self.k, self.xi)
 
