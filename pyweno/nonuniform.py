@@ -7,11 +7,6 @@ def coefficients(k, xi, x):
 
     This wraps the "symbolic" C routines in the cnonuniform extension
     module.
-
-    XXX: Need to implement: higher derivatives, optimal weights.
-
-    XXX: When the above are done, can probably replace all nonuniform
-    stuff below with this routine.
     """
 
     import pyweno.cnonuniform

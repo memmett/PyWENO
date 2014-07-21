@@ -1,11 +1,8 @@
 
-#ifndef _WENO_H_
-#define _WENO_H_
+#ifndef _NFWENO_H_
+#define _NFWENO_H_
 
 #define MAX_DEGREE 8
-
-#define WENO_BAD_STATE 1
-#define WENO_BAD_ALLOC 2
 
 #define dtype double
 
