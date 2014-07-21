@@ -122,7 +122,7 @@ class KernelGenerator(object):
 
   #############################################################################
 
-  def weights(self, varpi=None, split=None, normalise=False, power=2, epsilon='1.0e-6'):
+  def weights(self, varpi=None, split=None, kind='js', normalise=False, power=2, epsilon='1.0e-6'):
     r"""Fully un-rolled weights kernel for uniform grids.
 
     The weights kernel computes the weights :math:`\omega^r`
@@ -159,7 +159,9 @@ class KernelGenerator(object):
     varpi = varpi or getattr(self, 'varpi', None)
     split = split or getattr(self, 'split', None)
     if varpi is None:
-      varpi, split = symbolic.optimal_weights(self.k, self.xi)
+      varpi, split, kind = symbolic.optimal_weights(self.k, self.xi)
+
+    assert(kind == 'js')
 
     n  = varpi.get('n')
     k  = varpi.get('k')

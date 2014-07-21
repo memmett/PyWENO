@@ -108,9 +108,9 @@ def reconstruction_coefficients(k, xi, d=0):
 
 ###############################################################################
 
-def optimal_weights(k, xi, **kwargs):
-  r"""Compute the optimal weights for a 2k-1 order WENO scheme
-  corresponding to the reconstruction points in *xi*.
+def jiang_shu_optimal_weights(k, xi, **kwargs):
+  r"""Compute the classical optimal weights for a 2k-1 order WENO
+  scheme corresponding to the reconstruction points in *xi*.
 
   The coefficients are stored as SymPy variables in a dictionary
   indexed according to ``w[l,r]``.  That is
@@ -166,7 +166,94 @@ def optimal_weights(k, xi, **kwargs):
       else:
         varpi[l, r] = sol[omega[r]]
 
-  return varpi, split
+  return varpi, split, 'js'
+
+
+###############################################################################
+
+def yamileev_carpenter_optimal_weights(k, xi, **kwargs):
+  r"""Compute the Yamileev-Carpenter optimal weights for a 2k-1 order
+  WENO scheme corresponding to the reconstruction points in *xi*.
+
+  The coefficients are stored as SymPy variables in a dictionary
+  indexed according to ``w[l,r]``.  That is
+
+  .. math::
+
+    f(\xi^l) \approx \sum_r w^r f^r
+
+  for each :math:`l` from 0 to ``len(xi)``.
+  """
+
+  n = len(xi)
+
+  c   = reconstruction_coefficients(k, xi, **kwargs)
+  c2k = reconstruction_coefficients(2*k-1, xi, **kwargs)
+
+  omega = [ sym('omega%d' % r) for r in range(k) ]
+  varpi = { 'n': n, 'k': k }
+  split = { 'n': n }
+
+  for l in range(n):
+
+    # use first k eqns since weight system is overdetermined
+    eqns = []
+    for j in range(k):
+      rmin, rmax = max(0, (k-1)-j), min(k-1, 2*(k-1)-j)
+      terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
+      eqns.append(sum(terms) - c2k[l, k-1, j])
+
+    # XXX: Should make sure that when mpmath.mpf's are passed in
+    # (in xi), that the solution obtained above is a high
+    # precision solution.
+
+    sol = sympy.solve(eqns, omega)
+
+    # now check all 2*k-1 eqns to make sure the weights work out properly
+    for j in range(2*k-1):
+      rmin, rmax = max(0, (k-1)-j), min(k-1, 2*(k-1)-j)
+      terms = [ omega[r] * c[l, r, r-(k-1)+j] for r in range(rmin, rmax+1) ]
+      eqn = sum(terms) - c2k[l, k-1, j]
+      err = eqn.subs(sol)
+      if abs(err) > 1e-10:
+        raise ValueError("optimal weight %d failed with error %s" % (j, err))
+
+    # set weight or split as appropriate
+    split[l] = min(sol.values()) < 0
+    for r in range(k):
+      if split[l]:
+        w  = sol[omega[r]]
+        wp = (w + 3*abs(w))/2
+        wm = wp - w
+        varpi[l, r] = (wp, wm)
+      else:
+        varpi[l, r] = sol[omega[r]]
+
+  return varpi, split, 'yc'
+
+
+###############################################################################
+
+def optimal_weights(k, xi, kind='jiang_shu', **kwargs):
+  r"""Compute the optimal weights for a 2k-1 order WENO scheme
+  corresponding to the reconstruction points in *xi*.
+
+  The coefficients are stored as SymPy variables in a dictionary
+  indexed according to ``w[l,r]``.  That is
+
+  .. math::
+
+    f(\xi^l) \approx \sum_r w^r f^r
+
+  for each :math:`l` from 0 to ``len(xi)``.
+  """
+
+  if kind == 'jiang_shu' or kind == 'js':
+    return jiang_shu_optimal_weights(k, xi, **kwargs)
+  elif kind == 'yamileev_carpenter' or kinda == 'yc':
+    return yamileev_carpenter_optimal_weights(k, xi, **kwargs)
+  else:
+    raise ValueError("invalid kind")
 
 
 ###############################################################################
@@ -218,7 +305,8 @@ def jiang_shu_smoothness_coefficients(k):
 ###############################################################################
 
 def reconstruction_coefficients_for_derivative(k, bias):
-  """XXX"""
+  """Compute the reconstruction coefficients for the derivative for a
+  2k-1 order finite-difference WENO scheme."""
 
   i = k-1
   (x, dx) = sympy.var('x dx')
@@ -258,7 +346,8 @@ def reconstruction_coefficients_for_derivative(k, bias):
 ###############################################################################
 
 def optimal_weights_for_derivative(k, bias):
-  """XXX"""
+  """Compute the optimal weights for the derivative for a 2k-1 order
+  finite-difference WENO scheme."""
 
   n = 1
   c   = reconstruction_coefficients_for_derivative(k, bias)
@@ -327,7 +416,8 @@ def optimal_weights_for_derivative(k, bias):
 ###############################################################################
 
 def jiang_shu_smoothness_coefficients_for_derivative(k, bias):
-  """XXX"""
+  """Compute the Jiang-Shu smoothness coefficients for the derivative
+  for a 2k-1 order finite-difference WENO scheme."""
 
   (x, dx) = sympy.var('x dx')
 
@@ -366,4 +456,5 @@ def jiang_shu_smoothness_coefficients_for_derivative(k, bias):
           beta[r,m,n] = c
 
   return beta
+
 
