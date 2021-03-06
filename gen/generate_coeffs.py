@@ -1,9 +1,11 @@
 '''Generate the ccoeffs extension module.'''
 
+import pathlib
 from textwrap import dedent
 
 # set of k values to generate reconstruction functions for
 K = range(3, 10)
+rootdir = pathlib.Path(__file__).parent
 
 
 ######################################################################
@@ -11,7 +13,7 @@ K = range(3, 10)
 
 def reconstruction_coeff_functions(k):
 
-  f = open('../coeffs%03d.c' % k, 'w')
+  f = open(rootdir / f'coeffs{k:03d}.c', 'w')
 
   f.write(dedent('''\
        void
@@ -20,18 +22,18 @@ def reconstruction_coeff_functions(k):
          double sum_l, sum_m, prod_n, prod_m;
        ''' % k))
 
-  for j in xrange(k):
+  for j in range(k):
 
     f.write('  /* j = %d */\n' % (j))
     f.write('  sum_l = 0.0;\n')
 
-    for l in xrange(j+1, k+1):
+    for l in range(j+1, k+1):
 
       f.write('\n')
       f.write('  /* l = %d */\n' % (l))
       f.write('  sum_m = 0.0;\n')
 
-      ms = range(0,k+1)
+      ms = list(range(0,k+1))
       ms.remove(l)
 
       for m in ms:
@@ -39,7 +41,7 @@ def reconstruction_coeff_functions(k):
         f.write('\n')
         f.write('  /* m = %d */\n' % (m))
 
-        ns = range(0,k+1)
+        ns = list(range(0,k+1))
         ns.remove(l)
         ns.remove(m)
 
@@ -75,7 +77,7 @@ for k in K:
 ######################################################################
 # write the python c extension file
 
-f = open('../ccoeffs.c', 'w')
+f = open(rootdir / 'ccoeffs.c', 'w')
 
 f.write(dedent('''\
      #define PY_ARRAY_UNIQUE_SYMBOL PYWENO_ARRAY_API
