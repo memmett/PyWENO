@@ -1,8 +1,9 @@
+#define PY_ARRAY_UNIQUE_SYMBOL CWENO_ARRAY_API
 
-#define PY_ARRAY_UNIQUE_SYMBOL cweno_ARRAY_API
 #include <stdio.h>
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
+
 PyObject *py_smoothness003 (PyObject * self, PyObject * args);
 PyObject *py_weights_left003001 (PyObject * self, PyObject * args);
 PyObject *py_reconstruct_left003001 (PyObject * self, PyObject * args);
@@ -200,9 +201,26 @@ static PyMethodDef cwenomethods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef cwenomodule = {
+  PyModuleDef_HEAD_INIT,
+  "cweno",
+  NULL,
+  0,
+  cwenomethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
+
 PyMODINIT_FUNC
-initcweno (void)
+PyInit_cweno (void)
 {
-  (void) Py_InitModule ("cweno", cwenomethods);
+  PyObject *module = PyModule_Create(&cwenomodule);
+  if (module == NULL) return NULL;
+
   import_array ();
+  return module;
 }
+
+// vim:set ts=2 sts=2 sw=2 et:

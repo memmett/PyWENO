@@ -18,7 +18,7 @@
  * :Author: Matthew Emmett
  */
 
-#define PY_ARRAY_UNIQUE_SYMBOL weno_nonuniform_ARRAY_API
+#define PY_ARRAY_UNIQUE_SYMBOL NFCWENO_ARRAY_API
 
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
@@ -341,11 +341,28 @@ static PyMethodDef cnonuniformmethods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef cnonuniformmodule = {
+  PyModuleDef_HEAD_INIT,
+  "cnonuniform",
+  NULL,
+  0,
+  cnonuniformmethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
 
 PyObject *py_nonuniform_weno_coeffs(PyObject *self, PyObject *args);
+
 PyMODINIT_FUNC
-initcnonuniform (void)
+PyInit_cnonuniform (void)
 {
-  (void) Py_InitModule("cnonuniform", cnonuniformmethods);
+  PyObject *module = PyModule_Create(&cnonuniformmodule);
+  if (module == NULL) return NULL;
+
   import_array ();
+  return module;
 }
+
+// vim:set ts=2 sts=2 sw=2 et:

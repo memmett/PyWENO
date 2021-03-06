@@ -89,9 +89,24 @@ static PyMethodDef ccoeffsmethods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef ccoeffsmodule = {
+  PyModuleDef_HEAD_INIT,
+  "ccoeffs",
+  NULL,
+  0,
+  ccoeffsmethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
+};
+
 PyMODINIT_FUNC
-initccoeffs (void)
+PyInit_ccoeffs (void)
 {
-  (void) Py_InitModule ("ccoeffs", ccoeffsmethods);
+  PyObject *module = PyModule_Create(&ccoeffsmodule);
+  if (module == NULL) return NULL;
+
   import_array ();
+  return module;
 }
