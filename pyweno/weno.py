@@ -68,7 +68,7 @@ def reconstruct(q, k, points,
     points = 'gauss_legendre'
 
   N = q.shape[0]
-  k = (k+1)/2
+  k = (k+1)//2
 
   # validate points and n
   if points in [ 'left', 'right', 'middle' ]:

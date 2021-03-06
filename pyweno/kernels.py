@@ -1,9 +1,9 @@
 """PyWENO code generation tool kit (kernels)."""
 
 import sympy
-import codeprinters
 
-import symbolic
+from . import codeprinters
+from . import symbolic
 
 class KernelGenerator:
   """Generate kernels for WENO reconstructions.
@@ -30,9 +30,9 @@ class KernelGenerator:
   """
 
   def __init__(self, lang, order=None, xi=None, **kwargs):
-    import symbols
+    from . import symbols
     if order is not None:
-      self.k = (order + 1) / 2
+      self.k = (order + 1) // 2
       self.xi = xi
     self.lang = lang.lower()
     self.weights_normalised = False
@@ -57,7 +57,7 @@ class KernelGenerator:
 
     """
 
-    from symbols import sigma, fmn, f
+    from .symbols import sigma, fmn, f
 
     kernel = Kernel()
 
@@ -152,7 +152,7 @@ class KernelGenerator:
 
     """
 
-    from symbols import real, omega, sigma
+    from .symbols import real, omega, sigma
 
     kernel = Kernel()
 
@@ -209,7 +209,7 @@ class KernelGenerator:
 
     """
 
-    from symbols import omega, fs, fr, f
+    from .symbols import omega, fs, fr, f
 
     kernel = Kernel()
 
@@ -260,7 +260,7 @@ class KernelGenerator:
 
 class Kernel:
   def __init__(self):
-    import symbols
+    from . import symbols
     if symbols.names.lang == 'fortran':
       self.code = codeprinters.FCodePrinter(settings={'source_format': 'free'})
     else:

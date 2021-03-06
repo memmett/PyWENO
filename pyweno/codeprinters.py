@@ -1,7 +1,7 @@
 """PyWENO code generation helpers."""
 
-from sympy.printing.fcode import FCodePrinter as SympyFCodePrinter
-from sympy.printing.ccode import CCodePrinter as SympyCCodePrinter
+from sympy.printing.fortran import FCodePrinter as SympyFCodePrinter
+from sympy.printing.c import C89CodePrinter as SympyCCodePrinter
 from sympy.printing.precedence import precedence
 
 

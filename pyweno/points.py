@@ -35,7 +35,7 @@ Requires SymPy.
 
 import numpy as np
 import sympy
-import sympy.mpmath as mpmath
+import mpmath
 
 
 ################################################################################
@@ -52,7 +52,7 @@ def legendre_poly(n):
 
   top = p.diff(x, n)
   bot = 2**n * 1.0*sympy.factorial(n)
-  
+
   return (top / bot).as_poly()
 
 
@@ -104,7 +104,7 @@ def gauss_lobatto(n):
   r = find_roots(p)
   r = [mpmath.mpf('-1.0'), mpmath.mpf('1.0')] + r
   return sorted(r)
-  
+
 
 def gauss_radau(n):
   '''Return Gauss-Radau nodes.

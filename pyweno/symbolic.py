@@ -18,7 +18,7 @@ def polynomial_interpolator(x, y):
 
   sum_i = 0
   for i in range(k):
-    ns = range(k)
+    ns = list(range(k))
     ns.remove(i)
 
     num, den = 1, 1
