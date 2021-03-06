@@ -4,7 +4,7 @@ import sympy
 
 real = lambda x: sympy.Symbol(str(x), real=True)
 
-class names(object):
+class names:
   lang   = 'c'
   sigma  = 'sigma{}'
   omega  = 'omega{}r{}'
@@ -17,7 +17,7 @@ class names(object):
     'fortran': 'f(i{:+d})'
     }
 
-class SigmaGenerator(object):
+class SigmaGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'sigma')
     return real(tmp.format(idx))
@@ -26,7 +26,7 @@ class SigmaGenerator(object):
 
 sigma = SigmaGenerator()
 
-class OmegaGenerator(object):
+class OmegaGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'omega')
     if len(idx) == 3:
@@ -46,7 +46,7 @@ class OmegaGenerator(object):
 
 omega = OmegaGenerator()
 
-class FStarGenerator(object):
+class FStarGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'f_star')
     return real(tmp.format(idx))
@@ -55,7 +55,7 @@ class FStarGenerator(object):
 
 fs = FStarGenerator()
 
-class FRGenerator(object):
+class FRGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'f_r')
     return real(tmp.format(*idx))
@@ -64,14 +64,14 @@ class FRGenerator(object):
 
 fr = FRGenerator()
 
-class FGenerator(object):
+class FGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'f')[names.lang]
     return real(tmp.format(idx))
 
 f = FGenerator()
 
-class FMNGenerator(object):
+class FMNGenerator:
   def __getitem__(self, idx):
     tmp = getattr(names, 'f_mn')
     return real(tmp.format(*idx).replace('-','m').replace('+','p'))

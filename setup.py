@@ -11,10 +11,10 @@ import numpy as np
 ###############################################################################
 # version
 
-with open('version.py', 'r') as f:
+with open('version.py') as f:
     exec(f.read())                  # this sets 'version'
 
-with open('README', 'r') as file:
+with open('README') as file:
     long_description = file.read()
 
 

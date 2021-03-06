@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.abspath('..'))
 
 # mock out some extension modules
-class Mock(object):
+class Mock:
     def __init__(self, *args, **kwargs):
         pass
 

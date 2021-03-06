@@ -5,7 +5,7 @@ import codeprinters
 
 import symbolic
 
-class KernelGenerator(object):
+class KernelGenerator:
   """Generate kernels for WENO reconstructions.
 
   Each method generates a 'kernel' for a specific WENO operation:
@@ -258,7 +258,7 @@ class KernelGenerator(object):
 ###############################################################################
 # helpers
 
-class Kernel(object):
+class Kernel:
   def __init__(self):
     import symbols
     if symbols.names.lang == 'fortran':

@@ -13,6 +13,6 @@ class CCodePrinter(SympyCCodePrinter):
     if expr.exp == 2:
       PREC = precedence(expr)
       s = str(self.parenthesize(expr.base, PREC))
-      return '%s*%s' % (s,s)
+      return f'{s}*{s}'
     else:
-      return super(CCodePrinter,self)._print_Pow(expr)
+      return super()._print_Pow(expr)

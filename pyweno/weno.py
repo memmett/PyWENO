@@ -111,7 +111,7 @@ def reconstruct(q, k, points,
 
   if points == '+/-':
     # XXX: finish this off
-    raise NotImplementedError, '+/- not implemented yet'
+    raise NotImplementedError('+/- not implemented yet')
 
   try:
     func = getattr(pyweno.cweno,
