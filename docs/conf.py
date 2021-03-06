@@ -47,5 +47,6 @@ html_sidebars = {
 project   = 'PyWENO'
 copyright = '2009, 2010, 2011, Matthew Emmett'
 
-execfile('../version.py')               # this sets 'version'
+with open('../version.py') as f:
+    exec(f.read())  # this sets 'version'
 release = version
