@@ -30,7 +30,7 @@ def test_reconstruction():
     qr = reconstruct(q[0,:], k, 'left')
     err = np.log10(1e-30 + abs(qr[k:-k] - f(x[:-1])[k:-k]).max())
 
-    print 'k: %d, error: %lf' % (k, err)
+    print('k: %d, error: %lf' % (k, err))
 
     assert err < max(-k, -13), "WENO (k=%d, left) is broken" % (k)
 

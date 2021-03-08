@@ -4,18 +4,17 @@ import glob
 import os
 import re
 
-from distutils.core import setup
-from distutils.extension import Extension
-
+from setuptools import setup, Extension
 import numpy as np
 
 
 ###############################################################################
 # version
 
-execfile('version.py')                  # this sets 'version'
+with open('version.py') as f:
+    exec(f.read())                  # this sets 'version'
 
-with open('README', 'r') as file:
+with open('README') as file:
     long_description = file.read()
 
 
@@ -24,24 +23,20 @@ with open('README', 'r') as file:
 
 try:
     git_head_file = os.path.join(os.path.dirname(__file__), '.git', 'HEAD')
-    f = open(git_head_file)
-    m = re.match(r'ref: (.+)', f.readline())
-    ref = m.group(1)
-    f.close()
+    with open(git_head_file) as f:
+        m = re.match(r'ref: (.+)', f.readline())
+        ref = m.group(1)
 
     git_head_file = os.path.join(os.path.dirname(__file__), '.git', ref)
-    f = open(git_head_file)
-    git_version = f.readline().rstrip()
-    f.close()
-
+    with open(git_head_file) as f:
+        git_version = f.readline().rstrip()
 except:
     git_version = 'not_available'
 
 git_version_file = os.path.join(os.path.dirname(__file__),
                                 'pyweno','__git_version__.py')
-f = open(git_version_file, 'w')
-f.write("version = '%s'\n" % (git_version))
-f.close()
+with open(git_version_file, 'w') as f:
+    f.write("version = '%s'\n" % (git_version))
 
 
 ###############################################################################
@@ -49,9 +44,9 @@ f.close()
 
 version_file = os.path.join(os.path.dirname(__file__),
                             'pyweno','__version__.py')
-f = open(version_file, 'w')
-f.write("version = '%s'\n" % (version))
-f.close()
+
+with open(version_file, 'w') as f:
+    f.write("version = '%s'\n" % (version))
 
 
 ###############################################################################

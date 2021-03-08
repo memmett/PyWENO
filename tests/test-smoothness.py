@@ -34,7 +34,7 @@ def test_smoothness():
 
     for k in K:
         beta = pyweno.symbolic.jiang_shu_smoothness_coefficients(k)
-        print beta
+        print(beta)
         for key in exact[k]:
             assert(exact[k][key] == beta[key])
 

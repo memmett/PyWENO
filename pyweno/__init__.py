@@ -1,10 +1,10 @@
 """The PyWENO module."""
 
-import points
-import kernels
-import nonuniform
-import symbolic
-import symbols
-import version
-import weno
-import cweno
+from . import points
+from . import kernels
+from . import nonuniform
+from . import symbolic
+from . import symbols
+from . import version
+from . import weno
+from . import cweno

@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.abspath('..'))
 
 # mock out some extension modules
-class Mock(object):
+class Mock:
     def __init__(self, *args, **kwargs):
         pass
 
@@ -47,5 +47,6 @@ html_sidebars = {
 project   = 'PyWENO'
 copyright = '2009, 2010, 2011, Matthew Emmett'
 
-execfile('../version.py')               # this sets 'version'
+with open('../version.py') as f:
+    exec(f.read())  # this sets 'version'
 release = version

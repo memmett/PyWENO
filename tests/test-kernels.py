@@ -1,4 +1,3 @@
-
 import pyweno
 
 def test_kernels():

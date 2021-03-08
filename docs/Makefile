@@ -1,13 +1,20 @@
+# Minimal makefile for Sphinx documentation
 #
-# Makefile for PyWENO documentation
-#
 
-SPHINXBUILD = sphinx-build
-SPHINXOPTS  = -d _doctrees
+# You can set these variables from the command line, and also
+# from the environment for the first two.
+SPHINXOPTS    ?= -v
+SPHINXBUILD   ?= python $(shell which sphinx-build)
+SOURCEDIR     = .
+BUILDDIR      = _build
 
-html:
-	$(SPHINXBUILD) -b html $(SPHINXOPTS) . _build
+# Put it first so that "make" without argument is like "make help".
+help:
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-all: html
+.PHONY: help Makefile
 
-.PHONY: html
+# Catch-all target: route all unknown targets to Sphinx using the new
+# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+%: Makefile
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
