@@ -1,0 +1,40 @@
+[build-system]
+build-backend = "mesonpy"
+requires = [
+    "meson-python>=0.14",
+    "ninja",
+    "numpy",
+]
+
+[project]
+name = "PyWENO"
+version = "0.11.2"
+description = "Weighted Essentially Non-oscillatory (WENO) reconstructions"
+readme = "README.md"
+keywords = [
+    "finite volume",
+    "interpolation",
+    "weno",
+]
+license = { text = "BSD-3-Clause" }
+maintainers = [{ name = "Matthew Emmett", email = "matthew@emmett.ca" }]
+authors = [{ name = "Matthew Emmett", email = "matthew@emmett.ca" }]
+requires-python = ">=3.6"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C",
+    "Programming Language :: Fortran",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy",
+    "sympy",
+]
+[project.urls]
+Documentation = "https://pyweno.readthedocs.io"
+Repository = "https://github.com/memmett/PyWENO"
