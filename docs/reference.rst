@@ -46,9 +46,3 @@ Non-uniform reconstructions
 
 .. automodule:: pyweno.nonuniform
    :members:
-
-
-Version
--------
-
-.. automodule:: pyweno.version
