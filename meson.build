@@ -158,7 +158,6 @@ py.install_sources([
   'pyweno/reconstruction_coeffs.py',
   'pyweno/symbolic.py',
   'pyweno/symbols.py',
-  'pyweno/version.py',
   'pyweno/weno.py',
   ],
   subdir: 'pyweno')
