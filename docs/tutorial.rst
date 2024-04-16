@@ -47,11 +47,12 @@ The code to generate the above is in
 Version information
 -------------------
 
-Here we obtain the version of PyWENO::
+PyWENO uses standard Python packaging, so its version information can be obtained
+through ``importlib``. However, you can also get it from the module itself::
 
-  >>> import pyweno.version
-  >>> pyweno.version.version()
-  >>> pyweno.version.git_version()
+  >>> from pyweno import __version__
+  >>> __version__
+  '0.11.2'
 
 
 
