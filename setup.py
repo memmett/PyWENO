@@ -4,9 +4,8 @@ import glob
 import os
 import re
 
-from setuptools import setup, Extension
 import numpy as np
-
+from setuptools import setup, Extension
 
 ###############################################################################
 # version
@@ -64,6 +63,8 @@ setup(
     keywords     = "weno, interpolate, interpolation, finite, volume",
     url          = "http://readthedocs.org/docs/pyweno/en/latest/",
 
+    setup_requires = ["numpy"],
+    install_requires = ["numpy", "sympy"],
     ext_modules = [
         Extension('pyweno.ccoeffs',
                   sources = ['src/ccoeffs.c'] + glob.glob('src/coeffs*.c'),
