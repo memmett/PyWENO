@@ -112,14 +112,14 @@ f.write(dedent('''\
        if (! PyArg_ParseTuple(args, "dliiOO", &xi, &i, &r, &k, &bndry, &coeffs))
        return NULL;
 
-       if ((PyArray_FLAGS(bndry) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+       if ((PyArray_FLAGS(bndry) & NPY_ARRAY_IN_ARRAY) != NPY_ARRAY_IN_ARRAY) {
        PyErr_SetString(PyExc_TypeError, "bndry is not contiguous and/or aligned");
        return NULL;
        }
        Py_INCREF(bndry);
        x = (double *) PyArray_DATA(bndry);
 
-       if ((PyArray_FLAGS(coeffs) & NPY_IN_ARRAY) != NPY_IN_ARRAY) {
+       if ((PyArray_FLAGS(coeffs) & NPY_ARRAY_IN_ARRAY) != NPY_ARRAY_IN_ARRAY) {
        PyErr_SetString(PyExc_TypeError, "coeffs is not contiguous and/or aligned");
        return NULL;
        }
