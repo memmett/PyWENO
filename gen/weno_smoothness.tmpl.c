@@ -33,13 +33,13 @@ py_{{name}} (PyObject * self, PyObject * args)
   if (!PyArg_ParseTuple (args, "OO", &f_py, &sigma_py))
     return NULL;
 
-  if (sigma_py->nd != 2 || sigma_py->descr->type_num != PyArray_DOUBLE)
+  if (sigma_py->nd != 2 || sigma_py->descr->type_num != NPY_DOUBLE)
     {
       PyErr_SetString (PyExc_ValueError, "sigma must be two-dimensional and of type float");
       return NULL;
     }
 
-  if (f_py->nd != 1 || f_py->descr->type_num != PyArray_DOUBLE)
+  if (f_py->nd != 1 || f_py->descr->type_num != NPY_DOUBLE)
     {
       PyErr_SetString (PyExc_ValueError, "f must be one-dimensional and of type float");
       return NULL;

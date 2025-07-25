@@ -261,27 +261,27 @@ PyObject *py_nonuniform_coeffs(PyObject *self, PyObject *args)
   if (!PyArg_ParseTuple (args, "iOOOOO", &k, &xi_py, &x_py, &c_py, &beta_py, &varpi_py))
     return NULL;
 
-  if (x_py->nd != 1 || x_py->descr->type_num != PyArray_DOUBLE) {
+  if (x_py->nd != 1 || x_py->descr->type_num != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError, "x must be one-dimensional and of type double");
     return NULL;
   }
 
-  if (xi_py->nd != 1 || xi_py->descr->type_num != PyArray_DOUBLE) {
+  if (xi_py->nd != 1 || xi_py->descr->type_num != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError, "xi must be one-dimensional and of type double");
     return NULL;
   }
 
-  if (c_py->nd != 4 || c_py->descr->type_num != PyArray_DOUBLE) {
+  if (c_py->nd != 4 || c_py->descr->type_num != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError, "c must be four-dimensional and of type double");
     return NULL;
   }
 
-  if (beta_py->nd != 4 || beta_py->descr->type_num != PyArray_DOUBLE) {
+  if (beta_py->nd != 4 || beta_py->descr->type_num != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError, "beta must be four-dimensional and of type double");
     return NULL;
   }
 
-  if (varpi_py->nd != 3 || varpi_py->descr->type_num != PyArray_DOUBLE) {
+  if (varpi_py->nd != 3 || varpi_py->descr->type_num != NPY_DOUBLE) {
     PyErr_SetString(PyExc_ValueError, "varpi must be three-dimensional and of type double");
     return NULL;
   }
